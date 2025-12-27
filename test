@@ -6040,5 +6040,29 @@ local config_holder
         return setmetatable(cfg, library)
     end
 
+    function library:divider(options)
+        options = options or {}
+        local cfg = {
+            visible = (options.visible == nil) and true or options.visible
+        }
+
+        local divider = library:create("Frame", {
+            Parent = self.holder,
+            Name = "Divider",
+            Size = dim2(1, -8, 0, 1),
+            BorderSizePixel = 0,
+            BackgroundColor3 = themes.preset.accent,
+            Visible = cfg.visible
+        })
+        library:apply_theme(divider, "accent", "BackgroundColor3")
+
+        function cfg.set_visible(v)
+            divider.Visible = v
+        end
+        
+        cfg.instance = divider
+        return setmetatable(cfg, library)
+    end
+
 library.themes = themes
 return library
