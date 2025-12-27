@@ -719,7 +719,7 @@ local config_holder
                     TextXAlignment = Enum.TextXAlignment.Right;
                     AutomaticSize = Enum.AutomaticSize.XY;
                     TextColor3 = themes.preset.text;
-                    TextSize = 10;
+                    TextSize = 8;
                     ZIndex = 100;
                     BackgroundColor3 = rgb(255, 255, 255)
                 });
