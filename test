@@ -721,7 +721,8 @@ local config_holder
                     TextColor3 = themes.preset.text;
                     TextSize = 8;
                     ZIndex = 100;
-                    BackgroundColor3 = rgb(255, 255, 255)
+                    BackgroundColor3 = rgb(255, 255, 255);
+                    FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal);
                 });
 
                 library:create( "UIStroke" , {
