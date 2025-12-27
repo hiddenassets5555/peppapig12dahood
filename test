@@ -1,5 +1,5 @@
 local flags = ... 
-print("Library script loaded! Version: Fix-ESP-Settings")
+print("Library script loaded! Version: Fix-Themes-Nil")
 local cloneref = cloneref or function(o) return o end
 local uis = cloneref(game:GetService("UserInputService"))
 local players = cloneref(game:GetService("Players"))
@@ -61,40 +61,6 @@ local clamp = math.clamp
 
 local ESP_SETTINGS = { SkeletonColor = Color3.fromRGB(255, 255, 255), Enabled = true, ShowSkeleton = false }
 
-library = {
-    directory = "raeleigh",
-    folders = {
-        "/fonts",
-        "/configs",
-        "/images"
-    },
-    flags = flags,
-    config_flags = {},
-    visible_flags = {}, 
-    guis = {}, 
-    connections = {},   
-    notifications = {},
-    playerlist_data = {},
-
-    current_tab, 
-    current_element_open, 
-    dock_button_holder,  
-    old_config; 
-    font, 
-    keybind_list,
-    binds = {}, 
-    
-    copied_flag; 
-    is_rainbow;
-
-    display_orders = 0; 
-    menu_open = true;
-    main_frames = {};
-}
-
-local flags = library.flags
-local config_flags = library.config_flags
-
 local themes = {
     preset = {
         ["outline"] = hex("#0A0A0A"), 
@@ -152,6 +118,41 @@ local themes = {
         ["ScrollingFrame"] = "ScrollBarImageColor3"
     }
 }
+
+library = {
+    directory = "raeleigh",
+    folders = {
+        "/fonts",
+        "/configs",
+        "/images"
+    },
+    flags = flags,
+    config_flags = {},
+    visible_flags = {}, 
+    guis = {}, 
+    connections = {},   
+    notifications = {},
+    playerlist_data = {},
+
+    current_tab, 
+    current_element_open, 
+    dock_button_holder,  
+    old_config; 
+    font, 
+    keybind_list,
+    binds = {}, 
+    
+    copied_flag; 
+    is_rainbow;
+
+    display_orders = 0; 
+    menu_open = true;
+    main_frames = {};
+}
+
+local flags = library.flags
+local config_flags = library.config_flags
+
 
 local keys = {
     [Enum.KeyCode.LeftShift] = "LS",
