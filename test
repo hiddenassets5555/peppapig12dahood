@@ -45,6 +45,20 @@ local find = table.find
 local remove = table.remove
 local concat = table.concat
 
+local floor = math.floor
+local ceil = math.ceil
+local max = math.max
+local min = math.min
+local abs = math.abs
+local random = math.random
+local rad = math.rad
+local sin = math.sin
+local cos = math.cos
+local atan2 = math.atan2
+local pi = math.pi
+local sqrt = math.sqrt
+local clamp = math.clamp
+
 library = {
     directory = "raeleigh",
     folders = {
