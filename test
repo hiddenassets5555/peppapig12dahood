@@ -65,7 +65,7 @@ local themes = {
     preset = {
         ["outline"] = hex("#0A0A0A"), 
         ["inline"] = hex("#2D2D2D"), 
-        ["accent"] = rgb(191, 191, 244), 
+        ["accent"] = rgb(133, 156, 220), 
         ["high_contrast"] = hex("#141414"),
         ["low_contrast"] = hex("#1E1E1E"),
         ["text"] = hex("#B4B4B4"),
@@ -682,8 +682,26 @@ local config_holder
                     Enabled = cfg.open,
                     Parent = gethui(),
                     Name = "",
-                    DisplayOrder = 10000
+                    DisplayOrder = 10000,
+                    IgnoreGuiInset = true
                 })
+
+                -- Custom Cursor
+                uis.MouseIconEnabled = false
+                local cursor = library:create("ImageLabel", {
+                    Parent = items.sgui,
+                    Name = "Cursor",
+                    Image = "rbxassetid://6031097225",
+                    Size = dim_offset(20, 20),
+                    BackgroundTransparency = 1,
+                    ZIndex = 999999,
+                    Active = false
+                })
+
+                library:connection(run.RenderStepped, function()
+                    local mouse = uis:GetMouseLocation()
+                    cursor.Position = dim_offset(mouse.X, mouse.Y)
+                end)
                 
                 items.main_holder = library:create("Frame", {
                     Parent = items.sgui,
@@ -711,13 +729,13 @@ local config_holder
                     Active = false;
                     BorderColor3 = rgb(0, 0, 0);
                     Text = "X";
-                    Size = dim2(0, 0, 0, 0);
+                    Size = dim2(0, 11, 0, 11);
                     Selectable = false;
                     Position = dim2(1, -7, 0, 5);
                     BorderSizePixel = 0;
                     BackgroundTransparency = 1;
-                    TextXAlignment = Enum.TextXAlignment.Right;
-                    AutomaticSize = Enum.AutomaticSize.XY;
+                    TextXAlignment = Enum.TextXAlignment.Center;
+                    AutomaticSize = Enum.AutomaticSize.None;
                     TextColor3 = themes.preset.text;
                     TextSize = 11;
                     ZIndex = 100;
@@ -742,10 +760,10 @@ local config_holder
                     BorderColor3 = rgb(0, 0, 0),
                     Size = dim2(1, -2, 1, -2),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = themes.preset.accent
+                    BackgroundColor3 = rgb(60, 60, 60)
                 })
                 
-                library:apply_theme(items.window_inline, "accent", "BackgroundColor3") 
+                -- library:apply_theme(items.window_inline, "accent", "BackgroundColor3") 
                 
                 items.window_holder = library:create("Frame", {
                     Parent = items.window_inline,
@@ -1355,13 +1373,13 @@ local config_holder
             }) library:apply_theme(dock_holder, "outline", "BackgroundColor3") 
             
             local accent = library:create("Frame", {
-                Parent = dock_holder,
-                Name = "",
-                Size = dim2(1, 0, 0, 2),
-                BorderColor3 = rgb(0, 0, 0),
-                BorderSizePixel = 0,
-                BackgroundColor3 = themes.preset.accent
-            }) library:apply_theme(accent, "accent", "BackgroundColor3") 
+        Parent = dock_holder,
+        Name = "",
+        Size = dim2(1, 0, 0, 2),
+        BorderColor3 = rgb(0, 0, 0),
+        BorderSizePixel = 0,
+        BackgroundColor3 = rgb(60, 60, 60)
+    }) -- library:apply_theme(accent, "accent", "BackgroundColor3") 
             
             local UIGradient = library:create("UIGradient", {
                 Parent = accent,
@@ -1479,8 +1497,8 @@ local config_holder
                 BorderColor3 = rgb(0, 0, 0),
                 Size = dim2(1, 0, 0, 2),
                 BorderSizePixel = 0,
-                BackgroundColor3 = themes.preset.accent
-            }); library:apply_theme(bg, "accent", "BackgroundColor3")
+                BackgroundColor3 = rgb(60, 60, 60)
+            }); -- library:apply_theme(bg, "accent", "BackgroundColor3")
             
             
             library:create("UIGradient", {
@@ -2050,8 +2068,8 @@ local config_holder
             BorderColor3 = rgb(0, 0, 0),
             Size = dim2(1, -4, 0, 2),
             BorderSizePixel = 0,
-            BackgroundColor3 = themes.preset.accent
-        }) library:apply_theme(accent, "accent", "BackgroundColor3") 
+            BackgroundColor3 = rgb(60, 60, 60)
+        }) -- library:apply_theme(accent, "accent", "BackgroundColor3") 
         
         local UIGradient = library:create("UIGradient", {
             Parent = accent,
@@ -2521,10 +2539,10 @@ local config_holder
                 BorderColor3 = rgb(0, 0, 0),
                 Size = UDim2.new(0, 1, 1, -4),
                 BorderSizePixel = 0,
-                BackgroundColor3 = themes.preset.accent
+                BackgroundColor3 = rgb(60, 60, 60)
             })
 
-            library:apply_theme(accent, "accent", "BackgroundColor3")
+            -- library:apply_theme(accent, "accent", "BackgroundColor3")
     
             local UIGradient = library:create("UIGradient", {
                 Parent = accent,
@@ -2543,7 +2561,7 @@ local config_holder
                 BorderColor3 = rgb(0, 0, 0),
                 Size = UDim2.new(0, -4, 0, 1),
                 BorderSizePixel = 0,
-                BackgroundColor3 = themes.preset.accent
+                BackgroundColor3 = rgb(60, 60, 60)
             })
             
             local UIGradient = library:create("UIGradient", {
@@ -2788,8 +2806,8 @@ local config_holder
             BorderColor3 = rgb(0, 0, 0),
             ZIndex = 3,
             BorderSizePixel = 0,
-            BackgroundColor3 = themes.preset.accent
-        }) library:apply_theme(accent, "accent", "BackgroundColor3")
+            BackgroundColor3 = rgb(60, 60, 60)
+        }) -- library:apply_theme(accent, "accent", "BackgroundColor3")
         
         local UIGradient = library:create("UIGradient", {
             Parent = accent,
@@ -3022,8 +3040,8 @@ local config_holder
             BorderColor3 = rgb(0, 0, 0),
             Size = dim2(1, 0, 0, 2),
             BorderSizePixel = 0,
-            BackgroundColor3 = themes.preset.accent
-        }) library:apply_theme(accent, "accent", "BackgroundColor3") 
+            BackgroundColor3 = rgb(60, 60, 60)
+        }) -- library:apply_theme(accent, "accent", "BackgroundColor3") 
 
         local UIGradient = library:create("UIGradient", {
             Parent = accent,
