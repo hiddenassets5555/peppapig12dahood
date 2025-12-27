@@ -1,5 +1,5 @@
 local flags = ... 
-print("Library script loaded! Version: Fix-Math-Locals")
+print("Library script loaded! Version: Fix-ESP-Settings")
 local cloneref = cloneref or function(o) return o end
 local uis = cloneref(game:GetService("UserInputService"))
 local players = cloneref(game:GetService("Players"))
@@ -58,6 +58,8 @@ local atan2 = math.atan2
 local pi = math.pi
 local sqrt = math.sqrt
 local clamp = math.clamp
+
+local ESP_SETTINGS = { SkeletonColor = Color3.fromRGB(255, 255, 255), Enabled = true, ShowSkeleton = false }
 
 library = {
     directory = "raeleigh",
@@ -2232,7 +2234,7 @@ local config_holder
             
             if (now - lastHealthUpdate) >= healthInterval then
                 lastHealthUpdate = now
-                cfg.change_health()
+                if cfg.change_health then cfg.change_health() end
             end
         end)
 
