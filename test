@@ -1,5 +1,5 @@
 local flags = ... 
-print("Library script loaded! Version: Fix-Themes-Export")
+print("Library script loaded! Version: Small-UI-Fix")
 local cloneref = cloneref or function(o) return o end
 local uis = cloneref(game:GetService("UserInputService"))
 local players = cloneref(game:GetService("Players"))
@@ -1579,10 +1579,11 @@ local config_holder
         
             local cam = workspace.CurrentCamera or game:GetService("Workspace").CurrentCamera
             local vp = cam and cam.ViewportSize or Vector2.new(1920, 1080)
+            local win_size = properties and properties.size or dim2(0, 500, 0, 550)
             local main_window = library:panel({
                 name = properties and properties.name or "Home | ", 
-                size = properties and properties.size or dim2(0, 500, 0, 550),
-                position = dim2(0, (vp.X / 2) - 250 - 96, 0, (vp.Y / 2) - 275 - 12),
+                size = win_size,
+                position = dim2(0, (vp.X / 2) - (win_size.X.Offset / 2) - 96, 0, (vp.Y / 2) - (win_size.Y.Offset / 2) - 12),
                 image = "rbxassetid://98823308062942",
             })
 
