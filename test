@@ -1788,7 +1788,7 @@ local config_holder
         
             local configurations = library:panel({
                 name = "Configurations", 
-                size = dim2(0, 250, 0, 300),
+                size = dim2(0, 290, 0, 350),
                 position = dim2(0, items.main_holder.AbsolutePosition.X + items.main_holder.AbsoluteSize.X + 2, 0, items.main_holder.AbsolutePosition.Y),
                 image = "rbxassetid://105199726008012",
                 open = false,
@@ -1878,8 +1878,8 @@ local config_holder
             local playerlist = library:panel({
                 name = "Playerlist", 
                 anchor_point = vec2(0, 0),
-                size = dim2(0, 350, 0, 400),
-                position = dim2(0, main_window.items.main_holder.AbsolutePosition.X - 352, 0, main_window.items.main_holder.AbsolutePosition.Y),
+                size = dim2(0, 440, 0, 420),
+                position = dim2(0, main_window.items.main_holder.AbsolutePosition.X - 442, 0, main_window.items.main_holder.AbsolutePosition.Y),
                 image = "rbxassetid://107070078834415",
                 open = false,
             })  
