@@ -1681,7 +1681,7 @@ local config_holder
             local style = library:panel({
                 name = "Style", 
                 anchor_point = vec2(0, 0),
-                size = dim2(0, 300, 0, 350),
+                size = dim2(0, 394, 0, 464),
                 position = dim2(0, main_window.items.main_holder.AbsolutePosition.X + main_window.items.main_holder.AbsoluteSize.X + 2, 0, main_window.items.main_holder.AbsolutePosition.Y),
                 image = "rbxassetid://115194686863276",
                 open = false,
@@ -1788,7 +1788,7 @@ local config_holder
         
             local configurations = library:panel({
                 name = "Configurations", 
-                size = dim2(0, 290, 0, 350),
+                size = dim2(0, 324, 0, 410),
                 position = dim2(0, items.main_holder.AbsolutePosition.X + items.main_holder.AbsoluteSize.X + 2, 0, items.main_holder.AbsolutePosition.Y),
                 image = "rbxassetid://105199726008012",
                 open = false,
@@ -1850,7 +1850,7 @@ local config_holder
             local esp_preview = library:panel({
                 name = "ESP Preview", 
                 anchor_point = vec2(0, 0),
-                size = dim2(0, 250, 0, 280),
+                size = dim2(0, 300, 0, 325),
                 position = dim2(0, style.items.main_holder.AbsolutePosition.X, 0, style.items.main_holder.AbsolutePosition.Y + style.items.main_holder.AbsoluteSize.Y + 2),
                 image = "rbxassetid://77684377836328",
                 open = false,
@@ -1878,8 +1878,8 @@ local config_holder
             local playerlist = library:panel({
                 name = "Playerlist", 
                 anchor_point = vec2(0, 0),
-                size = dim2(0, 440, 0, 420),
-                position = dim2(0, main_window.items.main_holder.AbsolutePosition.X - 442, 0, main_window.items.main_holder.AbsolutePosition.Y),
+                size = dim2(0, 529, 0, 445),
+                position = dim2(0, main_window.items.main_holder.AbsolutePosition.X - 531, 0, main_window.items.main_holder.AbsolutePosition.Y),
                 image = "rbxassetid://107070078834415",
                 open = false,
             })  
