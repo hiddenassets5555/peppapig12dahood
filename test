@@ -1,5 +1,5 @@
 local flags = ... 
-
+print("Library script loaded! Version: Fix-Math-Locals")
 local cloneref = cloneref or function(o) return o end
 local uis = cloneref(game:GetService("UserInputService"))
 local players = cloneref(game:GetService("Players"))
