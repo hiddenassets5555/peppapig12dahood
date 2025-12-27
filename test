@@ -18,6 +18,7 @@ local rs = cloneref(game:GetService("ReplicatedStorage"))
 local cas = cloneref(game:GetService("ContextActionService"))
 
 local lp = players.LocalPlayer
+local camera = ws.CurrentCamera
 
 local vec2 = Vector2.new
 local vec3 = Vector3.new
