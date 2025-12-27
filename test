@@ -18,7 +18,7 @@ local rs = cloneref(game:GetService("ReplicatedStorage"))
 local cas = cloneref(game:GetService("ContextActionService"))
 
 local lp = players.LocalPlayer
-local camera = ws.CurrentCamera
+local camera = workspace.CurrentCamera
 
 local vec2 = Vector2.new
 local vec3 = Vector3.new
@@ -1560,10 +1560,12 @@ local config_holder
         
 
         
+            local cam = workspace.CurrentCamera or game:GetService("Workspace").CurrentCamera
+            local vp = cam and cam.ViewportSize or Vector2.new(1920, 1080)
             local main_window = library:panel({
                 name = properties and properties.name or "Home | ", 
                 size = dim2(0, 604, 0, 628),
-                position = dim2(0, (camera.ViewportSize.X / 2) - 302 - 96, 0, (camera.ViewportSize.Y / 2) - 421 - 12),
+                position = dim2(0, (vp.X / 2) - 302 - 96, 0, (vp.Y / 2) - 421 - 12),
                 image = "rbxassetid://98823308062942",
             })
 
