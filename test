@@ -1,5 +1,5 @@
 local flags = ... 
-print("Library script loaded! Version: Fix-Themes-Nil")
+print("Library script loaded! Version: Fix-Themes-Export")
 local cloneref = cloneref or function(o) return o end
 local uis = cloneref(game:GetService("UserInputService"))
 local players = cloneref(game:GetService("Players"))
@@ -6038,6 +6038,7 @@ local config_holder
         cfg.labels.uid = self:label({name = "User Id: ??"})
 
         return setmetatable(cfg, library)
-    end 
+    end
 
+library.themes = themes
 return library
