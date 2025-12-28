@@ -686,22 +686,7 @@ local config_holder
                     IgnoreGuiInset = true
                 })
 
-                -- Custom Cursor
-                uis.MouseIconEnabled = false
-                local cursor = library:create("ImageLabel", {
-                    Parent = items.sgui,
-                    Name = "Cursor",
-                    Image = "rbxassetid://6031097225",
-                    Size = dim_offset(20, 20),
-                    BackgroundTransparency = 1,
-                    ZIndex = 999999,
-                    Active = false
-                })
 
-                library:connection(run.RenderStepped, function()
-                    local mouse = uis:GetMouseLocation()
-                    cursor.Position = dim_offset(mouse.X, mouse.Y)
-                end)
                 
                 items.main_holder = library:create("Frame", {
                     Parent = items.sgui,
