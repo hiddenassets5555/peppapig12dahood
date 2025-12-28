@@ -1284,6 +1284,47 @@ local config_holder
         local window = {opened = true}            
         local opened = {}
         local dock_outline;
+
+        -- Custom Cursor Initialization
+        local Cursor, CursorOutline
+        if Drawing then
+             Cursor = Drawing.new('Triangle')
+             Cursor.Thickness = 1
+             Cursor.Filled = true
+             Cursor.Visible = true -- Default to true matching menu_open
+             Cursor.ZIndex = 9999 -- Ensure it's on top
+             
+             CursorOutline = Drawing.new('Triangle')
+             CursorOutline.Thickness = 1
+             CursorOutline.Filled = false
+             CursorOutline.Color = Color3.new(0, 0, 0)
+             CursorOutline.Visible = true
+             CursorOutline.ZIndex = 9999
+             
+             uis.MouseIconEnabled = false
+        end
+        
+        local function update_cursor()
+             if not Cursor then return end
+             
+             local mPos = uis:GetMouseLocation()
+             Cursor.Color = themes.preset.accent -- Use theme accent color
+             
+             Cursor.PointA = Vector2.new(mPos.X, mPos.Y)
+             Cursor.PointB = Vector2.new(mPos.X + 16, mPos.Y + 6)
+             Cursor.PointC = Vector2.new(mPos.X + 6, mPos.Y + 16)
+
+             CursorOutline.PointA = Cursor.PointA
+             CursorOutline.PointB = Cursor.PointB
+             CursorOutline.PointC = Cursor.PointC
+        end
+        
+        library:connection(run.RenderStepped, function()
+             if library.menu_open and Cursor and Cursor.Visible then
+                 update_cursor()
+             end
+        end)
+
         local blur = library:create( "BlurEffect" , {
             Parent = lighting;
             Enabled = true;
@@ -1299,6 +1340,13 @@ local config_holder
         function window.set_menu_visibility(bool) 
             window.opened = bool 
             library.menu_open = bool
+            
+            -- Cursor Toggle
+            if Cursor then
+                Cursor.Visible = bool
+                CursorOutline.Visible = bool
+                uis.MouseIconEnabled = not bool
+            end
             
             if bool then 
                 for _,gui in opened do 
