@@ -1300,8 +1300,6 @@ local config_holder
              CursorOutline.Color = Color3.new(0, 0, 0)
              CursorOutline.Visible = true
              CursorOutline.ZIndex = 9999
-             
-             uis.MouseIconEnabled = false
         end
         
         local function update_cursor()
@@ -1320,8 +1318,15 @@ local config_holder
         end
         
         library:connection(run.RenderStepped, function()
-             if library.menu_open and Cursor and Cursor.Visible then
-                 update_cursor()
+             if library.menu_open then
+                -- Enforce mouse hidden when menu is open
+                uis.MouseIconEnabled = false 
+                if Cursor and Cursor.Visible then
+                    update_cursor()
+                end
+             else
+                -- If menu is closed, we rely on set_menu_visibility to set it back, 
+                -- but we shouldn't force it to false here.
              end
         end)
 
