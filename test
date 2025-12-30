@@ -826,10 +826,10 @@ local config_holder
                     BorderColor3 = rgb(0, 0, 0),
                     Size = dim2(1, -2, 1, -2),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = themes.preset.outline
+                    BackgroundColor3 = themes.preset.accent
                 })
                 
-                library:apply_theme(items.window_inline, "outline", "BackgroundColor3") 
+                library:apply_theme(items.window_inline, "accent", "BackgroundColor3") 
                 
                 items.window_holder = library:create("Frame", {
                     Parent = items.window_inline,
@@ -1577,7 +1577,7 @@ local config_holder
 
             local outline = library:create("Frame", {
                 Parent = side_panel,
-                Name = "",
+                Name = "KeybindList",
                 Visible = false, 
                 Active = true,
                 Draggable = false, 
@@ -1585,29 +1585,37 @@ local config_holder
                 Size = dim2(1, 0, 0, 0),
                 AutomaticSize = Enum.AutomaticSize.Y,
                 BorderSizePixel = 0,
-                BackgroundColor3 = themes.preset.outline
+                BackgroundColor3 = themes.preset.accent
             })
-            library:apply_theme(outline, "outline", "BackgroundColor3") 
+            library:apply_theme(outline, "accent", "BackgroundColor3") 
             library:make_resizable(outline)
             library.keybind_list_frame = outline 
             
             local inline = library:create("Frame", {
                 Parent = outline,
-                Name = "",
+                Name = "Inline",
                 Position = dim2(0, 1, 0, 1),
-                BorderColor3 = rgb(0, 0, 0),
                 Size = dim2(1, -2, 1, -2),
                 BorderSizePixel = 0,
-                BackgroundColor3 = themes.preset.inline
+                BackgroundColor3 = themes.preset.inline,
+                ZIndex = 1
             })
             library:apply_theme(inline, "inline", "BackgroundColor3")
 
+            local content = library:create("Frame", {
+                Parent = outline,
+                Name = "Content",
+                Size = dim2(1, 0, 0, 0),
+                AutomaticSize = Enum.AutomaticSize.Y,
+                BackgroundTransparency = 1,
+                ZIndex = 2
+            })
+
             local background = library:create("Frame", {
-                Parent = inline,
-                Name = "",
-                Position = dim2(0, 1, 0, 1),
-                BorderColor3 = rgb(0, 0, 0),
-                Size = dim2(1, -2, 1, -2),
+                Parent = content,
+                Name = "Header",
+                Position = dim2(0, 2, 0, 2),
+                Size = dim2(1, -4, 0, 20),
                 BorderSizePixel = 0,
                 BackgroundColor3 = rgb(255, 255, 255)
             })
@@ -1665,41 +1673,17 @@ local config_holder
                 LineJoinMode = Enum.LineJoinMode.Miter
             })
             
-            local text_holder = library:create("Frame", {
-                Parent = background,
-                Name = "",
-                Position = dim2(0, -2, 1, 1),
-                Size = dim2(1, 4, 0, 0),
-                BorderColor3 = rgb(0, 0, 0),
-                BorderSizePixel = 0,
+            local list_container = library:create("Frame", {
+                Parent = content,
+                Name = "List",
+                Position = dim2(0, 2, 0, 24),
+                Size = dim2(1, -4, 0, 0),
                 AutomaticSize = Enum.AutomaticSize.Y,
-                BackgroundColor3 = themes.preset.outline
-            })
-            library:apply_theme(text_holder, "outline", "BackgroundColor3")
-
-            local inline = library:create("Frame", {
-                Parent = text_holder,
-                Name = "",
-                Size = dim2(1, -2, 1, -2),
-                Position = dim2(0, 1, 0, 1),
-                BorderColor3 = rgb(0, 0, 0),
                 BorderSizePixel = 0,
-                
-                BackgroundColor3 = themes.preset.inline
-            })
-            library:apply_theme(inline, "inline", "BackgroundColor3")
-            
-            local background = library:create("Frame", {
-                Parent = inline,
-                Name = "",
-                Size = dim2(1, -2, 1, -2),
-                Position = dim2(0, 1, 0, 1),
-                BorderColor3 = rgb(0, 0, 0),
-                BorderSizePixel = 0,
-                
                 BackgroundColor3 = rgb(255, 255, 255)
             })
-            library.keybind_list = background
+            library.keybind_list = list_container
+            local background = list_container
             
             local UIGradient = library:create("UIGradient", {
                 Parent = background,
@@ -1745,20 +1729,28 @@ local config_holder
 
             local inline = library:create("Frame", {
                 Parent = info_outline,
-                Name = "",
+                Name = "Inline",
                 Position = dim2(0, 1, 0, 1),
-                BorderColor3 = rgb(0, 0, 0),
                 Size = dim2(1, -2, 1, -2),
                 BorderSizePixel = 0,
-                BackgroundColor3 = themes.preset.inline
+                BackgroundColor3 = themes.preset.inline,
+                ZIndex = 1
             }) library:apply_theme(inline, "inline", "BackgroundColor3")
 
+            local content = library:create("Frame", {
+                Parent = info_outline,
+                Name = "Content",
+                Size = dim2(1, 0, 0, 0),
+                AutomaticSize = Enum.AutomaticSize.Y,
+                BackgroundTransparency = 1,
+                ZIndex = 2
+            })
+
             local background = library:create("Frame", {
-                Parent = inline,
-                Name = "",
-                Position = dim2(0, 1, 0, 1),
-                BorderColor3 = rgb(0, 0, 0),
-                Size = dim2(1, -2, 1, -2),
+                Parent = content,
+                Name = "Header",
+                Position = dim2(0, 2, 0, 2),
+                Size = dim2(1, -4, 0, 20),
                 BorderSizePixel = 0,
                 BackgroundColor3 = rgb(255, 255, 255)
             })
@@ -1814,37 +1806,17 @@ local config_holder
                 LineJoinMode = Enum.LineJoinMode.Miter
             })
 
-            local text_holder = library:create("Frame", {
-                Parent = background,
-                Name = "",
-                Position = dim2(0, -2, 1, 1),
-                Size = dim2(1, 4, 0, 0),
-                BorderColor3 = rgb(0, 0, 0),
-                BorderSizePixel = 0,
+            local list_container = library:create("Frame", {
+                Parent = content,
+                Name = "List",
+                Position = dim2(0, 2, 0, 24),
+                Size = dim2(1, -4, 0, 0),
                 AutomaticSize = Enum.AutomaticSize.Y,
-                BackgroundColor3 = themes.preset.outline
-            }) library:apply_theme(text_holder, "outline", "BackgroundColor3")
-
-            local inline = library:create("Frame", {
-                Parent = text_holder,
-                Name = "",
-                Size = dim2(1, -2, 1, -2),
-                Position = dim2(0, 1, 0, 1),
-                BorderColor3 = rgb(0, 0, 0),
-                BorderSizePixel = 0,
-                BackgroundColor3 = themes.preset.inline
-            }) library:apply_theme(inline, "inline", "BackgroundColor3")
-
-            local background = library:create("Frame", {
-                Parent = inline,
-                Name = "",
-                Size = dim2(1, -2, 1, -2),
-                Position = dim2(0, 1, 0, 1),
-                BorderColor3 = rgb(0, 0, 0),
                 BorderSizePixel = 0,
                 BackgroundColor3 = rgb(255, 255, 255)
             })
-            library.info_list = background
+            library.info_list = list_container
+            local background = list_container
 
             local UIGradient = library:create("UIGradient", {
                 Parent = background,
