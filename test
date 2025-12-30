@@ -228,7 +228,7 @@ local tahoma = {
             name = "Regular",
             weight = 400,
             style = "normal",
-            assetId = getcustomasset("TraeScript/assets/Tahoma.ttf")
+            assetId = getcustomasset("tahoma.ttf")
         }
     }
 }
@@ -697,8 +697,8 @@ local config_holder
                     BorderColor3 = rgb(0, 0, 0),
                 Size = cfg.size,
                 BorderSizePixel = 0,
-                BackgroundColor3 = themes.preset.outline
-                }) library:apply_theme(items.main_holder, "outline", "BackgroundColor3")
+                BackgroundColor3 = themes.preset.accent
+                }) library:apply_theme(items.main_holder, "accent", "BackgroundColor3")
                 
                 library.main_frames = library.main_frames or {}
                 table.insert(library.main_frames, items.main_holder)
@@ -2511,7 +2511,7 @@ local config_holder
                 BorderSizePixel = 0,
                 Position = UDim2.new(0, 20, 0, 72 + (#library.notifications * 28)),
                 AutomaticSize = Enum.AutomaticSize.X,
-                BackgroundColor3 = themes.preset.outline,
+                BackgroundColor3 = themes.preset.accent,
                 AnchorPoint = Vector2.new(1, 0)
             })
         
@@ -3664,10 +3664,10 @@ local config_holder
                 BorderColor3 = rgb(0, 0, 0),
                 Size = dim2(0, 190, 0, 210),
                 BorderSizePixel = 0,
-                BackgroundColor3 = themes.preset.outline,
+                BackgroundColor3 = themes.preset.accent,
                 Visible = false,
                 ZIndex = 1
-            }) library:apply_theme(colorpicker_holder, "outline", "BackgroundColor3") 
+            }) library:apply_theme(colorpicker_holder, "accent", "BackgroundColor3") 
 
             library:make_resizable(colorpicker_holder)
             
