@@ -1574,7 +1574,7 @@ local config_holder
             local outline = library:create("Frame", {
                 Parent = side_panel,
                 Name = "KeybindList",
-                Position = dim2(0, 0, 1, -110), -- Bottom (offset to avoid watermark)
+                Position = dim2(0, 0, 1, -200), -- Bottom (offset to avoid watermark)
                 AnchorPoint = vec2(0, 1),    -- Anchored to Bottom
                 Visible = false, 
                 Active = true,
