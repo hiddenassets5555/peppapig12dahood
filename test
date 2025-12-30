@@ -1566,18 +1566,16 @@ local config_holder
                 BackgroundTransparency = 1,
             })
             
-            library:create("UIListLayout", {
-                Parent = side_panel,
-                Padding = dim(0, 10),
-                SortOrder = Enum.SortOrder.LayoutOrder,
-                HorizontalAlignment = Enum.HorizontalAlignment.Right,
-                VerticalAlignment = Enum.VerticalAlignment.SpaceBetween
-            })
+            -- Keybinds at Bottom, Info at Top
+            -- Since UIListLayout doesn't support SpaceBetween, we position them manually or use UIListLayout.
+            -- But standard UIListLayout can't do Top AND Bottom simultaneously.
+            -- So we'll remove UIListLayout and position them explicitly.
 
             local outline = library:create("Frame", {
                 Parent = side_panel,
                 Name = "KeybindList",
-                LayoutOrder = 2,
+                Position = dim2(0, 0, 1, 0), -- Bottom
+                AnchorPoint = vec2(0, 1),    -- Anchored to Bottom
                 Visible = false, 
                 Active = true,
                 Draggable = false, 
@@ -1703,7 +1701,7 @@ local config_holder
             local info_outline = library:create("Frame", {
                 Parent = side_panel,
                 Name = "InfoList",
-                LayoutOrder = 1,
+                Position = dim2(0, 0, 0, 0), -- Top
                 Visible = true,
                 Active = true,
                 Draggable = false,
