@@ -1390,7 +1390,7 @@ local config_holder
             
             library:tween(blur, {Size = bool and (flags["Blur Size"] or 15) or 0})
             
-            dock_outline.Visible = true;
+            dock_outline.Visible = bool;
 
             sgui.Enabled = true
             notif_holder.Enabled = true
@@ -1414,16 +1414,14 @@ local config_holder
                 Name = "",
                 Visible = true,
                 BorderColor3 = rgb(0, 0, 0),
-                AnchorPoint = vec2(0, 1),
-                Position = dim2(0, 10, 1, -360 - 45), -- Approx position above where keybinds was
+                AnchorPoint = vec2(0.5, 0), -- Top center
+                Position = dim2(0.5, 0, 0, 10), -- 10px from top
                 Size = dim2(0, 157, 0, 39),
                 BorderSizePixel = 0,
                 BackgroundColor3 = themes.preset.outline
             }); 
 
             library:apply_theme(dock_outline, "outline", "BackgroundColor3"); 
-            -- dock_outline.Position = dim2(0, dock_outline.AbsolutePosition.X, 0, dock_outline.AbsolutePosition.Y); -- Remove auto-adjustment to let it float
-            dock_outline.AnchorPoint = vec2(0, 0); 
             library:draggify(dock_outline);
 
             local dock_inline = library:create("Frame", {
@@ -1516,20 +1514,19 @@ local config_holder
 
         
             local outline = library:create("Frame", {
-                Parent = dock_outline, -- Parented to dock
+                Parent = sgui, -- Parented to sgui (ScreenGui)
                 Name = "",
                 Visible = false, 
                 Active = true,
-                Draggable = false, -- Disabled individual dragging
-                AnchorPoint = Vector2.new(0, 0),
-                Position = dim2(0, 0, 1, 2), -- Below dock
+                Draggable = false, 
+                AnchorPoint = Vector2.new(1, 0.5), -- Anchor to right center-ish
+                Position = dim2(1, -20, 0.6, 0), -- Position on right side, slightly below center
                 BorderColor3 = rgb(0, 0, 0),
                 Size = dim2(0, 182, 0, 25),
                 BorderSizePixel = 0,
                 BackgroundColor3 = themes.preset.outline
             })
             library:apply_theme(outline, "outline", "BackgroundColor3") 
-            -- library:draggify(outline) -- Removed draggify
             library:make_resizable(outline)
             library.keybind_list_frame = outline 
             
@@ -1670,13 +1667,13 @@ local config_holder
 
             -- [[ Info List ]]
             local info_outline = library:create("Frame", {
-                Parent = dock_outline,
+                Parent = sgui,
                 Name = "InfoList",
                 Visible = false,
                 Active = true,
                 Draggable = false,
-                AnchorPoint = Vector2.new(0, 0),
-                Position = dim2(0, 190, 1, 2), -- Offset to the right
+                AnchorPoint = Vector2.new(1, 0.5),
+                Position = dim2(1, -20, 0.6, -35), -- Above Keybinds
                 BorderColor3 = rgb(0, 0, 0),
                 Size = dim2(0, 182, 0, 25),
                 BorderSizePixel = 0,
@@ -1742,7 +1739,7 @@ local config_holder
                 FontFace = library.font,
                 TextColor3 = themes.preset.text,
                 BorderColor3 = rgb(0, 0, 0),
-                Text = "Status",
+                Text = "Information",
                 BackgroundTransparency = 1,
                 TextTruncate = Enum.TextTruncate.AtEnd,
                 Size = dim2(1, 0, 1, 0),
