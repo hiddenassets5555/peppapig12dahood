@@ -593,7 +593,7 @@ local config_holder
                 Visible = false,
                 AutomaticSize = Enum.AutomaticSize.X,
                 BackgroundColor3 = themes.preset.outline
-            })
+            }) library:apply_theme(watermark_outline, "outline", "BackgroundColor3")
             
             local watermark_inline = library:create("Frame", {
                 Parent = watermark_outline,
@@ -695,10 +695,10 @@ local config_holder
                     Position = cfg.position,
                     Active = true, 
                     BorderColor3 = rgb(0, 0, 0),
-                    Size = cfg.size,
-                    BorderSizePixel = 0,
-                    BackgroundColor3 = themes.preset.outline
-                })
+                Size = cfg.size,
+                BorderSizePixel = 0,
+                BackgroundColor3 = themes.preset.outline
+                }) library:apply_theme(items.main_holder, "outline", "BackgroundColor3")
                 
                 library.main_frames = library.main_frames or {}
                 table.insert(library.main_frames, items.main_holder)
@@ -3403,7 +3403,7 @@ local config_holder
             local toggle_holder = library:create("TextButton", {
                 Parent = self.holder,
                 FontFace = library.font,
-                TextColor3 = rgb(151, 151, 151),
+                TextColor3 = themes.preset.text,
                 BorderColor3 = rgb(0, 0, 0),
                 Text = "",
                 Name = "toggle",
