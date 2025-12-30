@@ -63,12 +63,12 @@ local ESP_SETTINGS = { SkeletonColor = Color3.fromRGB(255, 255, 255), Enabled = 
 
 local themes = {
     preset = {
-        ["outline"] = rgb(27, 27, 27), 
-        ["inline"] = rgb(20, 20, 20), 
-        ["accent"] = rgb(198, 154, 196), 
-        ["high_contrast"] = rgb(15, 15, 15),
-        ["low_contrast"] = rgb(30, 30, 30),
-        ["text"] = rgb(215, 215, 215),
+        ["outline"] = rgb(49, 46, 46), 
+        ["inline"] = rgb(32, 26, 30), 
+        ["accent"] = rgb(227, 144, 191), 
+        ["high_contrast"] = rgb(23, 18, 21),
+        ["low_contrast"] = rgb(32, 26, 30),
+        ["text"] = rgb(163, 171, 178),
         ["text_outline"] = rgb(0, 0, 0),
         ["glow"] = rgb(0, 0, 0), 
     },
