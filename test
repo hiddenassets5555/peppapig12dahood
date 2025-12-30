@@ -677,6 +677,51 @@ local config_holder
         return cfg
     end 
 
+    function library:add_info_item(name, value)
+        if not library.info_list then return end
+        local holder = library.info_list
+        local existing = holder:FindFirstChild(name)
+        if existing then
+            existing.ValueLabel.Text = tostring(value)
+        else
+            local item = library:create("Frame", {
+                Parent = holder,
+                Name = name,
+                Size = dim2(1, 0, 0, 15),
+                BackgroundTransparency = 1,
+                BorderSizePixel = 0
+            })
+            
+            local nameLabel = library:create("TextLabel", {
+                Parent = item,
+                Name = "NameLabel",
+                Text = name,
+                TextColor3 = themes.preset.text,
+                TextXAlignment = Enum.TextXAlignment.Left,
+                Size = dim2(0.5, 0, 1, 0),
+                Position = dim2(0, 4, 0, 0),
+                BackgroundTransparency = 1,
+                FontFace = library.font,
+                TextSize = 12
+            }) library:apply_theme(nameLabel, "text", "TextColor3")
+            library:create("UIStroke", {Parent = nameLabel})
+            
+            local valueLabel = library:create("TextLabel", {
+                Parent = item,
+                Name = "ValueLabel",
+                Text = tostring(value),
+                TextColor3 = themes.preset.accent,
+                TextXAlignment = Enum.TextXAlignment.Right,
+                Size = dim2(0.5, 0, 1, 0),
+                Position = dim2(0.5, -4, 0, 0),
+                BackgroundTransparency = 1,
+                FontFace = library.font,
+                TextSize = 12
+            }) library:apply_theme(valueLabel, "accent", "TextColor3")
+            library:create("UIStroke", {Parent = valueLabel})
+        end
+    end
+
     function library:panel(options) 
         local cfg = {
             name = options.text or options.name or "Window", 
@@ -1513,16 +1558,32 @@ local config_holder
         
 
         
+            local side_panel = library:create("Frame", {
+                Parent = sgui,
+                Name = "SidePanel",
+                Position = dim2(1, -192, 0.4, 0),
+                Size = dim2(0, 182, 0, 0),
+                BackgroundTransparency = 1,
+                AutomaticSize = Enum.AutomaticSize.Y
+            })
+            
+            library:create("UIListLayout", {
+                Parent = side_panel,
+                Padding = dim(0, 10),
+                SortOrder = Enum.SortOrder.LayoutOrder,
+                HorizontalAlignment = Enum.HorizontalAlignment.Right,
+                VerticalAlignment = Enum.VerticalAlignment.Top
+            })
+
             local outline = library:create("Frame", {
-                Parent = sgui, -- Parented to sgui (ScreenGui)
+                Parent = side_panel,
                 Name = "",
                 Visible = false, 
                 Active = true,
                 Draggable = false, 
-                AnchorPoint = Vector2.new(1, 0.5), -- Anchor to right center-ish
-                Position = dim2(1, -20, 0.6, 0), -- Position on right side, slightly below center
                 BorderColor3 = rgb(0, 0, 0),
-                Size = dim2(0, 182, 0, 25),
+                Size = dim2(1, 0, 0, 0),
+                AutomaticSize = Enum.AutomaticSize.Y,
                 BorderSizePixel = 0,
                 BackgroundColor3 = themes.preset.outline
             })
@@ -1568,8 +1629,8 @@ local config_holder
                 BorderColor3 = rgb(0, 0, 0),
                 Size = dim2(1, 0, 0, 2),
                 BorderSizePixel = 0,
-                BackgroundColor3 = themes.preset.outline
-            }); library:apply_theme(bg, "outline", "BackgroundColor3")
+                BackgroundColor3 = themes.preset.accent
+            }); library:apply_theme(bg, "accent", "BackgroundColor3")
             
             
             library:create("UIGradient", {
@@ -1667,19 +1728,18 @@ local config_holder
 
             -- [[ Info List ]]
             local info_outline = library:create("Frame", {
-                Parent = sgui,
+                Parent = side_panel,
                 Name = "InfoList",
-                Visible = false,
+                Visible = true,
                 Active = true,
                 Draggable = false,
-                AnchorPoint = Vector2.new(1, 0.5),
-                Position = dim2(1, -20, 0.6, -35), -- Above Keybinds
                 BorderColor3 = rgb(0, 0, 0),
-                Size = dim2(0, 182, 0, 25),
+                Size = dim2(1, 0, 0, 0),
+                AutomaticSize = Enum.AutomaticSize.Y,
                 BorderSizePixel = 0,
-                BackgroundColor3 = themes.preset.outline
+                BackgroundColor3 = themes.preset.accent
             })
-            library:apply_theme(info_outline, "outline", "BackgroundColor3")
+            library:apply_theme(info_outline, "accent", "BackgroundColor3")
             library:make_resizable(info_outline)
             library.info_list_frame = info_outline
 
@@ -1719,8 +1779,8 @@ local config_holder
                 BorderColor3 = rgb(0, 0, 0),
                 Size = dim2(1, 0, 0, 2),
                 BorderSizePixel = 0,
-                BackgroundColor3 = themes.preset.outline
-            }) library:apply_theme(bg, "outline", "BackgroundColor3")
+                BackgroundColor3 = themes.preset.accent
+            }) library:apply_theme(bg, "accent", "BackgroundColor3")
 
             library:create("UIGradient", {
                 Parent = bg,
@@ -3876,8 +3936,8 @@ local config_holder
                 BorderColor3 = rgb(0, 0, 0),
                 Size = dim2(1, -2, 1, -2),
                 BorderSizePixel = 0,
-                BackgroundColor3 = themes.preset.outline
-            }) library:apply_theme(window_inline, "outline", "BackgroundColor3") 
+                BackgroundColor3 = themes.preset.accent
+            }) library:apply_theme(window_inline, "accent", "BackgroundColor3") 
             
             local window_holder = library:create("Frame", {
                 Parent = window_inline,
