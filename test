@@ -624,7 +624,7 @@ local config_holder
             local text = library:create("TextLabel", {
                 Parent = watermark_background,
                 Name = "",
-                FontFace = library.font,
+                FontFace = library.watermark_font or library.font,
                 TextColor3 = themes.preset.text,
                 BorderColor3 = rgb(0, 0, 0),
                 Text = " " .. cfg.name .. " ",
@@ -745,10 +745,10 @@ local config_holder
                     BorderColor3 = rgb(0, 0, 0),
                     Size = dim2(1, -2, 1, -2),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = rgb(60, 60, 60)
+                    BackgroundColor3 = themes.preset.outline
                 })
                 
-                -- library:apply_theme(items.window_inline, "accent", "BackgroundColor3") 
+                library:apply_theme(items.window_inline, "outline", "BackgroundColor3") 
                 
                 items.window_holder = library:create("Frame", {
                     Parent = items.window_inline,
@@ -1416,8 +1416,8 @@ local config_holder
         Size = dim2(1, 0, 0, 2),
         BorderColor3 = rgb(0, 0, 0),
         BorderSizePixel = 0,
-        BackgroundColor3 = rgb(60, 60, 60)
-    }) -- library:apply_theme(accent, "accent", "BackgroundColor3") 
+        BackgroundColor3 = themes.preset.outline
+    }) library:apply_theme(accent, "outline", "BackgroundColor3") 
             
             local UIGradient = library:create("UIGradient", {
                 Parent = accent,
@@ -1535,8 +1535,8 @@ local config_holder
                 BorderColor3 = rgb(0, 0, 0),
                 Size = dim2(1, 0, 0, 2),
                 BorderSizePixel = 0,
-                BackgroundColor3 = rgb(60, 60, 60)
-            }); -- library:apply_theme(bg, "accent", "BackgroundColor3")
+                BackgroundColor3 = themes.preset.outline
+            }); library:apply_theme(bg, "outline", "BackgroundColor3")
             
             
             library:create("UIGradient", {
@@ -2547,7 +2547,7 @@ local config_holder
             local text = library:create("TextLabel", {
                 Parent = watermark_background,
                 Name = "",
-                FontFace = library.font,
+                FontFace = library.watermark_font or library.font,
                 TextColor3 = themes.preset.text,
                 BorderColor3 = rgb(0, 0, 0),
                 Text = "  " .. cfg.text .. "  ",
@@ -2567,10 +2567,10 @@ local config_holder
                 BorderColor3 = rgb(0, 0, 0),
                 Size = UDim2.new(0, 1, 1, -4),
                 BorderSizePixel = 0,
-                BackgroundColor3 = rgb(60, 60, 60)
+                BackgroundColor3 = themes.preset.outline
             })
 
-            -- library:apply_theme(accent, "accent", "BackgroundColor3")
+            library:apply_theme(accent, "outline", "BackgroundColor3")
     
             local UIGradient = library:create("UIGradient", {
                 Parent = accent,
@@ -2589,8 +2589,8 @@ local config_holder
                 BorderColor3 = rgb(0, 0, 0),
                 Size = UDim2.new(0, -4, 0, 1),
                 BorderSizePixel = 0,
-                BackgroundColor3 = rgb(60, 60, 60)
-            })
+                BackgroundColor3 = themes.preset.outline
+            }) library:apply_theme(accent_bottom, "outline", "BackgroundColor3")
             
             local UIGradient = library:create("UIGradient", {
                 Parent = accent,
@@ -2834,8 +2834,8 @@ local config_holder
             BorderColor3 = rgb(0, 0, 0),
             ZIndex = 3,
             BorderSizePixel = 0,
-            BackgroundColor3 = rgb(60, 60, 60)
-        }) -- library:apply_theme(accent, "accent", "BackgroundColor3")
+            BackgroundColor3 = themes.preset.outline
+        }) library:apply_theme(accent, "outline", "BackgroundColor3")
         
         local UIGradient = library:create("UIGradient", {
             Parent = accent,
@@ -3068,8 +3068,8 @@ local config_holder
             BorderColor3 = rgb(0, 0, 0),
             Size = dim2(1, 0, 0, 2),
             BorderSizePixel = 0,
-            BackgroundColor3 = rgb(60, 60, 60)
-        }) -- library:apply_theme(accent, "accent", "BackgroundColor3") 
+            BackgroundColor3 = themes.preset.outline
+        }) library:apply_theme(accent, "outline", "BackgroundColor3") 
 
         local UIGradient = library:create("UIGradient", {
             Parent = accent,
