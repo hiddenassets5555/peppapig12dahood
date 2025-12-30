@@ -728,9 +728,9 @@ local config_holder
                     Position = dim2(0, 0, 0, 0),
                     Size = dim2(1, 0, 0, 1),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = themes.preset.outline,
+                    BackgroundColor3 = themes.preset.accent,
                     ZIndex = 5
-                }) library:apply_theme(items.top_accent, "outline", "BackgroundColor3")
+                }) library:apply_theme(items.top_accent, "accent", "BackgroundColor3")
 
                 items.bottom_accent = library:create("Frame", {
                     Parent = items.main_holder,
@@ -738,9 +738,9 @@ local config_holder
                     Position = dim2(0, 0, 1, -1),
                     Size = dim2(1, 0, 0, 1),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = themes.preset.outline,
+                    BackgroundColor3 = themes.preset.accent,
                     ZIndex = 5
-                }) library:apply_theme(items.bottom_accent, "outline", "BackgroundColor3")
+                }) library:apply_theme(items.bottom_accent, "accent", "BackgroundColor3")
 
                 local Close = library:create( "TextButton" , {
                     Parent = items.main_holder;
