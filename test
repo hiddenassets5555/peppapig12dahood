@@ -847,10 +847,10 @@ local config_holder
                     BorderColor3 = rgb(0, 0, 0),
                     Size = dim2(1, 0, 1, -18),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = themes.preset.inline
+                    BackgroundColor3 = themes.preset.accent
                 })
                 
-                library:apply_theme(items.outline, "inline", "BackgroundColor3") 
+                library:apply_theme(items.outline, "accent", "BackgroundColor3") 
                 
                 items.inline = library:create("Frame", {
                     Parent = items.outline,
@@ -859,10 +859,10 @@ local config_holder
                     BorderColor3 = rgb(0, 0, 0),
                     Size = dim2(1, -2, 1, -2),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = themes.preset.outline
+                    BackgroundColor3 = themes.preset.high_contrast
                 })
                 
-                library:apply_theme(items.inline, "outline", "BackgroundColor3") 
+                library:apply_theme(items.inline, "high_contrast", "BackgroundColor3") 
                 
                 items.holder = library:create("Frame", {
                     Parent = items.inline,
@@ -1720,10 +1720,10 @@ local config_holder
                 BorderColor3 = rgb(0, 0, 0),
                 Size = dim2(1, 0, 1, 2),
                 BorderSizePixel = 0,
-                BackgroundColor3 = themes.preset.outline
+                BackgroundColor3 = themes.preset.accent
             })
             
-            library:apply_theme(outline, "outline", "BackgroundColor3") 
+            library:apply_theme(outline, "accent", "BackgroundColor3") 
 
             local inline = library:create("Frame", {
                 Parent = outline,
@@ -2741,6 +2741,17 @@ local config_holder
                 BackgroundColor3 = rgb(255, 255, 255)
             }, "text")
             library:apply_theme(text, "accent", "TextColor3")
+
+            local underline = library:create("Frame", {
+                Parent = background,
+                Name = "Underline",
+                Size = dim2(1, 0, 0, 1),
+                Position = dim2(0, 0, 1, -1),
+                BorderSizePixel = 0,
+                BackgroundColor3 = themes.preset.accent,
+                Visible = false,
+                ZIndex = 6
+            }) library:apply_theme(underline, "accent", "BackgroundColor3")
         
 
         
@@ -2772,6 +2783,9 @@ local config_holder
                 button.Size = dim2(1, -2, 1, -1)
                 button:FindFirstChildOfClass("UIGradient").Rotation = 90
                 button:FindFirstChildOfClass("TextLabel").TextColor3 = themes.preset.text
+                if button:FindFirstChild("Underline") then
+                    button.Underline.Visible = false
+                end
                     
                 library.current_tab[2].Visible = false
                 
@@ -2786,7 +2800,10 @@ local config_holder
             button.Size = dim2(1, -2, 1, 0) 
             button:FindFirstChildOfClass("UIGradient").Rotation = -90
             button:FindFirstChildOfClass("TextLabel").TextColor3 = themes.preset.accent 
-
+            if button:FindFirstChild("Underline") then
+                button.Underline.Visible = true
+            end
+            
             library.current_tab[2].Visible = true 
 
             if library.current_element_open and library.current_element_open ~= cfg then 
@@ -2850,8 +2867,8 @@ local config_holder
             BorderColor3 = rgb(0, 0, 0),
             Size = dim2(1, -2, 1, -2),
             BorderSizePixel = 0,
-            BackgroundColor3 = themes.preset.outline
-        }) library:apply_theme(inline, "outline", "BackgroundColor3") 
+            BackgroundColor3 = themes.preset.accent
+        }) library:apply_theme(inline, "accent", "BackgroundColor3")  
         
         local __background = library:create("Frame", {
             Parent = inline,
@@ -3067,8 +3084,8 @@ local config_holder
             BorderColor3 = rgb(0, 0, 0),
             Size = dim2(1, -2, 1, -2),
             BorderSizePixel = 0,
-            BackgroundColor3 = themes.preset.outline
-        }) library:apply_theme(inline, "outline", "BackgroundColor3") 
+            BackgroundColor3 = themes.preset.accent
+        }) library:apply_theme(inline, "accent", "BackgroundColor3") 
 
         local background = library:create("Frame", {
             Parent = inline,
