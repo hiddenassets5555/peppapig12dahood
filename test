@@ -801,7 +801,7 @@ local config_holder
                 items.text = library:create("TextLabel", {
                     Parent = items.window_holder,
                     Name = "",
-                    Font = library.font,
+                    FontFace = library.font,
                     TextColor3 = themes.preset.accent,
                     BorderColor3 = rgb(0, 0, 0),
                     Text = cfg.name,
@@ -2106,7 +2106,7 @@ local config_holder
         local text = library:create("TextLabel", {
             Parent = watermark_background,
             Name = "",
-            Font = Enum.Font.RobotoMono,
+            FontFace = library.font,
             TextColor3 = themes.preset.text,
             BorderColor3 = rgb(0, 0, 0),
             Text = "  drain.lol | Beta | Aug 29 2024 | 07:29:00  ",
