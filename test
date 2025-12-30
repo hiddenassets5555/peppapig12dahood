@@ -1571,11 +1571,134 @@ local config_holder
             -- But standard UIListLayout can't do Top AND Bottom simultaneously.
             -- So we'll remove UIListLayout and position them explicitly.
 
+            -- [[ Info List ]]
+            local info_outline = library:create("Frame", {
+                Parent = side_panel,
+                Name = "InfoList",
+                LayoutOrder = 1,
+                Visible = true,
+                Active = true,
+                Draggable = false,
+                BorderColor3 = rgb(0, 0, 0),
+                Size = dim2(1, 0, 0, 0),
+                AutomaticSize = Enum.AutomaticSize.Y,
+                BorderSizePixel = 0,
+                BackgroundColor3 = themes.preset.outline
+            })
+            library:apply_theme(info_outline, "outline", "BackgroundColor3")
+            library:make_resizable(info_outline)
+            library.info_list_frame = info_outline
+
+            local inline = library:create("Frame", {
+                Parent = info_outline,
+                Name = "Inline",
+                Position = dim2(0, 1, 0, 1),
+                Size = dim2(1, -2, 1, -2),
+                BorderSizePixel = 0,
+                BackgroundColor3 = themes.preset.inline,
+                ZIndex = 1
+            }) library:apply_theme(inline, "inline", "BackgroundColor3")
+
+            local content = library:create("Frame", {
+                Parent = info_outline,
+                Name = "Content",
+                Size = dim2(1, 0, 0, 0),
+                AutomaticSize = Enum.AutomaticSize.Y,
+                BackgroundTransparency = 1,
+                ZIndex = 2
+            })
+
+            local background = library:create("Frame", {
+                Parent = content,
+                Name = "Header",
+                Position = dim2(0, 2, 0, 2),
+                Size = dim2(1, -4, 0, 20),
+                BorderSizePixel = 0,
+                BackgroundColor3 = rgb(255, 255, 255)
+            })
+
+            local UIGradient = library:create("UIGradient", {
+                Parent = background,
+                Name = "",
+                Rotation = 90,
+                Color = rgbseq{
+                    rgbkey(0, themes.preset.high_contrast),
+                    rgbkey(1, themes.preset.low_contrast)
+                }
+            }) library:apply_theme(UIGradient, "contrast", "Color")
+
+            local bg = library:create("Frame", {
+                Parent = background,
+                Name = "a",
+                BorderColor3 = rgb(0, 0, 0),
+                Size = dim2(1, 0, 0, 2),
+                BorderSizePixel = 0,
+                BackgroundColor3 = themes.preset.accent
+            }); library:apply_theme(bg, "accent", "BackgroundColor3")
+
+            library:create("UIGradient", {
+                Parent = bg,
+                Name = "",
+                Enabled = true, 
+                Rotation = 90,
+                Color = rgbseq{
+                    rgbkey(0, rgb(255, 255, 255)),
+                    rgbkey(1, rgb(167, 167, 167))
+                }
+            })
+
+            local text = library:create("TextLabel", {
+                Parent = background,
+                Name = "",
+                FontFace = library.font,
+                TextColor3 = themes.preset.text,
+                BorderColor3 = rgb(0, 0, 0),
+                Text = "Information",
+                BackgroundTransparency = 1,
+                TextTruncate = Enum.TextTruncate.AtEnd,
+                Size = dim2(1, 0, 1, 0),
+                BorderSizePixel = 0,
+                TextSize = 12,
+                BackgroundColor3 = themes.preset.text
+            }, "text")
+
+            local UIStroke = library:create("UIStroke", {
+                Parent = text,
+                Name = "",
+                LineJoinMode = Enum.LineJoinMode.Miter
+            })
+
+            local list_container = library:create("Frame", {
+                Parent = content,
+                Name = "List",
+                Position = dim2(0, 2, 0, 24),
+                Size = dim2(1, -4, 0, 0),
+                AutomaticSize = Enum.AutomaticSize.Y,
+                BorderSizePixel = 0,
+                BackgroundTransparency = 1
+            })
+            library.info_list = list_container
+            local background = list_container
+
+            library:create("UIListLayout", {
+                Parent = background,
+                Name = "",
+                Padding = dim(0, -1),
+                SortOrder = Enum.SortOrder.LayoutOrder
+            })
+
+            library:create("UIPadding", {
+                Parent = background,
+                Name = "",
+                PaddingBottom = dim(0, 4),
+                PaddingLeft = dim(0, 5)
+            })
+
+            -- [[ Keybinds List (Bottom of Info) ]]
             local outline = library:create("Frame", {
                 Parent = side_panel,
                 Name = "KeybindList",
-                Position = dim2(0, 0, 1, -200), -- Bottom (offset to avoid watermark)
-                AnchorPoint = vec2(0, 1),    -- Anchored to Bottom
+                LayoutOrder = 2,
                 Visible = false, 
                 Active = true,
                 Draggable = false, 
@@ -1690,129 +1813,6 @@ local config_holder
                 SortOrder = Enum.SortOrder.LayoutOrder
             })
             
-            library:create("UIPadding", {
-                Parent = background,
-                Name = "",
-                PaddingBottom = dim(0, 4),
-                PaddingLeft = dim(0, 5)
-            })
-
-            -- [[ Info List ]]
-            local info_outline = library:create("Frame", {
-                Parent = side_panel,
-                Name = "InfoList",
-                Position = dim2(0, 0, 0, 0), -- Top
-                Visible = true,
-                Active = true,
-                Draggable = false,
-                BorderColor3 = rgb(0, 0, 0),
-                Size = dim2(1, 0, 0, 0),
-                AutomaticSize = Enum.AutomaticSize.Y,
-                BorderSizePixel = 0,
-                BackgroundColor3 = themes.preset.outline
-            })
-            library:apply_theme(info_outline, "outline", "BackgroundColor3")
-            library:make_resizable(info_outline)
-            library.info_list_frame = info_outline
-
-            local inline = library:create("Frame", {
-                Parent = info_outline,
-                Name = "Inline",
-                Position = dim2(0, 1, 0, 1),
-                Size = dim2(1, -2, 1, -2),
-                BorderSizePixel = 0,
-                BackgroundColor3 = themes.preset.inline,
-                ZIndex = 1
-            }) library:apply_theme(inline, "inline", "BackgroundColor3")
-
-            local content = library:create("Frame", {
-                Parent = info_outline,
-                Name = "Content",
-                Size = dim2(1, 0, 0, 0),
-                AutomaticSize = Enum.AutomaticSize.Y,
-                BackgroundTransparency = 1,
-                ZIndex = 2
-            })
-
-            local background = library:create("Frame", {
-                Parent = content,
-                Name = "Header",
-                Position = dim2(0, 2, 0, 2),
-                Size = dim2(1, -4, 0, 20),
-                BorderSizePixel = 0,
-                BackgroundColor3 = rgb(255, 255, 255)
-            })
-
-            local UIGradient = library:create("UIGradient", {
-                Parent = background,
-                Name = "",
-                Rotation = 90,
-                Color = rgbseq{
-                    rgbkey(0, themes.preset.high_contrast),
-                    rgbkey(1, themes.preset.low_contrast)
-                }
-            }) library:apply_theme(UIGradient, "contrast", "Color")
-
-            local bg = library:create("Frame", {
-                Parent = background,
-                Name = "a",
-                BorderColor3 = rgb(0, 0, 0),
-                Size = dim2(1, 0, 0, 2),
-                BorderSizePixel = 0,
-                BackgroundColor3 = themes.preset.accent
-            }) library:apply_theme(bg, "accent", "BackgroundColor3")
-
-            library:create("UIGradient", {
-                Parent = bg,
-                Name = "",
-                Enabled = true,
-                Rotation = 90,
-                Color = rgbseq{
-                    rgbkey(0, rgb(255, 255, 255)),
-                    rgbkey(1, rgb(167, 167, 167))
-                }
-            })
-
-            local text = library:create("TextLabel", {
-                Parent = background,
-                Name = "",
-                FontFace = library.font,
-                TextColor3 = themes.preset.text,
-                BorderColor3 = rgb(0, 0, 0),
-                Text = "Information",
-                BackgroundTransparency = 1,
-                TextTruncate = Enum.TextTruncate.AtEnd,
-                Size = dim2(1, 0, 1, 0),
-                BorderSizePixel = 0,
-                TextSize = 12,
-                BackgroundColor3 = themes.preset.text
-            }, "text")
-
-            local UIStroke = library:create("UIStroke", {
-                Parent = text,
-                Name = "",
-                LineJoinMode = Enum.LineJoinMode.Miter
-            })
-
-            local list_container = library:create("Frame", {
-                Parent = content,
-                Name = "List",
-                Position = dim2(0, 2, 0, 24),
-                Size = dim2(1, -4, 0, 0),
-                AutomaticSize = Enum.AutomaticSize.Y,
-                BorderSizePixel = 0,
-                BackgroundTransparency = 1
-            })
-            library.info_list = list_container
-            local background = list_container
-
-            library:create("UIListLayout", {
-                Parent = background,
-                Name = "",
-                Padding = dim(0, -1),
-                SortOrder = Enum.SortOrder.LayoutOrder
-            })
-
             library:create("UIPadding", {
                 Parent = background,
                 Name = "",
