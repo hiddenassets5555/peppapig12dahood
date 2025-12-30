@@ -1695,7 +1695,7 @@ local config_holder
                 Parent = side_panel,
                 Name = "KeybindList",
                 AnchorPoint = vec2(0, 1),
-                Position = dim2(0, 0, 1, -10),
+                Position = dim2(0, 0, 1, -50),
                 LayoutOrder = 2,
                 Visible = true, 
                 Active = true,
