@@ -713,14 +713,24 @@ local config_holder
                     BorderColor3 = rgb(0, 0, 0),
                 Size = cfg.size,
                 BorderSizePixel = 0,
-                BackgroundColor3 = themes.preset.accent
-                }) library:apply_theme(items.main_holder, "accent", "BackgroundColor3")
+                BackgroundColor3 = rgb(0, 0, 0)
+                })
                 
                 library.main_frames = library.main_frames or {}
                 table.insert(library.main_frames, items.main_holder)
 
                 library:draggify(items.main_holder)
                 library:make_resizable(items.main_holder)
+
+                items.top_accent = library:create("Frame", {
+                    Parent = items.main_holder,
+                    Name = "",
+                    Position = dim2(0, 0, 0, 0),
+                    Size = dim2(1, 0, 0, 1),
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = themes.preset.accent,
+                    ZIndex = 5
+                }) library:apply_theme(items.top_accent, "accent", "BackgroundColor3")
 
                 local Close = library:create( "TextButton" , {
                     Parent = items.main_holder;
@@ -791,7 +801,7 @@ local config_holder
                 items.text = library:create("TextLabel", {
                     Parent = items.window_holder,
                     Name = "",
-                    Font = Enum.Font.RobotoMono,
+                    Font = library.font,
                     TextColor3 = themes.preset.accent,
                     BorderColor3 = rgb(0, 0, 0),
                     Text = cfg.name,
