@@ -1565,12 +1565,6 @@ local config_holder
                 Size = dim2(0, 182, 1, -20),
                 BackgroundTransparency = 1,
             })
-
-            library:create("UIListLayout", {
-                Parent = side_panel,
-                Padding = dim(0, 10),
-                SortOrder = Enum.SortOrder.LayoutOrder
-            })
             
             -- [[ Info List ]]
             local info_outline = library:create("Frame", {
@@ -1695,12 +1689,14 @@ local config_holder
                 PaddingLeft = dim(0, 5)
             })
 
-            -- [[ Keybinds List (Bottom of Info) ]]
+            -- [[ Keybinds List ]]
             local outline = library:create("Frame", {
                 Parent = side_panel,
                 Name = "KeybindList",
+                AnchorPoint = vec2(0, 1),
+                Position = dim2(0, 0, 1, -10),
                 LayoutOrder = 2,
-                Visible = false, 
+                Visible = true, 
                 Active = true,
                 Draggable = false, 
                 BorderColor3 = rgb(0, 0, 0),
