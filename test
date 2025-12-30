@@ -4384,6 +4384,49 @@ local config_holder
         return setmetatable(cfg, library) 
     end
 
+    function library:add_info(text_content)
+        local label = library:create("TextLabel", {
+            Parent = library.info_list,
+            Name = "InfoItem",
+            FontFace = library.font,
+            TextColor3 = themes.preset.text,
+            BorderColor3 = rgb(0, 0, 0),
+            Text = text_content,
+            BackgroundTransparency = 1,
+            TextTruncate = Enum.TextTruncate.AtEnd,
+            Size = dim2(1, 0, 0, 15), 
+            BorderSizePixel = 0,
+            TextSize = 12,
+            AutomaticSize = Enum.AutomaticSize.Y,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            BackgroundColor3 = themes.preset.text
+        })
+        
+        library:create("UIPadding", {
+            Parent = label,
+            PaddingLeft = dim(0, 5),
+            PaddingRight = dim(0, 5),
+        })
+        
+        local item = {
+            instance = label
+        }
+        
+        function item:update(new_text)
+            label.Text = new_text
+        end
+        
+        function item:set_visible(bool)
+            label.Visible = bool
+        end
+        
+        function item:remove()
+            label:Destroy()
+        end
+        
+        return item
+    end
+
     function library:keybind(options)
         local parent = self.right_holder
 
