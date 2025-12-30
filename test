@@ -677,6 +677,14 @@ local config_holder
         return cfg
     end 
 
+    function library:remove_info_item(name)
+        if not library.info_list then return end
+        local existing = library.info_list:FindFirstChild(name)
+        if existing then
+            existing:Destroy()
+        end
+    end
+
     function library:add_info_item(name, value)
         if not library.info_list then return end
         local holder = library.info_list
