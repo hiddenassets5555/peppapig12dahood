@@ -1563,7 +1563,7 @@ local config_holder
                 Name = "SidePanel",
                 AnchorPoint = vec2(1, 0.5),
                 Position = dim2(1, -10, 0.5, 0),
-                Size = dim2(0, 182, 0.35, 0),
+                Size = dim2(0, 182, 0.3, 0),
                 BackgroundTransparency = 1,
             })
             
