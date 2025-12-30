@@ -2772,6 +2772,7 @@ local config_holder
                 button.Size = dim2(1, -2, 1, -1)
                 button:FindFirstChildOfClass("UIGradient").Rotation = 90
                 button:FindFirstChildOfClass("TextLabel").TextColor3 = themes.preset.text
+                button:FindFirstChildOfClass("TextLabel").Underline.Visible = false
                     
                 library.current_tab[2].Visible = false
                 
@@ -2786,6 +2787,7 @@ local config_holder
             button.Size = dim2(1, -2, 1, 0) 
             button:FindFirstChildOfClass("UIGradient").Rotation = -90
             button:FindFirstChildOfClass("TextLabel").TextColor3 = themes.preset.accent 
+            button:FindFirstChildOfClass("TextLabel").Underline.Visible = true
 
             library.current_tab[2].Visible = true 
 
@@ -3722,8 +3724,8 @@ local config_holder
                 BorderColor3 = rgb(0, 0, 0),
                 Size = dim2(1, -2, 1, -2),
                 BorderSizePixel = 0,
-                BackgroundColor3 = themes.preset.accent
-            }) library:apply_theme(window_inline, "accent", "BackgroundColor3") 
+                BackgroundColor3 = themes.preset.outline
+            }) library:apply_theme(window_inline, "outline", "BackgroundColor3") 
             
             local window_holder = library:create("Frame", {
                 Parent = window_inline,
