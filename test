@@ -1565,12 +1565,13 @@ local config_holder
                 Size = dim2(0, 182, 1, -20),
                 BackgroundTransparency = 1,
             })
-            
-            -- Keybinds at Bottom, Info at Top
-            -- Since UIListLayout doesn't support SpaceBetween, we position them manually or use UIListLayout.
-            -- But standard UIListLayout can't do Top AND Bottom simultaneously.
-            -- So we'll remove UIListLayout and position them explicitly.
 
+            library:create("UIListLayout", {
+                Parent = side_panel,
+                Padding = dim(0, 10),
+                SortOrder = Enum.SortOrder.LayoutOrder
+            })
+            
             -- [[ Info List ]]
             local info_outline = library:create("Frame", {
                 Parent = side_panel,
