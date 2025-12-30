@@ -728,9 +728,9 @@ local config_holder
                     Position = dim2(0, 0, 0, 0),
                     Size = dim2(1, 0, 0, 1),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = themes.preset.accent,
+                    BackgroundColor3 = themes.preset.outline,
                     ZIndex = 5
-                }) library:apply_theme(items.top_accent, "accent", "BackgroundColor3")
+                }) library:apply_theme(items.top_accent, "outline", "BackgroundColor3")
 
                 items.bottom_accent = library:create("Frame", {
                     Parent = items.main_holder,
@@ -738,9 +738,9 @@ local config_holder
                     Position = dim2(0, 0, 1, -1),
                     Size = dim2(1, 0, 0, 1),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = themes.preset.accent,
+                    BackgroundColor3 = themes.preset.outline,
                     ZIndex = 5
-                }) library:apply_theme(items.bottom_accent, "accent", "BackgroundColor3")
+                }) library:apply_theme(items.bottom_accent, "outline", "BackgroundColor3")
 
                 local Close = library:create( "TextButton" , {
                     Parent = items.main_holder;
@@ -1058,8 +1058,8 @@ local config_holder
                 BorderColor3 = rgb(0, 0, 0);
                 Size = dim2(1, -2, 1, -2);
                 BorderSizePixel = 0;
-                BackgroundColor3 = themes.preset.accent
-            });	library:apply_theme(items.Accent, "accent", "BackgroundColor3")
+                BackgroundColor3 = themes.preset.outline
+            });	library:apply_theme(items.Accent, "outline", "BackgroundColor3")
             
             items.Background = library:create( "Frame" , {
                 Parent = items.Accent;
@@ -1187,9 +1187,9 @@ local config_holder
                 Parent = items.LowContrast;
                 BorderColor3 = rgb(0, 0, 0);
                 Size = dim2(1, 0, 0, 2);
-                BackgroundColor3 = themes.preset.accent;
+                BackgroundColor3 = themes.preset.outline;
                 BorderSizePixel = 0;
-            });	library:apply_theme(items.Accent, "accent", "BackgroundColor3");
+            });	library:apply_theme(items.Accent, "outline", "BackgroundColor3");
             
             items.Shadow = library:create( "Frame" , {
                 AnchorPoint = vec2(0, 1);
@@ -1199,8 +1199,8 @@ local config_holder
                 BorderColor3 = rgb(0, 0, 0);
                 Size = dim2(1, 0, 0, 1);
                 BorderSizePixel = 0;
-                BackgroundColor3 = themes.preset.accent;
-            }); library:apply_theme(items.Shadow, "accent", "BackgroundColor3");
+                BackgroundColor3 = themes.preset.outline;
+            }); library:apply_theme(items.Shadow, "outline", "BackgroundColor3");
             
             library:create( "UIGradient" , {
                 Rotation = 90;
@@ -1418,10 +1418,10 @@ local config_holder
                 Position = dim2(0, 10, 1, -360 - 45), -- Approx position above where keybinds was
                 Size = dim2(0, 157, 0, 39),
                 BorderSizePixel = 0,
-                BackgroundColor3 = themes.preset.accent
+                BackgroundColor3 = themes.preset.outline
             }); 
 
-            library:apply_theme(dock_outline, "accent", "BackgroundColor3"); 
+            library:apply_theme(dock_outline, "outline", "BackgroundColor3"); 
             -- dock_outline.Position = dim2(0, dock_outline.AbsolutePosition.X, 0, dock_outline.AbsolutePosition.Y); -- Remove auto-adjustment to let it float
             dock_outline.AnchorPoint = vec2(0, 0); 
             library:draggify(dock_outline);
@@ -1452,8 +1452,8 @@ local config_holder
                 Size = dim2(1, 0, 0, 2),
                 BorderColor3 = rgb(0, 0, 0),
                 BorderSizePixel = 0,
-                BackgroundColor3 = themes.preset.accent
-            }) library:apply_theme(accent, "accent", "BackgroundColor3") 
+                BackgroundColor3 = themes.preset.outline
+            }) library:apply_theme(accent, "outline", "BackgroundColor3") 
             
             local UIGradient = library:create("UIGradient", {
                 Parent = accent,
