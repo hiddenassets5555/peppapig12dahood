@@ -63,12 +63,12 @@ local ESP_SETTINGS = { SkeletonColor = Color3.fromRGB(255, 255, 255), Enabled = 
 
 local themes = {
     preset = {
-        ["outline"] = hex("#0A0A0A"), 
-        ["inline"] = hex("#2D2D2D"), 
-        ["accent"] = rgb(133, 156, 220), 
-        ["high_contrast"] = hex("#141414"),
-        ["low_contrast"] = hex("#1E1E1E"),
-        ["text"] = hex("#B4B4B4"),
+        ["outline"] = rgb(27, 27, 27), 
+        ["inline"] = rgb(20, 20, 20), 
+        ["accent"] = rgb(198, 154, 196), 
+        ["high_contrast"] = rgb(15, 15, 15),
+        ["low_contrast"] = rgb(30, 30, 30),
+        ["text"] = rgb(215, 215, 215),
         ["text_outline"] = rgb(0, 0, 0),
         ["glow"] = rgb(0, 0, 0), 
     },
@@ -235,7 +235,7 @@ local tahoma = {
 
 writefile("tahoma.json", http_service:JSONEncode(tahoma))
 
-library.font = Font.fromEnum(Enum.Font.SourceSansSemibold)
+library.font = Font.new(getcustomasset("tahoma.json"), Enum.FontWeight.Regular)
 
 local config_holder 
 
@@ -2072,8 +2072,8 @@ local config_holder
             Name = "",
             Rotation = 90,
             Color = rgbseq{
-                rgbkey(0, rgb(41, 41, 55)),
-                rgbkey(1, rgb(35, 35, 47))
+                rgbkey(0, rgb(15, 15, 15)),
+                rgbkey(1, rgb(30, 30, 30))
             }
         }) library:apply_theme(UIGradient, "contrast", "Color") 
         
@@ -2106,18 +2106,8 @@ local config_holder
             BorderColor3 = rgb(0, 0, 0),
             Size = dim2(1, -4, 0, 2),
             BorderSizePixel = 0,
-            BackgroundColor3 = rgb(60, 60, 60)
-        }) -- library:apply_theme(accent, "accent", "BackgroundColor3") 
-        
-        local UIGradient = library:create("UIGradient", {
-            Parent = accent,
-            Name = "",
-            Rotation = 90,
-            Color = rgbseq{
-                rgbkey(0, rgb(255, 255, 255)),
-                rgbkey(1, rgb(167, 167, 167))
-            }
-        })
+            BackgroundColor3 = themes.preset.accent
+        }) library:apply_theme(accent, "accent", "BackgroundColor3") 
         
         function cfg.change_text(input)
             text.Text = "  ".. input .."  "
