@@ -1446,24 +1446,24 @@ local config_holder
                 BackgroundColor3 = rgb(255, 255, 255)
             }) library:apply_theme(dock_holder, "outline", "BackgroundColor3") 
             
-            local accent = library:create("Frame", {
+            local top_accent = library:create("Frame", {
                 Parent = dock_holder,
                 Name = "",
-                Size = dim2(1, 0, 0, 2),
+                Size = dim2(1, 0, 0, 1),
                 BorderColor3 = rgb(0, 0, 0),
                 BorderSizePixel = 0,
-                BackgroundColor3 = themes.preset.outline
-            }) library:apply_theme(accent, "outline", "BackgroundColor3") 
-            
-            local UIGradient = library:create("UIGradient", {
-                Parent = accent,
+                BackgroundColor3 = themes.preset.accent
+            }) library:apply_theme(top_accent, "accent", "BackgroundColor3") 
+
+            local bottom_accent = library:create("Frame", {
+                Parent = dock_holder,
                 Name = "",
-                Rotation = 90,
-                Color = rgbseq{
-                rgbkey(0, rgb(255, 255, 255)),
-                rgbkey(1, rgb(167, 167, 167))
-            }
-            })
+                Position = dim2(0, 0, 1, -1),
+                Size = dim2(1, 0, 0, 1),
+                BorderColor3 = rgb(0, 0, 0),
+                BorderSizePixel = 0,
+                BackgroundColor3 = themes.preset.accent
+            }) library:apply_theme(bottom_accent, "accent", "BackgroundColor3")
             
             library:create("ImageLabel", {
                 Parent = dock_holder,
