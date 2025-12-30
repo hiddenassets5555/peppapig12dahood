@@ -214,28 +214,44 @@ for _, path in next, library.folders do
     makefolder(library.directory .. path)
 end 
 
-if not isfile("tahoma.ttf") then
-    local success, content = pcall(game.HttpGet, game, "https://raw.githubusercontent.com/SecuredProfitss/Fonts/main/WindowsXPTahoma.ttf")
-    if success then
-        writefile("tahoma.ttf", content)
+local function loadCustomFont()
+    local fontName = "tahoma.ttf"
+    local fontUrl = "https://raw.githubusercontent.com/SecuredProfitss/Fonts/main/WindowsXPTahoma.ttf"
+    
+    if not isfile(fontName) then
+        local success, content = pcall(game.HttpGet, game, fontUrl)
+        if success then
+            writefile(fontName, content)
+        end
     end
+    
+    if isfile(fontName) then
+        local success, assetId = pcall(getcustomasset, fontName)
+        if success and assetId then
+            local tahoma = {
+                name = "Tahoma",
+                faces = {
+                    {
+                        name = "Regular",
+                        weight = 400,
+                        style = "normal",
+                        assetId = assetId
+                    }
+                }
+            }
+            writefile("tahoma.json", http_service:JSONEncode(tahoma))
+            
+            local jsonSuccess, jsonAssetId = pcall(getcustomasset, "tahoma.json")
+            if jsonSuccess and jsonAssetId then
+                return Font.new(jsonAssetId, Enum.FontWeight.Regular)
+            end
+        end
+    end
+    
+    return Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
 end
 
-local tahoma = {
-    name = "Tahoma",
-    faces = {
-        {
-            name = "Regular",
-            weight = 400,
-            style = "normal",
-            assetId = getcustomasset("tahoma.ttf")
-        }
-    }
-}
-
-writefile("tahoma.json", http_service:JSONEncode(tahoma))
-
-library.font = Font.new(getcustomasset("tahoma.json"), Enum.FontWeight.Regular)
+library.font = loadCustomFont()
 
 local config_holder 
 
