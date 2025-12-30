@@ -732,6 +732,16 @@ local config_holder
                     ZIndex = 5
                 }) library:apply_theme(items.top_accent, "accent", "BackgroundColor3")
 
+                items.bottom_accent = library:create("Frame", {
+                    Parent = items.main_holder,
+                    Name = "",
+                    Position = dim2(0, 0, 1, -1),
+                    Size = dim2(1, 0, 0, 1),
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = themes.preset.accent,
+                    ZIndex = 5
+                }) library:apply_theme(items.bottom_accent, "accent", "BackgroundColor3")
+
                 local Close = library:create( "TextButton" , {
                     Parent = items.main_holder;
                     FontFace = library.font;
@@ -2528,11 +2538,13 @@ local config_holder
             flashing = false, 
         }
     
-        
+        local _, count = string.gsub(cfg.text, "\n", "")
+        local height = 24 + (count * 14)
+
             local watermark_outline = library:create("Frame", {
                 Parent = notif_holder,
                 Name = "",
-                Size = UDim2.new(0, 0, 0, 24),
+                Size = UDim2.new(0, 0, 0, height),
                 BorderColor3 = rgb(0, 0, 0),
                 BorderSizePixel = 0,
                 Position = UDim2.new(0, 20, 0, 72 + (#library.notifications * 28)),
@@ -3581,6 +3593,12 @@ local config_holder
         library:hoverify(toggle_holder, toggle)
 
         function cfg.set(bool)
+            if bool and library.can_enable_feature and not library.can_enable_feature() then
+                library:notification({text = "Cannot enable features\nwhile staff is present!", time = 3})
+                bool = false
+                cfg.enabled = false
+            end
+
             library:tween(accent, {BackgroundTransparency = bool and 0 or 1})
             flags[cfg.flag] = bool
             
