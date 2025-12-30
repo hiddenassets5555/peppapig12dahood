@@ -1563,7 +1563,7 @@ local config_holder
                 Name = "SidePanel",
                 AnchorPoint = vec2(1, 0.5),
                 Position = dim2(1, -10, 0.5, 0),
-                Size = dim2(0, 182, 0.5, 0),
+                Size = dim2(0, 182, 0.35, 0),
                 BackgroundTransparency = 1,
             })
             
@@ -1695,7 +1695,7 @@ local config_holder
                 Parent = side_panel,
                 Name = "KeybindList",
                 AnchorPoint = vec2(0, 1),
-                Position = dim2(0, 0, 1, -50),
+                Position = dim2(0, 0, 1, -10),
                 LayoutOrder = 2,
                 Visible = true, 
                 Active = true,
