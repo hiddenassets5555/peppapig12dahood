@@ -1599,7 +1599,7 @@ local config_holder
                 Parent = left_panel,
                 Name = "ModeratorList",
                 LayoutOrder = 1,
-                Visible = false, -- Hidden by default until a mod joins
+                Visible = true, -- Visible by default so user can see it
                 Active = true,
                 Draggable = false,
                 BorderColor3 = rgb(0, 0, 0),
