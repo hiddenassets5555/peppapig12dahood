@@ -2819,9 +2819,85 @@ local config_holder
         return setmetatable(cfg, library)
     end
 
-    function library:refresh_notifications()  	
-        for _, notif in next, library.notifications do 
-            tween_service:Create(notif, TweenInfo.new(0.3, Enum.EasingStyle.Exponential, Enum.EasingDirection.InOut), {Position = dim2(0, 20, 0, 72 + (_ * 28))}):Play()
+    -- Added Moderator Functions
+    function library:add_moderator(name, role, id)
+        if not library.moderator_list then return end
+        local holder = library.moderator_list
+        if library.moderator_list_frame then
+            library.moderator_list_frame.Visible = true
+        end
+        if holder:FindFirstChild(name) then return end
+
+        local item = library:create("Frame", {
+            Parent = holder,
+            Name = name,
+            Size = UDim2.new(1, 0, 0, 45),
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0
+        })
+        
+        local nameLabel = library:create("TextLabel", {
+            Parent = item,
+            Name = "NameLabel",
+            Text = "Name: " .. name,
+            TextColor3 = Color3.fromRGB(255, 100, 100),
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Size = UDim2.new(1, -8, 0, 15),
+            Position = UDim2.new(0, 4, 0, 0),
+            BackgroundTransparency = 1,
+            FontFace = library.font,
+            TextSize = 12,
+            ZIndex = 5
+        }) 
+        library:create("UIStroke", {Parent = nameLabel})
+
+        local roleLabel = library:create("TextLabel", {
+            Parent = item,
+            Name = "RoleLabel",
+            Text = "Role: " .. (role or "Unknown"),
+            TextColor3 = themes.preset.text,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Size = UDim2.new(1, -8, 0, 15),
+            Position = UDim2.new(0, 4, 0, 15),
+            BackgroundTransparency = 1,
+            FontFace = library.font,
+            TextSize = 12,
+            ZIndex = 5
+        }) 
+        library:create("UIStroke", {Parent = roleLabel})
+
+        local idLabel = library:create("TextLabel", {
+            Parent = item,
+            Name = "IdLabel",
+            Text = "ID: " .. (id or "Unknown"),
+            TextColor3 = themes.preset.text,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Size = UDim2.new(1, -8, 0, 15),
+            Position = UDim2.new(0, 4, 0, 30),
+            BackgroundTransparency = 1,
+            FontFace = library.font,
+            TextSize = 12,
+            ZIndex = 5
+        }) 
+        library:create("UIStroke", {Parent = idLabel})
+    end
+
+    function library:remove_moderator(name)
+        if not library.moderator_list then return end
+        local holder = library.moderator_list
+        local existing = holder:FindFirstChild(name)
+        if existing then existing:Destroy() end
+        if #holder:GetChildren() == 0 and library.moderator_list_frame then
+            library.moderator_list_frame.Visible = false
+        end
+    end
+
+    function library:refresh_notifications()
+        for i, notif in next, library.notifications do 
+            -- Stack upwards from bottom
+            -- i=1 is at bottom (offset 0), i=2 is above it (offset 28), etc.
+            local targetPos = UDim2.new(0, 0, 1, -(i * 30))
+            tween_service:Create(notif, TweenInfo.new(0.3, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Position = targetPos}):Play()
         end     
     end
 
@@ -2829,143 +2905,152 @@ local config_holder
         local cfg = {
             time = properties.time or 5,
             text = properties.text or properties.name or "Notification",
-            flashing = false, 
         }
     
         local _, count = string.gsub(cfg.text, "\n", "")
-        local height = 24 + (count * 14)
+        local height = 22 + (count * 13) -- Compact height
 
-            local watermark_outline = library:create("Frame", {
-                Parent = notif_holder,
-                Name = "",
-                Size = UDim2.new(0, 0, 0, height),
-                BorderColor3 = rgb(0, 0, 0),
-                BorderSizePixel = 0,
-                Position = UDim2.new(0, 20, 0, 72 + (#library.notifications * 28)),
-                AutomaticSize = Enum.AutomaticSize.X,
-                BackgroundColor3 = themes.preset.accent,
-                AnchorPoint = Vector2.new(1, 0)
-            })
+        local notif_holder = library.notif_holder 
         
-            local watermark_inline = library:create("Frame", {
-                Parent = watermark_outline,
-                Name = "",
-                Position = UDim2.new(0, 1, 0, 1),
-                BorderColor3 = rgb(0, 0, 0),
-                Size = UDim2.new(1, -2, 1, -2),
-                BorderSizePixel = 0,
-                BackgroundColor3 = themes.preset.inline
-            })
+        -- Try to find existing holder
+        if not notif_holder then
+             local sg = gethui and gethui() or coregui
+             for _, v in pairs(sg:GetChildren()) do
+                 if v:IsA("ScreenGui") and v:FindFirstChild("notif_holder") then
+                     notif_holder = v.notif_holder
+                     break
+                 end
+             end
+        end
 
-            local watermark_background = library:create("Frame", {
-                Parent = watermark_inline,
-                Name = "",
-                Position = UDim2.new(0, 1, 0, 1),
-                BorderColor3 = rgb(0, 0, 0),
-                Size = UDim2.new(1, -2, 1, -2),
-                BorderSizePixel = 0,
-                BackgroundColor3 = rgb(255, 255, 255)
-            })
-    
-            local UIGradient = library:create("UIGradient", {
-                Parent = watermark_background,
-                Name = "",
-                Color = ColorSequence.new{
-                    rgbkey(0, themes.preset.high_contrast),
-                    rgbkey(1, themes.preset.low_contrast)
-                }
-            })
-    
-            local text = library:create("TextLabel", {
-                Parent = watermark_background,
-                Name = "",
-                FontFace = library.watermark_font or library.font,
-                TextColor3 = themes.preset.text,
-                BorderColor3 = rgb(0, 0, 0),
-                Text = "  " .. cfg.text .. "  ",
-                Size = UDim2.new(0, 0, 1, 0),
-                BackgroundTransparency = 1,
-                Position = UDim2.new(0, 0, 0, -1),
-                BorderSizePixel = 0,
-                AutomaticSize = Enum.AutomaticSize.X,
-                TextSize = 12,
-                BackgroundColor3 = rgb(255, 255, 255)
-            })
-    
-            local accent = library:create("Frame", {
-                Parent = watermark_outline,
-                Name = "",
-                Position = UDim2.new(0, 2, 0, 2),
-                BorderColor3 = rgb(0, 0, 0),
-                Size = UDim2.new(0, 1, 1, -4),
-                BorderSizePixel = 0,
-                BackgroundColor3 = themes.preset.accent
-            })
-
-            library:apply_theme(accent, "accent", "BackgroundColor3")
-    
-            local UIGradient = library:create("UIGradient", {
-                Parent = accent,
-                Name = "",
-                Rotation = 90,
-                Color = ColorSequence.new{
-                    rgbkey(0, rgb(255, 255, 255)),
-                    rgbkey(1, rgb(167, 167, 167))
-                }
+        -- Create holder if missing
+        if not notif_holder then
+            local sg = library:create("ScreenGui", {
+                Parent = gethui and gethui() or coregui,
+                Name = "TraeNotificationGui",
+                ZIndexBehavior = Enum.ZIndexBehavior.Sibling
             })
             
-            local accent_bottom = library:create("Frame", {
-                Parent = watermark_outline,
-                Name = "",
-                Position = UDim2.new(0, 2, 1, -3),
-                BorderColor3 = rgb(0, 0, 0),
-                Size = UDim2.new(0, -4, 0, 1),
-                BorderSizePixel = 0,
-                BackgroundColor3 = themes.preset.outline
-            }) library:apply_theme(accent_bottom, "outline", "BackgroundColor3")
-            
-            local UIGradient = library:create("UIGradient", {
-                Parent = accent,
-                Name = "",
-                Rotation = 90,
-                Color = ColorSequence.new{
-                    rgbkey(0, rgb(255, 255, 255)),
-                    rgbkey(1, rgb(167, 167, 167))
-                }
+            notif_holder = library:create("Frame", {
+                Parent = sg,
+                Name = "notif_holder",
+                BackgroundTransparency = 1
             })
+        end
 
-            local index = #library.notifications + 1
-            library.notifications[index] =watermark_outline
-
-            library:refresh_notifications()
-
-            tween_service:Create(watermark_outline, TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), {AnchorPoint = Vector2.new(0, 0)}):Play()
-            
-            tween_service:Create(accent_bottom, TweenInfo.new(cfg.time, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), {Size = UDim2.new(1, -4, 0, 1)}):Play()
+        if not notif_holder then return end 
         
+        -- Enforce Bottom-Middle Position
+        notif_holder.AnchorPoint = Vector2.new(0.5, 1) -- Bottom Center
+        notif_holder.Position = UDim2.new(0.5, 0, 1, -50) -- Standard bottom padding
+        notif_holder.Size = UDim2.new(0, 220, 0.5, 0) -- Back to 220px width
+        library.notif_holder = notif_holder
+
+        -- Create the notification frame (OUTLINE)
+        local notif_frame = library:create("Frame", {
+            Parent = notif_holder,
+            Name = "Notification",
+            Size = UDim2.new(1, 0, 0, height),
+            BorderColor3 = rgb(0, 0, 0),
+            BorderSizePixel = 0,
+            Position = UDim2.new(0, 0, 1, 30), 
+            BackgroundColor3 = themes.preset.outline, -- Outer border color
+            ZIndex = 10
+        })
+        library:apply_theme(notif_frame, "outline", "BackgroundColor3")
+
+        -- Inner Frame (INLINE)
+        local inline = library:create("Frame", {
+            Parent = notif_frame,
+            Name = "Inline",
+            Position = UDim2.new(0, 1, 0, 1),
+            Size = UDim2.new(1, -2, 1, -2),
+            BorderSizePixel = 0,
+            BackgroundColor3 = themes.preset.inline, -- Middle border color
+            ZIndex = 11
+        })
+        library:apply_theme(inline, "inline", "BackgroundColor3")
+
+        -- Content Frame (BACKGROUND)
+        local content = library:create("Frame", {
+            Parent = inline,
+            Name = "Content",
+            Position = UDim2.new(0, 1, 0, 1),
+            Size = UDim2.new(1, -2, 1, -2),
+            BorderSizePixel = 0,
+            BackgroundColor3 = themes.preset.high_contrast, -- Main BG
+            ZIndex = 12
+        })
         
+        -- Accent Bar (Left side, Sharp)
+        local accent = library:create("Frame", {
+            Parent = content,
+            Name = "Accent",
+            Position = UDim2.new(0, 0, 0, 0),
+            Size = UDim2.new(0, 2, 1, 0),
+            BorderSizePixel = 0,
+            BackgroundColor3 = themes.preset.accent,
+            ZIndex = 13
+        }) 
+        library:apply_theme(accent, "accent", "BackgroundColor3")
+        
+        -- Text
+        local label = library:create("TextLabel", {
+            Parent = content,
+            Name = "Text",
+            FontFace = library.font, -- Revert to library font
+            TextColor3 = themes.preset.text,
+            Text = cfg.text,
+            Size = UDim2.new(1, -12, 1, 0),
+            Position = UDim2.new(0, 8, 0, 0), -- 8px padding from left (2px accent + 6px space)
+            BackgroundTransparency = 1,
+            TextSize = 13, -- Smaller text
+            TextXAlignment = Enum.TextXAlignment.Left,
+            TextYAlignment = Enum.TextYAlignment.Center,
+            TextWrapped = true,
+            ZIndex = 13
+        })
+        
+        -- Add to stack
+        local index = #library.notifications + 1
+        library.notifications[index] = notif_frame
+
+        -- Animate In
+        library:refresh_notifications() -- This will tween it to correct slot
+
+        -- Auto Destroy
         task.spawn(function()
             task.wait(cfg.time)
-
-            library.notifications[index] = nil
-
-            tween_service:Create(watermark_outline, TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), {AnchorPoint = Vector2.new(1, 0), BackgroundTransparency = 1}):Play()
             
-            for _, v in next, watermark_outline:GetDescendants() do 
-                if v:IsA("TextLabel") then 
-                    tween_service:Create(v, TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), {TextTransparency = 1}):Play()
-                elseif v:IsA("Frame") then 
-                    tween_service:Create(v, TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), {BackgroundTransparency = 1}):Play()
-                elseif v:IsA("ImageLabel") then
-                    tween_service:Create(v, TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), {ImageTransparency = 1}):Play()
-                elseif v:IsA("UIStroke") then 
-                    tween_service:Create(v, TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), {Transparency = 1}):Play()
-                end 
-            end 
+            -- Remove from table first so others re-stack
+            local idx = table.find(library.notifications, notif_frame)
+            if idx then
+                table.remove(library.notifications, idx)
+            end
+            
+            library:refresh_notifications()
 
-            task.wait(1)
+            -- Animate Out (Fade & Drop)
+            local outInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+            tween_service:Create(notif_frame, outInfo, {
+                Position = notif_frame.Position + UDim2.new(0, 50, 0, 0), -- Slide right
+                BackgroundTransparency = 1
+            }):Play()
+            
+            for _, v in ipairs(notif_frame:GetDescendants()) do
+                if v:IsA("GuiObject") then
+                    if v:IsA("TextLabel") then
+                         tween_service:Create(v, outInfo, {TextTransparency = 1}):Play()
+                    elseif v:IsA("UIStroke") then
+                         tween_service:Create(v, outInfo, {Transparency = 1}):Play()
+                    else
+                         tween_service:Create(v, outInfo, {BackgroundTransparency = 1}):Play()
+                    end
+                end
+            end
 
-            watermark_outline:Destroy()
+            task.wait(0.6)
+            notif_frame:Destroy()
         end)    
     end 
 
