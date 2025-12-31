@@ -2931,6 +2931,10 @@ local config_holder
                 ZIndexBehavior = Enum.ZIndexBehavior.Sibling
             })
             
+            -- Prevent main UI toggle from hiding this
+            local idx = table.find(library.guis, sg)
+            if idx then table.remove(library.guis, idx) end
+            
             notif_holder = library:create("Frame", {
                 Parent = sg,
                 Name = "notif_holder",
@@ -2978,9 +2982,20 @@ local config_holder
             Position = UDim2.new(0, 1, 0, 1),
             Size = UDim2.new(1, -2, 1, -2),
             BorderSizePixel = 0,
-            BackgroundColor3 = themes.preset.high_contrast, -- Main BG
+            BackgroundColor3 = rgb(255, 255, 255), -- White for gradient
             ZIndex = 12
         })
+        
+        -- Add Gradient to match UI style
+        local UIGradient = library:create("UIGradient", {
+            Parent = content,
+            Rotation = 90,
+            Color = rgbseq{
+                rgbkey(0, rgb(41, 41, 55)),
+                rgbkey(1, rgb(35, 35, 47))
+            }
+        })
+        library:apply_theme(UIGradient, "contrast", "Color")
         
         -- Accent Bar (Left side, Sharp)
         local accent = library:create("Frame", {
@@ -3009,6 +3024,14 @@ local config_holder
             TextYAlignment = Enum.TextYAlignment.Center,
             TextWrapped = true,
             ZIndex = 13
+        })
+        
+        -- Add shadow to text for readability
+        library:create("UIStroke", {
+            Parent = label,
+            Color = rgb(0,0,0),
+            Thickness = 1,
+            Transparency = 0.5
         })
         
         -- Add to stack
