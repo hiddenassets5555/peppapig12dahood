@@ -685,12 +685,17 @@ local config_holder
         end
     end
 
-    function library:add_info_item(name, value)
+    function library:add_info_item(name, value, color)
         if not library.info_list then return end
         local holder = library.info_list
         local existing = holder:FindFirstChild(name)
         if existing then
             existing.ValueLabel.Text = tostring(value)
+            if color then
+                existing.ValueLabel.TextColor3 = color
+            else
+                existing.ValueLabel.TextColor3 = themes.preset.accent
+            end
         else
             local item = library:create("Frame", {
                 Parent = holder,
@@ -718,14 +723,19 @@ local config_holder
                 Parent = item,
                 Name = "ValueLabel",
                 Text = tostring(value),
-                TextColor3 = themes.preset.accent,
+                TextColor3 = color or themes.preset.accent,
                 TextXAlignment = Enum.TextXAlignment.Right,
                 Size = dim2(0.5, 0, 1, 0),
                 Position = dim2(0.5, -4, 0, 0),
                 BackgroundTransparency = 1,
                 FontFace = library.font,
                 TextSize = 12
-            }) library:apply_theme(valueLabel, "accent", "TextColor3")
+            }) 
+            
+            if not color then
+                library:apply_theme(valueLabel, "accent", "TextColor3")
+            end
+            
             library:create("UIStroke", {Parent = valueLabel})
         end
     end
