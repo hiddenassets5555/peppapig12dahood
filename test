@@ -1584,6 +1584,132 @@ local config_holder
                 Size = dim2(0, 182, 0.3, 0),
                 BackgroundTransparency = 1,
             })
+
+            local left_panel = library:create("Frame", {
+                Parent = sgui,
+                Name = "LeftPanel",
+                AnchorPoint = vec2(0, 0.5),
+                Position = dim2(0, 10, 0.5, 0), -- Left Middle
+                Size = dim2(0, 182, 0.3, 0),
+                BackgroundTransparency = 1,
+            })
+            
+            -- [[ Moderator List ]]
+            local mod_outline = library:create("Frame", {
+                Parent = left_panel,
+                Name = "ModeratorList",
+                LayoutOrder = 1,
+                Visible = false, -- Hidden by default until a mod joins
+                Active = true,
+                Draggable = false,
+                BorderColor3 = rgb(0, 0, 0),
+                Size = dim2(1, 0, 0, 0),
+                AutomaticSize = Enum.AutomaticSize.Y,
+                BorderSizePixel = 0,
+                BackgroundColor3 = themes.preset.outline
+            })
+            library:apply_theme(mod_outline, "outline", "BackgroundColor3")
+            library:make_resizable(mod_outline)
+            library.moderator_list_frame = mod_outline
+
+            local mod_inline = library:create("Frame", {
+                Parent = mod_outline,
+                Name = "Inline",
+                Position = dim2(0, 1, 0, 1),
+                Size = dim2(1, -2, 1, -2),
+                BorderSizePixel = 0,
+                BackgroundColor3 = themes.preset.inline,
+                ZIndex = 1
+            }) library:apply_theme(mod_inline, "inline", "BackgroundColor3")
+
+            local mod_content = library:create("Frame", {
+                Parent = mod_outline,
+                Name = "Content",
+                Size = dim2(1, 0, 0, 0),
+                AutomaticSize = Enum.AutomaticSize.Y,
+                BackgroundTransparency = 1,
+                ZIndex = 2
+            })
+
+            local mod_background = library:create("Frame", {
+                Parent = mod_content,
+                Name = "Header",
+                Position = dim2(0, 2, 0, 2),
+                Size = dim2(1, -4, 0, 20),
+                BorderSizePixel = 0,
+                BackgroundColor3 = rgb(255, 255, 255)
+            })
+
+            local mod_UIGradient = library:create("UIGradient", {
+                Parent = mod_background,
+                Name = "",
+                Rotation = 90,
+                Color = rgbseq{
+                    rgbkey(0, themes.preset.high_contrast),
+                    rgbkey(1, themes.preset.low_contrast)
+                }
+            }) library:apply_theme(mod_UIGradient, "contrast", "Color")
+
+            local mod_bg = library:create("Frame", {
+                Parent = mod_background,
+                Name = "a",
+                BorderColor3 = rgb(0, 0, 0),
+                Size = dim2(1, 0, 0, 2),
+                BorderSizePixel = 0,
+                BackgroundColor3 = themes.preset.accent
+            }); library:apply_theme(mod_bg, "accent", "BackgroundColor3")
+
+            library:create("UIGradient", {
+                Parent = mod_bg,
+                Name = "",
+                Enabled = true, 
+                Rotation = 90,
+                Color = rgbseq{
+                    rgbkey(0, rgb(255, 255, 255)),
+                    rgbkey(1, rgb(167, 167, 167))
+                }
+            })
+
+            local mod_text = library:create("TextLabel", {
+                Parent = mod_background,
+                Name = "",
+                FontFace = library.font,
+                TextColor3 = themes.preset.text,
+                BorderColor3 = rgb(0, 0, 0),
+                Text = "Moderators",
+                BackgroundTransparency = 1,
+                TextTruncate = Enum.TextTruncate.AtEnd,
+                Size = dim2(1, 0, 1, 0),
+                BorderSizePixel = 0,
+                TextSize = 12,
+                BackgroundColor3 = themes.preset.text
+            }, "text")
+
+            local mod_UIStroke = library:create("UIStroke", {
+                Parent = mod_text,
+                Name = "",
+                LineJoinMode = Enum.LineJoinMode.Miter
+            })
+
+            local mod_list_container = library:create("Frame", {
+                Parent = mod_content,
+                Name = "List",
+                Position = dim2(0, 2, 0, 24),
+                Size = dim2(1, -4, 0, 0),
+                AutomaticSize = Enum.AutomaticSize.Y,
+                BorderSizePixel = 0,
+                BackgroundTransparency = 1
+            })
+            library.moderator_list = mod_list_container
+            local mod_list_bg = mod_list_container
+
+            library:create("UIListLayout", {
+                Parent = mod_list_bg,
+                Name = "",
+                Padding = dim(0, 2),
+                FillDirection = Enum.FillDirection.Vertical,
+                SortOrder = Enum.SortOrder.LayoutOrder
+            })
             
             -- [[ Info List ]]
             local info_outline = library:create("Frame", {
