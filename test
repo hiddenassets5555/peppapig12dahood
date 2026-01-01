@@ -952,10 +952,10 @@ local config_holder
                 items.UIPadding = library:create("UIPadding", {
                     Parent = items.holder,
                     Name = "",
-                    PaddingTop = dim(0, 5),
-                    PaddingBottom = dim(0, 5),
-                    PaddingRight = dim(0, 5),
-                    PaddingLeft = dim(0, 5)
+                    PaddingTop = dim(0, 2),
+                    PaddingBottom = dim(0, 2),
+                    PaddingRight = dim(0, 2),
+                    PaddingLeft = dim(0, 2)
                 })
                 
                 items.glow = library:create("ImageLabel", {
@@ -1035,10 +1035,10 @@ local config_holder
                 local UIPadding = library:create("UIPadding", {
                     Parent = button_inline,
                     Name = "",
-                    PaddingTop = dim(0, 4),
-                    PaddingBottom = dim(0, 4),
-                    PaddingRight = dim(0, 4),
-                    PaddingLeft = dim(0, 4)
+                    PaddingTop = dim(0, 2),
+                    PaddingBottom = dim(0, 2),
+                    PaddingRight = dim(0, 2),
+                    PaddingLeft = dim(0, 2)
                 })
             
 
@@ -3232,7 +3232,7 @@ local config_holder
         
         library:create("UIListLayout", {
             Parent = column,
-            Padding = dim(0, 4),
+            Padding = dim(0, 2),
             SortOrder = Enum.SortOrder.LayoutOrder,
             VerticalFlex = Enum.UIFlexAlignment.Fill
         })
@@ -3252,7 +3252,7 @@ local config_holder
             Parent = self.holder,
             Name = "",
             BorderColor3 = rgb(0, 0, 0),
-            Size = dim2(1, 0, 0, 260),
+            Size = dim2(1, 0, 0, 210),
             BorderSizePixel = 0,
             BackgroundColor3 = themes.preset.inline
         }) library:apply_theme(section, "inline", "BackgroundColor3")
@@ -3421,13 +3421,13 @@ local config_holder
                     Name = "",
                     SortOrder = Enum.SortOrder.LayoutOrder,
                     HorizontalAlignment = Enum.HorizontalAlignment.Center,
-                    Padding = dim(0, 4)
+                    Padding = dim(0, 2)
                 })
                 
                 local UIPadding = library:create("UIPadding", {
                     Parent = ScrollingFrame,
                     Name = "",
-                    PaddingBottom = dim(0, 60)
+                    PaddingBottom = dim(0, 5)
                 })
             
             
@@ -3469,7 +3469,7 @@ local config_holder
             Parent = self.holder,
             Name = "\0",
             BorderColor3 = rgb(0, 0, 0),
-            Size = dim2(1, 0, 0, 260),
+            Size = dim2(1, 0, 0, 210),
             BorderSizePixel = 0,
             BackgroundColor3 = themes.preset.inline
         }) library:apply_theme(section, "inline", "BackgroundColor3") 
@@ -3579,14 +3579,14 @@ local config_holder
 
         library:create("UIListLayout", {
             Parent = elements,
-            Padding = dim(0, 4),
+            Padding = dim(0, 2),
             HorizontalAlignment = Enum.HorizontalAlignment.Center,
             SortOrder = Enum.SortOrder.LayoutOrder
         })
 
         library:create("UIPadding", {
             Parent = ScrollingFrame,
-            PaddingBottom = dim(0, 10)
+            PaddingBottom = dim(0, 5)
         })
 
         return setmetatable(cfg, library)
