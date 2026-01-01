@@ -3259,7 +3259,7 @@ local config_holder
 
         library:create("UIPadding", {
             Parent = section,
-            PaddingBottom = dim(0, 1)
+            PaddingBottom = dim(0, 2)
         })
         
         local inline = library:create("Frame", {
@@ -3275,7 +3275,7 @@ local config_holder
 
         library:create("UIPadding", {
             Parent = inline,
-            PaddingBottom = dim(0, 1)
+            PaddingBottom = dim(0, 2)
         })
         
         local __background = library:create("Frame", {
@@ -3425,6 +3425,7 @@ local config_holder
                     Name = "",
                     BorderColor3 = rgb(0, 0, 0),
                     Size = dim2(1, 0, 0, 0),
+                    AutomaticSize = Enum.AutomaticSize.Y,
                     BorderSizePixel = 0,
                     BackgroundColor3 = rgb(255, 255, 255)
                 }) multi.holder = elements
@@ -3490,7 +3491,7 @@ local config_holder
 
         library:create("UIPadding", {
             Parent = section,
-            PaddingBottom = dim(0, 1)
+            PaddingBottom = dim(0, 2)
         })
 
         local inline = library:create("Frame", {
@@ -3506,7 +3507,7 @@ local config_holder
 
         library:create("UIPadding", {
             Parent = inline,
-            PaddingBottom = dim(0, 1)
+            PaddingBottom = dim(0, 2)
         })
 
         local background = library:create("Frame", {
@@ -3599,6 +3600,7 @@ local config_holder
             Name = "\0",
             BorderColor3 = rgb(0, 0, 0),
             Size = dim2(1, 0, 0, 0),
+            AutomaticSize = Enum.AutomaticSize.Y,
             BorderSizePixel = 0,
             BackgroundColor3 = rgb(255, 255, 255)
         })
