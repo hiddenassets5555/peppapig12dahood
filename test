@@ -3233,8 +3233,7 @@ local config_holder
         library:create("UIListLayout", {
             Parent = column,
             Padding = dim(0, 2),
-            SortOrder = Enum.SortOrder.LayoutOrder,
-            VerticalFlex = Enum.UIFlexAlignment.Fill
+            SortOrder = Enum.SortOrder.LayoutOrder
         })
         
         cfg["holder"] = column
@@ -3252,7 +3251,8 @@ local config_holder
             Parent = self.holder,
             Name = "",
             BorderColor3 = rgb(0, 0, 0),
-            Size = dim2(1, 0, 0, 210),
+            Size = dim2(1, 0, 0, 0),
+            AutomaticSize = Enum.AutomaticSize.Y,
             BorderSizePixel = 0,
             BackgroundColor3 = themes.preset.inline
         }) library:apply_theme(section, "inline", "BackgroundColor3")
@@ -3262,7 +3262,8 @@ local config_holder
             Name = "",
             Position = dim2(0, 1, 0, 1),
             BorderColor3 = rgb(0, 0, 0),
-            Size = dim2(1, -2, 1, -2),
+            Size = dim2(1, -2, 0, 0),
+            AutomaticSize = Enum.AutomaticSize.Y,
             BorderSizePixel = 0,
             BackgroundColor3 = themes.preset.outline
         }) library:apply_theme(inline, "outline", "BackgroundColor3") 
@@ -3273,7 +3274,8 @@ local config_holder
             ClipsDescendants = true,
             Position = dim2(0, 1, 0, 1),
             BorderColor3 = rgb(0, 0, 0),
-            Size = dim2(1, -2, 1, -2),
+            Size = dim2(1, -2, 0, 0),
+            AutomaticSize = Enum.AutomaticSize.Y,
             BorderSizePixel = 0,
             ZIndex = 1,
             BackgroundColor3 = rgb(255, 255, 255)
@@ -3395,8 +3397,9 @@ local config_holder
                     TopImage = "rbxassetid://103468666327206",
                     BottomImage = "rbxassetid://103468666327206",
                     AutomaticCanvasSize = Enum.AutomaticSize.Y,
+                    AutomaticSize = Enum.AutomaticSize.Y,
                     ScrollBarThickness = 2,
-                    Size = dim2(1, 0, 1, -20),
+                    Size = dim2(1, 0, 0, 0),
                     Visible = false, 
                     BackgroundTransparency = 1,
                     Position = dim2(0, 0, 0, 24),
@@ -3469,7 +3472,8 @@ local config_holder
             Parent = self.holder,
             Name = "\0",
             BorderColor3 = rgb(0, 0, 0),
-            Size = dim2(1, 0, 0, 210),
+            Size = dim2(1, 0, 0, 0),
+            AutomaticSize = Enum.AutomaticSize.Y,
             BorderSizePixel = 0,
             BackgroundColor3 = themes.preset.inline
         }) library:apply_theme(section, "inline", "BackgroundColor3") 
@@ -3479,7 +3483,8 @@ local config_holder
             Name = "\0",
             Position = dim2(0, 1, 0, 1),
             BorderColor3 = rgb(0, 0, 0),
-            Size = dim2(1, -2, 1, -2),
+            Size = dim2(1, -2, 0, 0),
+            AutomaticSize = Enum.AutomaticSize.Y,
             BorderSizePixel = 0,
             BackgroundColor3 = themes.preset.outline
         }) library:apply_theme(inline, "outline", "BackgroundColor3") 
@@ -3489,7 +3494,8 @@ local config_holder
             Name = "\0",
             Position = dim2(0, 1, 0, 1),
             BorderColor3 = rgb(0, 0, 0),
-            Size = dim2(1, -2, 1, -2),
+            Size = dim2(1, -2, 0, 0),
+            AutomaticSize = Enum.AutomaticSize.Y,
             BorderSizePixel = 0,
             BackgroundColor3 = rgb(255, 255, 255)
         })
@@ -3546,11 +3552,12 @@ local config_holder
             ScrollBarImageColor3 = themes.preset.accent,
             Active = true,
             AutomaticCanvasSize = Enum.AutomaticSize.Y,
+            AutomaticSize = Enum.AutomaticSize.Y,
             ScrollBarThickness = 2,
             MidImage = "rbxassetid://103468666327206",
             TopImage = "rbxassetid://103468666327206",
             BottomImage = "rbxassetid://103468666327206",
-            Size = dim2(1, 0, 1, -20),
+            Size = dim2(1, 0, 0, 0),
             BackgroundTransparency = 1,
             Position = dim2(0, 0, 0, 20),
             BackgroundColor3 = rgb(255, 255, 255),
