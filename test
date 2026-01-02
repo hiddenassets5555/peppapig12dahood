@@ -77,7 +77,6 @@ local themes = {
         ["outline"] = {
             ["BackgroundColor3"] = {}, 	
             ["Color"] = {}, 
-            ["BorderColor3"] = {},
         },
         ["inline"] = {
             ["BackgroundColor3"] = {}, 	
@@ -629,8 +628,14 @@ local config_holder
                 BorderColor3 = rgb(0, 0, 0),
                 Size = dim2(1, -2, 1, -2),
                 BorderSizePixel = 0,
-                BackgroundColor3 = rgb(30, 30, 30)
+                BackgroundColor3 = rgb(255, 255, 255)
             })
+            
+            local UIGradient = library:create("UIGradient", {
+                Parent = watermark_background,
+                Name = "",
+                Color = rgbseq{rgbkey(0, rgb(41, 41, 55)), rgbkey(1, rgb(35, 35, 47))}
+            }); library:apply_theme(UIGradient, "contrast", "Color")
             
             local text = library:create("TextLabel", {
                 Parent = watermark_background,
@@ -769,9 +774,9 @@ local config_holder
                     Position = cfg.position,
                     Active = true, 
                     BorderColor3 = rgb(0, 0, 0),
-                    Size = cfg.size,
-                    BorderSizePixel = 0,
-                    BackgroundColor3 = rgb(255, 255, 255)
+                Size = cfg.size,
+                BorderSizePixel = 0,
+                BackgroundColor3 = rgb(0, 0, 0)
                 })
                 
                 library.main_frames = library.main_frames or {}
@@ -851,9 +856,21 @@ local config_holder
                     BorderColor3 = themes.preset.outline,
                     Size = dim2(1, -2, 1, -2),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = rgb(30, 30, 30)
+                    BackgroundColor3 = rgb(255, 255, 255)
                 })
                             
+                items.UIGradient = library:create("UIGradient", {
+                    Parent = items.window_holder,
+                    Name = "",
+                    Rotation = 90,
+                    Color = rgbseq{
+                    rgbkey(0, rgb(41, 41, 55)),
+                    rgbkey(1, rgb(35, 35, 47))
+                }
+                })
+    
+                library:apply_theme(items.UIGradient, "contrast", "Color") 
+                
                 items.text = library:create("TextLabel", {
                     Parent = items.window_holder,
                     Name = "",
@@ -917,8 +934,20 @@ local config_holder
                     BorderColor3 = rgb(0, 0, 0),
                     Size = dim2(1, -2, 1, -2),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = rgb(30, 30, 30)
+                    BackgroundColor3 = rgb(255, 255, 255)
                 })
+                
+                items.UIGradient = library:create("UIGradient", {
+                    Parent = items.holder,
+                    Name = "",
+                    Rotation = 90,
+                    Color = rgbseq{
+                        rgbkey(0, rgb(41, 41, 55)),
+                        rgbkey(1, rgb(35, 35, 47))
+                    }
+                })
+                
+                library:apply_theme(items.UIGradient, "contrast", "Color") 
                 
                 items.UIPadding = library:create("UIPadding", {
                     Parent = items.holder,
@@ -2056,7 +2085,7 @@ local config_holder
             local items = style.items
 
             local column = setmetatable(items, library):column() 
-            local section = column:section({name = "Theme", legacy = true})
+            local section = column:section({name = "Theme"})
             section:label({name = "Accent"})
             :colorpicker({name = "Accent", color = themes.preset.accent, flag = "accent", callback = function(color, alpha)
                 library:update_theme("accent", color)
@@ -2104,7 +2133,7 @@ local config_holder
                     blur.Size = int
                 end
             end})
-            local section = column:section({name = "Other", legacy = true})
+            local section = column:section({name = "Other"})
             section:label({name = "UI Bind"})
             :keybind({callback = window.set_menu_visibility, key = Enum.KeyCode.Z})
             section:toggle({name = "Keybind List", flag = "keybind_list", default = true, callback = function(bool)
@@ -2159,7 +2188,7 @@ local config_holder
             end 
 
             local column = setmetatable(items, library):column() 
-            local section = column:section({name = "Options", legacy = true})
+            local section = column:section({name = "Options"})
                 config_holder = section:list({flag = "config_name_list"})
                 section:textbox({flag = "config_name_text_box"})
                 section:button_holder({})
@@ -2217,7 +2246,7 @@ local config_holder
             local items = esp_preview.items
             
             local column = setmetatable(items, library):column() 
-            window.esp_section = column:section({name = "Main", legacy = true})
+            window.esp_section = column:section({name = "Main"})
             flags["Enabled"] = flags["Enabled"] ~= nil and flags["Enabled"] or true
             flags["Name_Color"] = flags["Name_Color"] or { Color = Color3.fromRGB(255,255,255) }
             flags["Distance_Color"] = flags["Distance_Color"] or { Color = Color3.fromRGB(255,255,255) }
@@ -2245,7 +2274,7 @@ local config_holder
             local items = playerlist.items
 
             local column = setmetatable(items, library):column() 
-            local section = column:section({name = "Playerlist", legacy = true})
+            local section = column:section({name = "Playerlist"})
             local playerlist_element = section:playerlist({})
             section:dropdown({name = "Priority", items = {"Enemy", "Priority", "Neutral", "Friendly"}, default = "Neutral", flag = "PLAYERLIST_DROPDOWN", callback = function(text)
                 library.prioritize(text)
@@ -3218,8 +3247,6 @@ local config_holder
             sections = {},
         }
 
-        local legacy = options.legacy or false
-
         local section = library:create("Frame", {
             Parent = self.holder,
             Name = "",
@@ -3232,7 +3259,7 @@ local config_holder
 
         library:create("UIPadding", {
             Parent = section,
-            PaddingBottom = legacy and dim(0, 1) or dim(0, 2)
+            PaddingBottom = dim(0, 2)
         })
         
         local inline = library:create("Frame", {
@@ -3248,7 +3275,7 @@ local config_holder
 
         library:create("UIPadding", {
             Parent = inline,
-            PaddingBottom = legacy and dim(0, 1) or dim(0, 2)
+            PaddingBottom = dim(0, 2)
         })
         
         local __background = library:create("Frame", {
@@ -3338,8 +3365,15 @@ local config_holder
                     BorderColor3 = rgb(0, 0, 0),
                     ZIndex = 1,
                     BorderSizePixel = 0,
-                    BackgroundColor3 = rgb(30, 30, 30)
+                    BackgroundColor3 = rgb(255, 255, 255)
                 })
+                
+                local UIGradient = library:create("UIGradient", {
+                    Parent = background,
+                    Name = "",
+                    Rotation = 90,
+                    Color = rgbseq{rgbkey(0, rgb(41, 41, 55)), rgbkey(1, rgb(35, 35, 47))}
+                }) library:apply_theme(UIGradient, "contrast", "Color")
                 
                 local text = library:create("TextLabel", {
                     Parent = background,
@@ -3390,7 +3424,7 @@ local config_holder
                     Name = "",
                     BorderColor3 = rgb(0, 0, 0),
                     Size = dim2(1, 0, 0, 0),
-                    AutomaticSize = legacy and Enum.AutomaticSize.None or Enum.AutomaticSize.Y,
+                    AutomaticSize = Enum.AutomaticSize.Y,
                     BorderSizePixel = 0,
                     BackgroundTransparency = 1,
                     BackgroundColor3 = rgb(255, 255, 255)
@@ -3445,8 +3479,6 @@ local config_holder
             name = options.name or "Section", 
         }
         
-        local legacy = options.legacy or false
-        
         local section = library:create("Frame", {
             Parent = self.holder,
             Name = "\0",
@@ -3459,7 +3491,7 @@ local config_holder
 
         library:create("UIPadding", {
             Parent = section,
-            PaddingBottom = legacy and dim(0, 1) or dim(0, 2)
+            PaddingBottom = dim(0, 2)
         })
 
         local inline = library:create("Frame", {
@@ -3475,7 +3507,7 @@ local config_holder
 
         library:create("UIPadding", {
             Parent = inline,
-            PaddingBottom = legacy and dim(0, 1) or dim(0, 2)
+            PaddingBottom = dim(0, 2)
         })
 
         local background = library:create("Frame", {
@@ -3486,7 +3518,7 @@ local config_holder
             Size = dim2(1, -2, 0, 0),
             AutomaticSize = Enum.AutomaticSize.Y,
             BorderSizePixel = 0,
-            BackgroundColor3 = rgb(20, 20, 20)
+            BackgroundColor3 = rgb(255, 255, 255)
         })
 
         local text = library:create("TextLabel", {
@@ -3567,7 +3599,7 @@ local config_holder
             Name = "\0",
             BorderColor3 = rgb(0, 0, 0),
             Size = dim2(1, 0, 0, 0),
-            AutomaticSize = legacy and Enum.AutomaticSize.None or Enum.AutomaticSize.Y,
+            AutomaticSize = Enum.AutomaticSize.Y,
             BorderSizePixel = 0,
             BackgroundTransparency = 1,
             BackgroundColor3 = rgb(255, 255, 255)
@@ -3624,7 +3656,7 @@ local config_holder
                 AutomaticSize = Enum.AutomaticSize.Y,
                 TextYAlignment = Enum.TextYAlignment.Top,
                 TextSize = 12,
-                BackgroundColor3 = themes.preset.text
+                BackgroundColor3 = rgb(255, 255, 255)
             })
             
             local TEXT_LABEL; 
@@ -3637,7 +3669,7 @@ local config_holder
                     BorderColor3 = rgb(0, 0, 0),
                     Size = dim2(0, 0, 0, 14),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = themes.preset.text
+                    BackgroundColor3 = rgb(255, 255, 255)
                 })
                 
                 TEXT_LABEL = library:create("TextLabel", {
@@ -3652,8 +3684,7 @@ local config_holder
                     BorderSizePixel = 0,
                     AutomaticSize = Enum.AutomaticSize.X,
                     TextSize = 12,
-                    BackgroundTransparency = 1,
-                    BackgroundColor3 = themes.preset.text
+                    BackgroundColor3 = rgb(255, 255, 255)
                 }, "text")
 
                 library:create("UIListLayout", {
@@ -3671,8 +3702,7 @@ local config_holder
                 BorderColor3 = rgb(0, 0, 0),
                 Size = dim2(1, 0, 0, 0),
                 BorderSizePixel = 0,
-                BackgroundTransparency = 1,
-                BackgroundColor3 = rgb(30, 30, 30)
+                BackgroundColor3 = rgb(255, 255, 255)
             })
             
             local slider = library:create("TextButton", {
@@ -3717,7 +3747,7 @@ local config_holder
                 BorderColor3 = rgb(0, 0, 0),
                 Size = dim2(1, 0, 1, 0),
                 BorderSizePixel = 0,
-                BackgroundColor3 = rgb(30, 30, 30)
+                BackgroundColor3 = rgb(255, 255, 255)
             })
             
             local slidertext = library:create("TextLabel", {
@@ -3866,7 +3896,7 @@ local config_holder
                 AutomaticSize = Enum.AutomaticSize.Y,
                 TextYAlignment = Enum.TextYAlignment.Top,
                 TextSize = 12,
-                BackgroundColor3 = rgb(30, 30, 30)
+                BackgroundColor3 = rgb(255, 255, 255)
             })
             
             local right_components = library:create("Frame", {
@@ -3876,8 +3906,7 @@ local config_holder
                 BorderColor3 = rgb(0, 0, 0),
                 Size = dim2(0, 0, 0, 12),
                 BorderSizePixel = 0,
-                BackgroundTransparency = 1,
-                BackgroundColor3 = rgb(30, 30, 30)
+                BackgroundColor3 = rgb(255, 255, 255)
             })
             cfg["right_holder"] = right_components
         
@@ -3903,7 +3932,7 @@ local config_holder
                 BorderColor3 = rgb(0, 0, 0),
                 Size = dim2(0, 0, 0, 14),
                 BorderSizePixel = 0,
-                BackgroundColor3 = themes.preset.text
+                BackgroundColor3 = rgb(255, 255, 255)
             })
             
             local text = library:create("TextLabel", {
@@ -3918,7 +3947,7 @@ local config_holder
                 BorderSizePixel = 0,
                 AutomaticSize = Enum.AutomaticSize.X,
                 TextSize = 12,
-                BackgroundColor3 = themes.preset.text
+                BackgroundColor3 = rgb(255, 255, 255)
             })
             cfg["text_label"] = text
         
@@ -4048,28 +4077,6 @@ local config_holder
 
         return setmetatable(cfg, library)
     end
-
-    function library:divider()
-        local container = library:create("Frame", {
-            Parent = self.holder,
-            Name = "divider",
-            Size = dim2(1, 0, 0, 6),
-            BackgroundTransparency = 1,
-            BorderSizePixel = 0
-        })
-
-        local line = library:create("Frame", {
-            Parent = container,
-            Name = "line",
-            AnchorPoint = vec2(0.5, 0.5),
-            Position = dim2(0.5, 0, 0.5, 0),
-            Size = dim2(1, -10, 0, 1),
-            BorderSizePixel = 0,
-            BackgroundColor3 = themes.preset.outline
-        }) library:apply_theme(line, "outline", "BackgroundColor3")
-
-        return container
-    end
     
     function library:colorpicker(options)
         local parent = self.right_holder
@@ -4168,7 +4175,7 @@ local config_holder
                 BorderColor3 = themes.preset.outline,
                 Size = dim2(1, -2, 1, -2),
                 BorderSizePixel = 0,
-                BackgroundColor3 = rgb(30, 30, 30)
+                BackgroundColor3 = rgb(255, 255, 255)
             })
 
             local UIGradient = library:create("UIGradient", {
@@ -4193,7 +4200,7 @@ local config_holder
                 BorderSizePixel = 0,
                 AutomaticSize = Enum.AutomaticSize.XY,
                 TextSize = 12,
-                BackgroundColor3 = themes.preset.text
+                BackgroundColor3 = rgb(255, 255, 255)
             })
             
             library:create("UIStroke", {
@@ -4284,7 +4291,7 @@ local config_holder
                 BorderColor3 = rgb(0, 0, 0),
                 Size = dim2(1, -2, 1, -2),
                 BorderSizePixel = 0,
-                BackgroundColor3 = rgb(30, 30, 30)
+                BackgroundColor3 = rgb(255, 255, 255)
             })
             
             local UIGradient = library:create("UIGradient", {
@@ -4349,7 +4356,7 @@ local config_holder
                 Size = dim2(1, 0, 1, 0),
                 TileSize = dim2(0, 6, 0, 6),
                 BorderSizePixel = 0,
-                BackgroundColor3 = themes.preset.text
+                BackgroundColor3 = rgb(255, 255, 255)
             })
             
             local UIGradient = library:create("UIGradient", {
@@ -4366,7 +4373,7 @@ local config_holder
                 BorderMode = Enum.BorderMode.Inset,
                 BorderColor3 = rgb(0, 0, 0),
                 Size = dim2(0, 4, 1, 0),
-                BackgroundColor3 = themes.preset.text
+                BackgroundColor3 = rgb(255, 255, 255)
             })
             
             local hue = library:create("TextButton", {
@@ -4421,7 +4428,7 @@ local config_holder
                 BorderMode = Enum.BorderMode.Inset,
                 BorderColor3 = rgb(0, 0, 0),
                 Size = dim2(1, 0, 0, 4),
-                BackgroundColor3 = themes.preset.text
+                BackgroundColor3 = rgb(255, 255, 255)
             })
             
             local visualize = library:create("Frame", {
@@ -4493,7 +4500,7 @@ local config_holder
                 BorderColor3 = rgb(0, 0, 0),
                 ZIndex = 2,
                 BorderSizePixel = 0,
-                BackgroundColor3 = themes.preset.text,
+                BackgroundColor3 = rgb(255, 255, 255),
                 Text = "",
                 AutoButtonColor = false,
             })
@@ -4517,7 +4524,7 @@ local config_holder
                 BorderColor3 = rgb(0, 0, 0),
                 Size = dim2(1, 0, 1, 0),
                 BorderSizePixel = 0,
-                BackgroundColor3 = rgb(0, 0, 0),
+                BackgroundColor3 = rgb(255, 255, 255),
                 Text = "",
                 AutoButtonColor = false,
             })
@@ -4536,7 +4543,7 @@ local config_holder
                 BorderColor3 = rgb(0, 0, 0),
                 Size = dim2(0, 2, 0, 2),
                 BorderSizePixel = 1,
-                BackgroundColor3 = themes.preset.inline,
+                BackgroundColor3 = rgb(255, 255, 255),
                 ZIndex = 3, 
             })
         
@@ -4793,7 +4800,7 @@ local config_holder
             Size = dim2(1, -2, 1, -2),
             BorderSizePixel = 0,
             AutomaticSize = Enum.AutomaticSize.X,
-            BackgroundColor3 = themes.preset.text
+            BackgroundColor3 = rgb(255, 255, 255)
         })
 
         local UIGradient = library:create("UIGradient", {
@@ -4820,7 +4827,7 @@ local config_holder
             BorderSizePixel = 0,
             AutomaticSize = Enum.AutomaticSize.XY,
             TextSize = 12,
-            BackgroundColor3 = themes.preset.text
+            BackgroundColor3 = rgb(255, 255, 255)
         })
 
         library:create("UIPadding", {
@@ -4834,12 +4841,12 @@ local config_holder
                 Parent = sgui,
                 Name = "",
                 Position = dim2(0, element_outline.AbsolutePosition.X + 1, 0, element_outline.AbsolutePosition.Y + 17),
-                BorderColor3 = themes.preset.outline,
+                BorderColor3 = rgb(255, 255, 255),
                 BorderSizePixel = 2,
                 Visible = false, 
                 AutomaticSize = Enum.AutomaticSize.XY,
-                BackgroundColor3 = themes.preset.outline
-            }) library:apply_theme(keybind_selector, "outline", "BorderColor3"); library:apply_theme(keybind_selector, "outline", "BackgroundColor3")
+                BackgroundColor3 = rgb(255, 255, 255)
+            })
             
             library:create("UIListLayout", {
                 Parent = keybind_selector,
@@ -4861,7 +4868,7 @@ local config_holder
                 BorderSizePixel = 0,
                 ZIndex = 2,
                 TextSize = 12,
-                BackgroundColor3 = themes.preset.text
+                BackgroundColor3 = rgb(255, 255, 255)
             })
             
             library:create("UIStroke", {
@@ -4891,7 +4898,7 @@ local config_holder
                 BorderSizePixel = 0,
                 ZIndex = 2,
                 TextSize = 12,
-                BackgroundColor3 = themes.preset.text
+                BackgroundColor3 = rgb(255, 255, 255)
             })
             
             library:create("UIStroke", {
@@ -4912,7 +4919,7 @@ local config_holder
                 BorderSizePixel = 0,
                 ZIndex = 2,
                 TextSize = 12,
-                BackgroundColor3 = themes.preset.text
+                BackgroundColor3 = rgb(255, 255, 255)
             })
             
             library:create("UIStroke", {
@@ -5203,7 +5210,7 @@ local config_holder
                 AutomaticSize = Enum.AutomaticSize.Y,
                 TextYAlignment = Enum.TextYAlignment.Top,
                 TextSize = 12,
-                BackgroundColor3 = themes.preset.text
+                BackgroundColor3 = rgb(255, 255, 255)
             })
 
             local main_text      
@@ -5216,7 +5223,7 @@ local config_holder
                     BorderColor3 = rgb(0, 0, 0),
                     Size = dim2(0, 0, 0, 14),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = themes.preset.text
+                    BackgroundColor3 = rgb(255, 255, 255)
                 })
 
                 main_text = library:create("TextLabel", {
@@ -5231,7 +5238,7 @@ local config_holder
                     BorderSizePixel = 0,
                     AutomaticSize = Enum.AutomaticSize.X,
                     TextSize = 12,
-                    BackgroundColor3 = themes.preset.text
+                    BackgroundColor3 = rgb(255, 255, 255)
                 })
                 
                 library:create("UIStroke", {
@@ -5253,8 +5260,7 @@ local config_holder
                     BorderColor3 = rgb(0, 0, 0),
                     Size = dim2(0, 0, 0, 12),
                     BorderSizePixel = 0,
-                    BackgroundTransparency = 1,
-                    BackgroundColor3 = themes.preset.text
+                    BackgroundColor3 = rgb(255, 255, 255)
                 })
                 cfg["right_holder"] = right_components
     
@@ -5276,8 +5282,7 @@ local config_holder
                 BorderColor3 = rgb(0, 0, 0),
                 Size = dim2(1, 26, 0, 0),
                 BorderSizePixel = 0,
-                BackgroundTransparency = 1,
-                BackgroundColor3 = themes.preset.text
+                BackgroundColor3 = rgb(255, 255, 255)
             })
             
             local dropdown = library:create("TextButton", {
@@ -5323,7 +5328,7 @@ local config_holder
                 BorderColor3 = rgb(0, 0, 0),
                 Size = dim2(1, 0, 1, 0),
                 BorderSizePixel = 0,
-                BackgroundColor3 = themes.preset.text
+                BackgroundColor3 = rgb(255, 255, 255)
             })
 
             local plus = library:create("TextLabel", {
@@ -5341,7 +5346,7 @@ local config_holder
                 FontFace = library.font,
                 TextTruncate = Enum.TextTruncate.AtEnd,
                 BorderSizePixel = 0,
-                BackgroundColor3 = themes.preset.text
+                BackgroundColor3 = rgb(255, 255, 255)
             })
             
             library:create("UIStroke", {
@@ -5364,7 +5369,7 @@ local config_holder
                 BorderSizePixel = 0,
                 TextTruncate = Enum.TextTruncate.AtEnd,
                 TextSize = 12,
-                BackgroundColor3 = themes.preset.text
+                BackgroundColor3 = rgb(255, 255, 255)
             })
             
             library:create("UIStroke", {
@@ -5467,7 +5472,7 @@ local config_holder
                 Size = dim2(1, 0, 1, -3),
                 BorderSizePixel = 0,
                 ZIndex = 2, 
-                BackgroundColor3 = themes.preset.text,
+                BackgroundColor3 = rgb(255, 255, 255),
                 AutomaticSize = cfg.scrolling and Enum.AutomaticSize.Y or Enum.AutomaticSize.None,
             }); 
 
@@ -5566,21 +5571,21 @@ local config_holder
 
             for i,v in next, refreshed_list do 
                 local TextButton = library:create("TextButton", {
-                Parent = contrast,
-                FontFace = library.font,
-                TextColor3 = themes.preset.text,
-                BorderColor3 = rgb(0, 0, 0),
-                Size = dim2(1, 0, 0, 0),
-                BackgroundTransparency = 1,
-                BorderSizePixel = 0,
-                TextWrapped = true,
-                AutomaticSize = Enum.AutomaticSize.Y,
-                TextSize = 12,
-                TextXAlignment = Enum.TextXAlignment.Left,
-                ZIndex = 2, 
-                Text = v,
-                BackgroundColor3 = themes.preset.text
-            }) library:apply_theme(TextButton, "accent", "TextColor3") 
+                    Parent = contrast,
+                    FontFace = library.font,
+                    TextColor3 = themes.preset.text,
+                    BorderColor3 = rgb(0, 0, 0),
+                    Size = dim2(1, 0, 0, 0),
+                    BackgroundTransparency = 1,
+                    BorderSizePixel = 0,
+                    TextWrapped = true,
+                    AutomaticSize = Enum.AutomaticSize.Y,
+                    TextSize = 12,
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    ZIndex = 2, 
+                    Text = v,
+                    BackgroundColor3 = rgb(255, 255, 255)
+                }) library:apply_theme(TextButton, "accent", "TextColor3") 
                 
                 library:create("UIStroke", {
                     Parent = TextButton,
@@ -5659,9 +5664,9 @@ local config_holder
                 TextXAlignment = Enum.TextXAlignment.Left,
                 AutomaticSize = Enum.AutomaticSize.Y,
                 TextYAlignment = Enum.TextYAlignment.Top,
-            TextSize = 12,
-            BackgroundColor3 = themes.preset.text
-        })
+                TextSize = 12,
+                BackgroundColor3 = rgb(255, 255, 255)
+            })
             
             local UIPadding = library:create("UIPadding", {
                 Parent = list_holder,
@@ -5680,8 +5685,7 @@ local config_holder
                 BorderColor3 = rgb(0, 0, 0),
                 Size = dim2(1, 26, 0, 0),
                 BorderSizePixel = 0,
-                BackgroundTransparency = 1,
-                BackgroundColor3 = themes.preset.text
+                BackgroundColor3 = rgb(255, 255, 255)
             })
             
             library:create("UIListLayout", {
@@ -5737,7 +5741,7 @@ local config_holder
                 BorderColor3 = rgb(0, 0, 0),
                 Size = dim2(1, 0, 1, 0),
                 BorderSizePixel = 0,
-                BackgroundColor3 = themes.preset.text
+                BackgroundColor3 = rgb(255, 255, 255)
             })
             
             local UIGradient = library:create("UIGradient", {
@@ -5762,7 +5766,7 @@ local config_holder
                 ScrollBarThickness = 2,
                 BackgroundTransparency = 1,
                 Size = dim2(1, 0, 1, 0),
-                BackgroundColor3 = themes.preset.text,
+                BackgroundColor3 = rgb(255, 255, 255),
                 BorderColor3 = rgb(0, 0, 0),
                 BorderSizePixel = 0,
                 CanvasSize = dim2(0, 0, 0, 0)
@@ -5794,10 +5798,10 @@ local config_holder
                 BackgroundTransparency = 1,
                 Size = dim2(1, 0, 0, 0),
                 BorderSizePixel = 0,
-            AutomaticSize = Enum.AutomaticSize.Y,
-            TextSize = 12,
-            BackgroundColor3 = themes.preset.text
-        })
+                AutomaticSize = Enum.AutomaticSize.Y,
+                TextSize = 12,
+                BackgroundColor3 = rgb(255, 255, 255)
+            })
 
             library:apply_theme(TextButton, "accent", "TextColor3") 
 
@@ -5899,7 +5903,7 @@ local config_holder
                 AutomaticSize = Enum.AutomaticSize.Y,
                 TextYAlignment = Enum.TextYAlignment.Top,
                 TextSize = 12,
-                BackgroundColor3 = themes.preset.text
+                BackgroundColor3 = rgb(255, 255, 255)
             })
             
             library:create("UIPadding", {
@@ -5969,7 +5973,7 @@ local config_holder
                 ClearTextOnFocus = false,
                 ZIndex = 3;
                 TextSize = 12,
-                BackgroundColor3 = themes.preset.text
+                BackgroundColor3 = rgb(255, 255, 255)
             })
             
             library:create("UIStroke", {
@@ -5989,7 +5993,7 @@ local config_holder
                 BorderSizePixel = 0,
                 TextSize = 14,
                 ZIndex = 2;
-                BackgroundColor3 = themes.preset.text
+                BackgroundColor3 = rgb(255, 255, 255)
             })
             
             local UIGradient = library:create("UIGradient", {
@@ -6062,7 +6066,7 @@ local config_holder
             AutomaticSize = Enum.AutomaticSize.Y,
             TextYAlignment = Enum.TextYAlignment.Top,
             TextSize = 12,
-            BackgroundColor3 = themes.preset.text, 
+            BackgroundColor3 = rgb(255, 255, 255), 
         })
 
         self.current_holder = button_holder
@@ -6160,7 +6164,7 @@ local config_holder
             BorderColor3 = rgb(0, 0, 0),
             Size = dim2(1, 0, 1, 0),
             BorderSizePixel = 0,
-            BackgroundColor3 = themes.preset.text
+            BackgroundColor3 = rgb(255, 255, 255)
         })
         
         local UIGradient = library:create("UIGradient", {
@@ -6190,7 +6194,7 @@ local config_holder
             BorderSizePixel = 0,
             FontFace = library.font,
             TextSize = 12,
-            BackgroundColor3 = themes.preset.text
+            BackgroundColor3 = rgb(255, 255, 255)
         })
         
         local UIStroke = library:create("UIStroke", {
@@ -6224,7 +6228,7 @@ local config_holder
             AutomaticSize = Enum.AutomaticSize.Y,
             TextYAlignment = Enum.TextYAlignment.Top,
             TextSize = 12,
-            BackgroundColor3 = themes.preset.text
+            BackgroundColor3 = rgb(255, 255, 255)
         })
         
         local UIStroke = library:create("UIStroke", {
@@ -6240,7 +6244,7 @@ local config_holder
             BorderColor3 = rgb(0, 0, 0),
             Size = dim2(0, 0, 0, 14),
             BorderSizePixel = 0,
-            BackgroundColor3 = themes.preset.text
+            BackgroundColor3 = rgb(255, 255, 255)
         })
         
         local TextLabel = library:create("TextLabel", {
@@ -6255,19 +6259,18 @@ local config_holder
             BorderSizePixel = 0,
             AutomaticSize = Enum.AutomaticSize.Y,
             TextSize = 12,
-            BackgroundColor3 = themes.preset.text
+            BackgroundColor3 = rgb(255, 255, 255)
         })
 
         local right_components = library:create("Frame", {
-                Parent = dropdown,
-                Name = "right_components",
-                Position = dim2(1, -1, 0, 1),
-                BorderColor3 = rgb(0, 0, 0),
-                Size = dim2(0, 0, 0, 12),
-                BorderSizePixel = 0,
-                BackgroundTransparency = 1,
-                BackgroundColor3 = themes.preset.text
-            }) cfg.right_holder = right_components
+            Parent = dropdown,
+            Name = "right_components",
+            Position = dim2(1, -1, 0, 1),
+            BorderColor3 = rgb(0, 0, 0),
+            Size = dim2(0, 0, 0, 12),
+            BorderSizePixel = 0,
+            BackgroundColor3 = rgb(255, 255, 255)
+        }) cfg.right_holder = right_components
 
         local list = library:create("UIListLayout", {
             Parent = right_components,
