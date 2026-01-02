@@ -2246,7 +2246,7 @@ local config_holder
             local items = esp_preview.items
             
             local column = setmetatable(items, library):column() 
-            window.esp_section = column:section({name = "Main", hide_accent = true, hide_border = true})
+            window.esp_section = column:section({name = "Main", hide_accent = true, hide_border = true, fill_parent = true})
             flags["Enabled"] = flags["Enabled"] ~= nil and flags["Enabled"] or true
             flags["Name_Color"] = flags["Name_Color"] or { Color = Color3.fromRGB(255,255,255) }
             flags["Distance_Color"] = flags["Distance_Color"] or { Color = Color3.fromRGB(255,255,255) }
@@ -2266,7 +2266,7 @@ local config_holder
                 name = "Playerlist", 
                 anchor_point = vec2(0, 0),
                 size = dim2(0, 529, 0, 445),
-                position = dim2(0, main_window.items.main_holder.AbsolutePosition.X - 531, 0, main_window.items.main_holder.AbsolutePosition.Y),
+                position = dim2(0, main_window.items.main_holder.Position.X.Offset - 531, 0, main_window.items.main_holder.Position.Y.Offset),
                 image = "rbxassetid://107070078834415",
                 open = false,
             })  
@@ -2310,6 +2310,10 @@ local config_holder
                 
                 local slot1_x = main_pos_x + main_size_x + 2
                 local slot1_y = main_pos_y
+                
+                if playerlist and playerlist.items and playerlist.items.main_holder then
+                     playerlist.items.main_holder.Position = dim2(0, main_pos_x - 531, 0, main_pos_y)
+                end
                 
                 if style_enabled then
                     style_frame.Position = dim2(0, slot1_x, 0, slot1_y)
@@ -3483,8 +3487,8 @@ local config_holder
             Parent = self.holder,
             Name = "\0",
             BorderColor3 = rgb(0, 0, 0),
-            Size = dim2(1, 0, 0, 0),
-            AutomaticSize = Enum.AutomaticSize.Y,
+            Size = options.fill_parent and dim2(1, 0, 1, 0) or dim2(1, 0, 0, 0),
+            AutomaticSize = options.fill_parent and Enum.AutomaticSize.None or Enum.AutomaticSize.Y,
             BorderSizePixel = 0,
             BackgroundColor3 = themes.preset.inline
         }) library:apply_theme(section, "inline", "BackgroundColor3") 
@@ -3499,8 +3503,8 @@ local config_holder
             Name = "\0",
             Position = dim2(0, 1, 0, 1),
             BorderColor3 = rgb(0, 0, 0),
-            Size = dim2(1, -2, 0, 0),
-            AutomaticSize = Enum.AutomaticSize.Y,
+            Size = dim2(1, -2, options.fill_parent and 1 or 0, options.fill_parent and -2 or 0),
+            AutomaticSize = options.fill_parent and Enum.AutomaticSize.None or Enum.AutomaticSize.Y,
             BorderSizePixel = 0,
             BackgroundColor3 = themes.preset.outline
         }) library:apply_theme(inline, "outline", "BackgroundColor3") 
@@ -3515,8 +3519,8 @@ local config_holder
             Name = "\0",
             Position = dim2(0, 1, 0, 1),
             BorderColor3 = rgb(0, 0, 0),
-            Size = dim2(1, -2, 0, 0),
-            AutomaticSize = Enum.AutomaticSize.Y,
+            Size = dim2(1, -2, options.fill_parent and 1 or 0, options.fill_parent and -2 or 0),
+            AutomaticSize = options.fill_parent and Enum.AutomaticSize.None or Enum.AutomaticSize.Y,
             BorderSizePixel = 0,
             BackgroundColor3 = rgb(255, 255, 255)
         })
