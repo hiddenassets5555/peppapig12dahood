@@ -1,5 +1,4 @@
 local flags = ... 
-print("Library script loaded! Version: Small-UI-Fix")
 local cloneref = cloneref or function(o) return o end
 local uis = cloneref(game:GetService("UserInputService"))
 local players = cloneref(game:GetService("Players"))
