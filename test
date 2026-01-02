@@ -3258,8 +3258,8 @@ local config_holder
             Size = dim2(1, 0, 0, 0),
             AutomaticSize = Enum.AutomaticSize.Y,
             BorderSizePixel = 0,
-            BackgroundColor3 = themes.preset.inline
-        }) library:apply_theme(section, "inline", "BackgroundColor3")
+            BackgroundColor3 = themes.preset.outline
+        }) library:apply_theme(section, "outline", "BackgroundColor3")
 
         library:create("UIPadding", {
             Parent = section,
@@ -3274,8 +3274,8 @@ local config_holder
             Size = dim2(1, -2, 0, 0),
             AutomaticSize = Enum.AutomaticSize.Y,
             BorderSizePixel = 0,
-            BackgroundColor3 = themes.preset.outline
-        }) library:apply_theme(inline, "outline", "BackgroundColor3") 
+            BackgroundColor3 = themes.preset.inline
+        }) library:apply_theme(inline, "inline", "BackgroundColor3") 
 
         library:create("UIPadding", {
             Parent = inline,
@@ -3490,8 +3490,8 @@ local config_holder
             Size = options.fill_parent and dim2(1, 0, 1, 0) or dim2(1, 0, 0, 0),
             AutomaticSize = options.fill_parent and Enum.AutomaticSize.None or Enum.AutomaticSize.Y,
             BorderSizePixel = 0,
-            BackgroundColor3 = themes.preset.inline
-        }) library:apply_theme(section, "inline", "BackgroundColor3") 
+            BackgroundColor3 = themes.preset.outline
+        }) library:apply_theme(section, "outline", "BackgroundColor3") 
 
         library:create("UIPadding", {
             Parent = section,
@@ -3506,8 +3506,8 @@ local config_holder
             Size = dim2(1, -2, options.fill_parent and 1 or 0, options.fill_parent and -2 or 0),
             AutomaticSize = options.fill_parent and Enum.AutomaticSize.None or Enum.AutomaticSize.Y,
             BorderSizePixel = 0,
-            BackgroundColor3 = themes.preset.outline
-        }) library:apply_theme(inline, "outline", "BackgroundColor3") 
+            BackgroundColor3 = themes.preset.inline
+        }) library:apply_theme(inline, "inline", "BackgroundColor3") 
 
         library:create("UIPadding", {
             Parent = inline,
