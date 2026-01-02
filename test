@@ -3495,7 +3495,7 @@ local config_holder
 
         library:create("UIPadding", {
             Parent = section,
-            PaddingBottom = options.hide_border and dim(0, 0) or dim(0, 2)
+            PaddingBottom = options.hide_border and dim(0, 0) or dim(0, 1)
         })
 
         local inline = library:create("Frame", {
@@ -3511,7 +3511,7 @@ local config_holder
 
         library:create("UIPadding", {
             Parent = inline,
-            PaddingBottom = options.hide_border and dim(0, 0) or dim(0, 2)
+            PaddingBottom = options.hide_border and dim(0, 0) or dim(0, 1)
         })
 
         local background = library:create("Frame", {
