@@ -2246,7 +2246,7 @@ local config_holder
             local items = esp_preview.items
             
             local column = setmetatable(items, library):column() 
-            window.esp_section = column:section({name = "Main"})
+            window.esp_section = column:section({name = "Main", hide_accent = true})
             flags["Enabled"] = flags["Enabled"] ~= nil and flags["Enabled"] or true
             flags["Name_Color"] = flags["Name_Color"] or { Color = Color3.fromRGB(255,255,255) }
             flags["Distance_Color"] = flags["Distance_Color"] or { Color = Color3.fromRGB(255,255,255) }
@@ -3547,7 +3547,8 @@ local config_holder
             BorderColor3 = rgb(0, 0, 0),
             Size = dim2(1, 0, 0, 2),
             BorderSizePixel = 0,
-            BackgroundColor3 = themes.preset.accent
+            BackgroundColor3 = themes.preset.accent,
+            Visible = not options.hide_accent
         }) library:apply_theme(accent, "accent", "BackgroundColor3") 
 
         local UIGradient = library:create("UIGradient", {
