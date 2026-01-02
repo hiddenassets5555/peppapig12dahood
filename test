@@ -2241,7 +2241,7 @@ local config_holder
                 position = dim2(0, style.items.main_holder.AbsolutePosition.X, 0, style.items.main_holder.AbsolutePosition.Y + style.items.main_holder.AbsoluteSize.Y + 2),
                 image = "rbxassetid://77684377836328",
                 open = false,
-            })  
+            }) window.esp_preview_panel = esp_preview
             
             local items = esp_preview.items
             
@@ -3206,6 +3206,10 @@ local config_holder
             button:FindFirstChildOfClass("TextLabel").Underline.Visible = true
 
             library.current_tab[2].Visible = true 
+
+            if self.esp_preview_panel and self.esp_preview_panel.items and self.esp_preview_panel.items.sgui then
+                self.esp_preview_panel.items.sgui.Enabled = (cfg.name == "Players")
+            end
 
             if library.current_element_open and library.current_element_open ~= cfg then 
                 library.current_element_open.set_visible(false)
