@@ -2084,8 +2084,25 @@ local config_holder
 
             local items = style.items
 
-            local column = setmetatable(items, library):column() 
-            local section = column:section({name = "Theme"})
+            -- Multi-column layout setup
+            library:create("UIListLayout", {
+                Parent = items.holder,
+                FillDirection = Enum.FillDirection.Horizontal,
+                Padding = dim(0, 10),
+                SortOrder = Enum.SortOrder.LayoutOrder
+            })
+
+            local col1 = setmetatable(items, library):column()
+            col1.holder.Size = dim2(0.33, -6, 1, 0)
+            
+            local col2 = setmetatable(items, library):column()
+            col2.holder.Size = dim2(0.33, -6, 1, 0)
+            
+            local col3 = setmetatable(items, library):column()
+            col3.holder.Size = dim2(0.33, -6, 1, 0)
+
+            -- Column 1: Theme
+            local section = col1:section({name = "Theme"})
             section:label({name = "Accent"})
             :colorpicker({name = "Accent", color = themes.preset.accent, flag = "accent", callback = function(color, alpha)
                 library:update_theme("accent", color)
@@ -2128,12 +2145,14 @@ local config_holder
             :colorpicker({name = "Glow", color = themes.preset.glow, callback = function(color, alpha)
                 library:update_theme("glow", color)
             end, flag = "Glow"})
+
+            -- Column 2: Other Settings
+            local section = col2:section({name = "Settings"})
             section:slider({name = "Blur Size", flag = "Blur Size", min = 0, max = 56, default = 10, interval = 1, callback = function(int)
                 if window.opened then 
                     blur.Size = int
                 end
             end})
-            local section = column:section({name = "Other"})
             section:label({name = "UI Bind"})
             :keybind({callback = window.set_menu_visibility, key = Enum.KeyCode.Z})
             section:toggle({name = "Keybind List", flag = "keybind_list", default = true, callback = function(bool)
@@ -2144,6 +2163,9 @@ local config_holder
             end})
             library.keybind_list_frame.Visible = true
             watermark.set_visible(false)
+
+            -- Column 3: Actions
+            local section = col3:section({name = "Actions"})
             section:button_holder({})
             section:button({name = "Copy JobId", callback = function()
                 setclipboard(game.JobId)
@@ -2182,14 +2204,31 @@ local config_holder
             }) 
 
             local items = configurations.items
+            
+            -- Multi-column layout setup
+            library:create("UIListLayout", {
+                Parent = items.holder,
+                FillDirection = Enum.FillDirection.Horizontal,
+                Padding = dim(0, 10),
+                SortOrder = Enum.SortOrder.LayoutOrder
+            })
+            
+            local col1 = setmetatable(items, library):column()
+            col1.holder.Size = dim2(0.5, -5, 1, 0)
+            
+            local col2 = setmetatable(items, library):column()
+            col2.holder.Size = dim2(0.5, -5, 1, 0)
 
             getgenv().load_config = function(name)
                 library:load_config(readfile(library.directory .. "/configs/" .. name .. ".cfg"))
             end 
 
-            local column = setmetatable(items, library):column() 
-            local section = column:section({name = "Options"})
+            -- Column 1: Config List
+            local section = col1:section({name = "Configs"})
                 config_holder = section:list({flag = "config_name_list"})
+
+            -- Column 2: Options
+            local section = col2:section({name = "Options"})
                 section:textbox({flag = "config_name_text_box"})
                 section:button_holder({})
                 section:button({name = "Create", callback = function()
@@ -2237,27 +2276,45 @@ local config_holder
             local esp_preview = library:panel({
                 name = "ESP Preview", 
                 anchor_point = vec2(0, 0),
-                size = dim2(0, 300, 0, 325),
-                position = dim2(0, style.items.main_holder.AbsolutePosition.X, 0, style.items.main_holder.AbsolutePosition.Y + style.items.main_holder.AbsoluteSize.Y + 2),
+                size = dim2(1, 0, 1, 0),
+                position = dim2(0, 0, 0, 0),
                 image = "rbxassetid://77684377836328",
                 open = false,
             })  
             
             local items = esp_preview.items
             
-            local column = setmetatable(items, library):column() 
-            window.esp_section = column:section({name = "Main"})
+            library:create("UIListLayout", {
+                Parent = items.holder,
+                FillDirection = Enum.FillDirection.Horizontal,
+                Padding = dim(0, 10),
+                SortOrder = Enum.SortOrder.LayoutOrder
+            })
+
+            local col1 = setmetatable(items, library):column()
+            col1.holder.Size = dim2(0.6, -5, 1, 0)
+            
+            local col2 = setmetatable(items, library):column()
+            col2.holder.Size = dim2(0.4, -5, 1, 0)
+
+            -- Column 1: Preview
+            local section_preview = col1:section({name = "Preview"})
             flags["Enabled"] = flags["Enabled"] ~= nil and flags["Enabled"] or true
             flags["Name_Color"] = flags["Name_Color"] or { Color = Color3.fromRGB(255,255,255) }
             flags["Distance_Color"] = flags["Distance_Color"] or { Color = Color3.fromRGB(255,255,255) }
             flags["Weapon_Color"] = flags["Weapon_Color"] or { Color = Color3.fromRGB(255,255,255) }
             flags["Health_Low"] = flags["Health_Low"] or { Color = Color3.fromRGB(255, 0, 0) }
             flags["Health_High"] = flags["Health_High"] or { Color = Color3.fromRGB(0, 255, 0) }
-            local espPreview = window.esp_section:esp_preview({})
+            
+            local espPreview = section_preview:esp_preview({})
             window.esp_preview = espPreview
             if espPreview and espPreview.items and espPreview.items.viewportframe then
                 espPreview.items.viewportframe.Visible = true
             end
+            
+            -- Column 2: Settings (Empty for now, but ready for future settings or if we want to move some flags controls here later)
+            window.esp_section = col2:section({name = "Settings"})
+            
             espPreview.refresh_elements()
         
 
@@ -2273,10 +2330,24 @@ local config_holder
             
             local items = playerlist.items
 
-            local column = setmetatable(items, library):column() 
-            local section = column:section({name = "Playerlist"})
-            local playerlist_element = section:playerlist({})
-            section:dropdown({name = "Priority", items = {"Enemy", "Priority", "Neutral", "Friendly"}, default = "Neutral", flag = "PLAYERLIST_DROPDOWN", callback = function(text)
+            library:create("UIListLayout", {
+                Parent = items.holder,
+                FillDirection = Enum.FillDirection.Horizontal,
+                Padding = dim(0, 10),
+                SortOrder = Enum.SortOrder.LayoutOrder
+            })
+
+            local col1 = setmetatable(items, library):column()
+            col1.holder.Size = dim2(0.6, -5, 1, 0)
+            
+            local col2 = setmetatable(items, library):column()
+            col2.holder.Size = dim2(0.4, -5, 1, 0)
+
+            local section_list = col1:section({name = "Players"})
+            local playerlist_element = section_list:playerlist({})
+
+            local section_settings = col2:section({name = "Settings"})
+            section_settings:dropdown({name = "Priority", items = {"Enemy", "Priority", "Neutral", "Friendly"}, default = "Neutral", flag = "PLAYERLIST_DROPDOWN", callback = function(text)
                 library.prioritize(text)
             end})
 
@@ -6262,11 +6333,11 @@ local config_holder
                 BorderColor3 = rgb(0, 0, 0),
                 Text = "",
                 ZIndex = 2,
-                Size = dim2(1, -8, 0, 12),
+                Size = dim2(1, -8, 1, 0),
                 BorderSizePixel = 0,
                 BackgroundTransparency = 1,
                 TextXAlignment = Enum.TextXAlignment.Left,
-                AutomaticSize = Enum.AutomaticSize.Y,
+                AutomaticSize = Enum.AutomaticSize.None,
                 TextYAlignment = Enum.TextYAlignment.Top,
                 TextSize = 12,
                 BackgroundColor3 = rgb(255, 255, 255)
@@ -6288,7 +6359,7 @@ local config_holder
                 Parent = playerlist_holder,
                 Name = "",
                 BorderColor3 = rgb(0, 0, 0),
-                Size = dim2(1, 26, 0, 0),
+                Size = dim2(1, 26, 1, 0),
                 BorderSizePixel = 0,
                 BackgroundColor3 = rgb(255, 255, 255)
             })
@@ -6305,7 +6376,7 @@ local config_holder
                 Name = "",
                 Position = dim2(0, 0, 0, 2),
                 BorderColor3 = rgb(0, 0, 0),
-                Size = dim2(1, -27, 1, 232),
+                Size = dim2(1, -27, 1, 0),
                 BorderSizePixel = 0,
                 BackgroundColor3 = themes.preset.outline
             }) library:apply_theme(list, "outline", "BackgroundColor3") 
