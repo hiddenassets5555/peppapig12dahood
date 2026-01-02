@@ -2246,7 +2246,7 @@ local config_holder
             local items = esp_preview.items
             
             local column = setmetatable(items, library):column() 
-            window.esp_section = column:section({name = "Main", hide_accent = true})
+            window.esp_section = column:section({name = "Main", hide_accent = true, hide_border = true})
             flags["Enabled"] = flags["Enabled"] ~= nil and flags["Enabled"] or true
             flags["Name_Color"] = flags["Name_Color"] or { Color = Color3.fromRGB(255,255,255) }
             flags["Distance_Color"] = flags["Distance_Color"] or { Color = Color3.fromRGB(255,255,255) }
@@ -3491,7 +3491,7 @@ local config_holder
 
         library:create("UIPadding", {
             Parent = section,
-            PaddingBottom = dim(0, 2)
+            PaddingBottom = options.hide_border and dim(0, 0) or dim(0, 2)
         })
 
         local inline = library:create("Frame", {
@@ -3507,7 +3507,7 @@ local config_holder
 
         library:create("UIPadding", {
             Parent = inline,
-            PaddingBottom = dim(0, 2)
+            PaddingBottom = options.hide_border and dim(0, 0) or dim(0, 2)
         })
 
         local background = library:create("Frame", {
