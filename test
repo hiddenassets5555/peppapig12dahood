@@ -2246,8 +2246,8 @@ local config_holder
             local items = esp_preview.items
             
             local column = setmetatable(items, library):column() 
-            window.esp_section = column:section({name = "Main", hide_accent = true, hide_border = true, fill_parent = true})
-            flags["Enabled"] = flags["Enabled"] ~= nil and flags["Enabled"] or true
+    window.esp_section = column:section({name = "Main", hide_accent = true, fill_parent = true})
+    flags["Enabled"] = flags["Enabled"] ~= nil and flags["Enabled"] or true
             flags["Name_Color"] = flags["Name_Color"] or { Color = Color3.fromRGB(255,255,255) }
             flags["Distance_Color"] = flags["Distance_Color"] or { Color = Color3.fromRGB(255,255,255) }
             flags["Weapon_Color"] = flags["Weapon_Color"] or { Color = Color3.fromRGB(255,255,255) }
@@ -3577,12 +3577,12 @@ local config_holder
             Parent = background,
             ScrollBarImageColor3 = themes.preset.accent,
             Active = true,
-            AutomaticSize = Enum.AutomaticSize.Y,
+            AutomaticSize = options.fill_parent and Enum.AutomaticSize.None or Enum.AutomaticSize.Y,
             ScrollBarThickness = 2,
             MidImage = "rbxassetid://103468666327206",
             TopImage = "rbxassetid://103468666327206",
             BottomImage = "rbxassetid://103468666327206",
-            Size = dim2(1, 0, 0, 0),
+            Size = options.fill_parent and dim2(1, 0, 1, -20) or dim2(1, 0, 0, 0),
             BackgroundTransparency = 1,
             Position = dim2(0, 0, 0, 20),
             BackgroundColor3 = rgb(255, 255, 255),
