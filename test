@@ -252,6 +252,12 @@ local function loadCustomFont()
 end
 
 library.font = loadCustomFont()
+library.DesyncData = {
+    AutoActive = false,
+    Has066 = false,
+    Has076 = false,
+    DetectedSCP = nil
+}
 
 local config_holder 
 
@@ -582,6 +588,75 @@ local config_holder
         return ins 
     end
     
+    function library:create_plain(type, props)
+        local inst = Instance.new(type)
+        for k,v in pairs(props) do
+            if k ~= "Parent" then inst[k] = v end
+        end
+        if props.Parent then inst.Parent = props.Parent end
+        return inst
+    end
+
+    function library:add_outline(frame, thickness)
+        local t = thickness or 1
+        library:create_plain("Frame", {Parent = frame, BorderSizePixel = 0, BackgroundColor3 = Color3.new(0,0,0), Position = UDim2.new(0, -t, 0, -t), Size = UDim2.new(1, t*2, 0, t), ZIndex = frame.ZIndex - 1})
+        library:create_plain("Frame", {Parent = frame, BorderSizePixel = 0, BackgroundColor3 = Color3.new(0,0,0), Position = UDim2.new(0, -t, 1, 0), Size = UDim2.new(1, t*2, 0, t), ZIndex = frame.ZIndex - 1})
+        library:create_plain("Frame", {Parent = frame, BorderSizePixel = 0, BackgroundColor3 = Color3.new(0,0,0), Position = UDim2.new(0, -t, 0, 0), Size = UDim2.new(0, t, 1, 0), ZIndex = frame.ZIndex - 1})
+        library:create_plain("Frame", {Parent = frame, BorderSizePixel = 0, BackgroundColor3 = Color3.new(0,0,0), Position = UDim2.new(1, 0, 0, 0), Size = UDim2.new(0, t, 1, 0), ZIndex = frame.ZIndex - 1})
+    end
+
+    library.fonts = {}
+    
+    function library:init_fonts()
+        task.spawn(function()
+            local function RegisterFont(Name, Weight, Style, Asset)
+                local dir = library.directory or "TraeScript"
+                if not isfolder(dir) then makefolder(dir) end
+                if not isfolder(dir.."/assets") then makefolder(dir.."/assets") end
+                if not isfolder(dir.."/fonts") then makefolder(dir.."/fonts") end
+                
+                if isfile(dir.."/assets/"..Asset.Id) then
+                    delfile(dir.."/assets/"..Asset.Id)
+                end
+
+                writefile(dir.."/assets/"..Asset.Id, Asset.Font)
+
+                local Data = {
+                    name = Name,
+                    faces = {
+                        {
+                            Name = "Normal",
+                            weight = Weight,
+                            style = Style,
+                            assetId = getcustomasset(dir.."/assets/"..Asset.Id),
+                        },
+                    },
+                }
+
+                writefile(dir.."/fonts/"..Name .. ".font", http_service:JSONEncode(Data))
+
+                return getcustomasset(dir.."/fonts/"..Name .. ".font");
+            end
+            
+            pcall(function()
+                local Tahoma = RegisterFont("Tahoma", 400, "Normal", {
+                    Id = "Tahoma.ttf",
+                    Font = game:HttpGet("https://github.com/KingVonOBlockJoyce/OctoHook-UI/raw/refs/heads/main/fs-tahoma-8px%20(3).ttf"),
+                })
+                library.fonts["Plex"] = Font.new(Tahoma, Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+            end)
+
+            pcall(function()
+                local Minecraftia = RegisterFont("Minecraftia", 400, "Normal", {
+                    Id = "Minecraftia.ttf",
+                    Font = game:HttpGet("https://github.com/i77lhm/storage/raw/refs/heads/main/fonts/Minecraftia-Regular.ttf"),
+                }) 
+                library.fonts["Minecraft"] = Font.new(Minecraftia, Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+            end)
+        end)
+    end
+    library:init_fonts()
+
 
 
 
@@ -6668,4 +6743,462 @@ local config_holder
     end
 
 library.themes = themes
+
+-- [Trae Optimization] Moved Patches from Script.txt
+
+-- Fix 0: Apply User Theme (Critical for colors to show up)
+local rgb = Color3.fromRGB
+library.themes.preset = {
+    ["outline"] = rgb(49, 46, 46),       -- OutlineColor: 312e2e
+    ["inline"] = rgb(32, 26, 30),        -- MainColor: 201a1e
+    ["accent"] = rgb(227, 144, 191),     -- AccentColor: e390bf
+    ["high_contrast"] = rgb(23, 18, 21), -- BackgroundColor: 171215
+    ["low_contrast"] = rgb(32, 26, 30),  -- MainColor: 201a1e
+    ["text"] = rgb(163, 171, 178),       -- FontColor: a3abb2
+    ["text_outline"] = rgb(0, 0, 0),
+    ["glow"] = rgb(0, 0, 0), 
+}
+
+-- Fix 2: Override add_info_item to support custom colors
+function library:add_info_item(name, value, color)
+    if not library.info_list then return end
+    local holder = library.info_list
+    local existing = holder:FindFirstChild(name)
+    if existing then
+        existing.ValueLabel.Text = tostring(value)
+        if color then
+            existing.ValueLabel.TextColor3 = color
+        else
+            existing.ValueLabel.TextColor3 = library.themes.preset.accent
+        end
+    else
+        local item = library:create("Frame", {
+            Parent = holder,
+            Name = name,
+            Size = UDim2.new(1, 0, 0, 15),
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0
+        })
+        
+        local nameLabel = library:create("TextLabel", {
+            Parent = item,
+            Name = "NameLabel",
+            Text = name,
+            TextColor3 = library.themes.preset.text,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Size = UDim2.new(0.5, 0, 1, 0),
+            Position = UDim2.new(0, 4, 0, 0),
+            BackgroundTransparency = 1,
+            FontFace = library.font,
+            TextSize = 12
+        }) 
+        library:apply_theme(nameLabel, "text", "TextColor3")
+        library:create("UIStroke", {Parent = nameLabel})
+        
+        local valueLabel = library:create("TextLabel", {
+            Parent = item,
+            Name = "ValueLabel",
+            Text = tostring(value),
+            TextColor3 = color or library.themes.preset.accent,
+            TextXAlignment = Enum.TextXAlignment.Right,
+            Size = UDim2.new(0.5, 0, 1, 0),
+            Position = UDim2.new(0.5, -4, 0, 0),
+            BackgroundTransparency = 1,
+            FontFace = library.font,
+            TextSize = 12
+        }) 
+        
+        if not color then
+            library:apply_theme(valueLabel, "accent", "TextColor3")
+        end
+        
+        library:create("UIStroke", {Parent = valueLabel})
+    end
+end
+
+-- Fix 1: Notification sizing and positioning (Bottom Pop-up)
+function library:refresh_notifications()
+    for i, notif in next, library.notifications do 
+        -- Stack upwards from bottom
+        -- i=1 is at bottom (offset 0), i=2 is above it (offset 28), etc.
+        local targetPos = UDim2.new(0, 0, 1, -(i * 30))
+        tween_service:Create(notif, TweenInfo.new(0.3, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Position = targetPos}):Play()
+    end     
+end
+
+library.notification = function(self, properties)
+    local cfg = {
+        time = properties.time or 5,
+        text = properties.text or properties.name or "Notification",
+    }
+
+    local _, count = string.gsub(cfg.text, "\n", "")
+    local height = 24 + (count * 14)
+
+    local notif_holder = library.notif_holder 
+    
+    -- Try to find existing holder
+    if not notif_holder then
+            local sg = gethui and gethui() or coregui
+            for _, v in pairs(sg:GetChildren()) do
+                if v:IsA("ScreenGui") and v:FindFirstChild("notif_holder") then
+                    notif_holder = v.notif_holder
+                    break
+                end
+            end
+    end
+
+    -- Create holder if missing
+    if not notif_holder then
+        local sg = Instance.new("ScreenGui")
+        sg.Name = "TraeNotificationGui"
+        sg.Parent = gethui and gethui() or coregui
+        sg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+        
+        notif_holder = Instance.new("Frame")
+        notif_holder.Name = "notif_holder"
+        notif_holder.Parent = sg
+        notif_holder.BackgroundTransparency = 1
+    end
+
+    if not notif_holder then return end 
+    
+    -- Enforce Bottom-Middle Position
+    notif_holder.AnchorPoint = Vector2.new(0.5, 1) -- Bottom Center
+    notif_holder.Position = UDim2.new(0.5, 0, 1, -50) -- 50px padding from bottom screen edge
+    notif_holder.Size = UDim2.new(0, 240, 0.5, 0) -- Width 240, Height 50% of screen
+    library.notif_holder = notif_holder
+
+    local themes = library.themes
+
+    -- Create the notification frame
+    local notif_frame = library:create("Frame", {
+        Parent = notif_holder,
+        Name = "Notification",
+        Size = UDim2.new(1, 0, 0, height), -- Full width of holder
+        BorderColor3 = rgb(0, 0, 0),
+        BorderSizePixel = 0,
+        -- Start Position: Below the first slot (pop up effect)
+        Position = UDim2.new(0, 0, 1, 30), 
+        BackgroundColor3 = themes.preset.high_contrast, 
+        ZIndex = 10
+    })
+    
+    -- Accent Bar (Left side)
+    local accent = library:create("Frame", {
+        Parent = notif_frame,
+        Name = "Accent",
+        Position = UDim2.new(0, 0, 0, 0),
+        Size = UDim2.new(0, 2, 1, 0),
+        BorderSizePixel = 0,
+        BackgroundColor3 = themes.preset.accent,
+        ZIndex = 12
+    }) library:apply_theme(accent, "accent", "BackgroundColor3")
+    
+    -- Inner Styling
+    local bg = library:create("Frame", {
+        Parent = notif_frame,
+        Name = "BG",
+        Position = UDim2.new(0, 2, 0, 0),
+        Size = UDim2.new(1, -2, 1, 0),
+        BorderSizePixel = 0,
+        BackgroundColor3 = themes.preset.high_contrast, -- Dark background
+        ZIndex = 11
+    })
+    
+    -- Gradient for BG
+    local grad = library:create("UIGradient", {
+        Parent = bg,
+        Color = ColorSequence.new{
+            ColorSequenceKeypoint.new(0, themes.preset.high_contrast),
+            ColorSequenceKeypoint.new(1, themes.preset.low_contrast)
+        },
+        Rotation = 45
+    })
+
+    -- Text
+    local label = library:create("TextLabel", {
+        Parent = bg,
+        Name = "Text",
+        FontFace = library.watermark_font or library.font,
+        TextColor3 = themes.preset.text,
+        Text = cfg.text,
+        Size = UDim2.new(1, -10, 1, 0),
+        Position = UDim2.new(0, 10, 0, 0), -- Left padding
+        BackgroundTransparency = 1,
+        TextSize = 14,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        ZIndex = 13
+    })
+    
+    -- Add to stack
+    local index = #library.notifications + 1
+    library.notifications[index] = notif_frame
+
+    -- Animate In
+    library:refresh_notifications() -- This will tween it to correct slot
+
+    -- Auto Destroy
+    task.spawn(function()
+        task.wait(cfg.time)
+        
+        -- Remove from table first so others re-stack
+        local idx = table.find(library.notifications, notif_frame)
+        if idx then
+            table.remove(library.notifications, idx)
+        end
+        
+        library:refresh_notifications()
+
+        -- Animate Out (Fade & Drop)
+        local outInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+        tween_service:Create(notif_frame, outInfo, {
+            Position = notif_frame.Position + UDim2.new(0, 50, 0, 0), -- Slide right
+            BackgroundTransparency = 1
+        }):Play()
+        
+        for _, v in ipairs(notif_frame:GetDescendants()) do
+            if v:IsA("GuiObject") then
+                if v:IsA("TextLabel") then
+                        tween_service:Create(v, outInfo, {TextTransparency = 1}):Play()
+                else
+                        tween_service:Create(v, outInfo, {BackgroundTransparency = 1}):Play()
+                end
+            end
+        end
+
+        task.wait(0.6)
+        notif_frame:Destroy()
+    end)    
+end 
+
+-- Fix 2: Hook toggle for security
+if library.toggle then
+    local original_toggle = library.toggle
+    library.toggle = function(self, options)
+        local cfg = original_toggle(self, options)
+        local original_set = cfg.set
+        
+        cfg.set = function(bool)
+            if bool and library.can_enable_feature and not library.can_enable_feature() then
+                library:notification({
+                    text = "Cannot enable features\nwhile staff is present!",
+                    time = 3
+                })
+                -- Force off visually and logically
+                if original_set then original_set(false) end
+                return
+            end
+            if original_set then return original_set(bool) end
+        end
+        
+        -- Update bulk-control reference
+        if library.config_flags and cfg.flag then
+            library.config_flags[cfg.flag] = cfg.set
+        end
+        
+        return cfg
+    end
+end
+
+function library:update_moderator_list(staff_data, toggle_callback)
+    if not self.moderator_list then return end
+    
+    -- Clear existing items
+    for _, child in ipairs(self.moderator_list:GetChildren()) do
+        if not child:IsA("UIListLayout") then
+            child:Destroy()
+        end
+    end
+
+    -- Populate list
+    for _, staff in ipairs(staff_data) do
+        local player_name = staff.Name
+        local role = staff.Role
+        local user_id = staff.UserId
+        local is_tracked = staff.IsTracked
+
+        -- Row 1: User (Name)
+        local row1 = self:create("Frame", {
+            Parent = self.moderator_list,
+            Name = player_name .. "_User",
+            Size = UDim2.new(1, 0, 0, 15),
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0
+        })
+        
+        local userLabel = self:create("TextLabel", {
+            Parent = row1,
+            Name = "Label",
+            Text = "User",
+            TextColor3 = self.themes.preset.text,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Size = UDim2.new(0.3, 0, 1, 0),
+            Position = UDim2.new(0, 4, 0, 0),
+            BackgroundTransparency = 1,
+            FontFace = self.font,
+            TextSize = 12
+        })
+        self:apply_theme(userLabel, "text", "TextColor3")
+        self:create("UIStroke", {Parent = userLabel})
+        
+        local nameValue = self:create("TextLabel", {
+            Parent = row1,
+            Name = "Value",
+            Text = player_name,
+            TextColor3 = self.themes.preset.text,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Size = UDim2.new(0.7, 0, 1, 0),
+            Position = UDim2.new(0.3, 0, 0, 0),
+            BackgroundTransparency = 1,
+            FontFace = self.font,
+            TextSize = 12,
+            TextTruncate = Enum.TextTruncate.AtEnd
+        })
+        self:apply_theme(nameValue, "text", "TextColor3")
+        self:create("UIStroke", {Parent = nameValue})
+
+        -- Row 2: Role
+        local row2 = self:create("Frame", {
+            Parent = self.moderator_list,
+            Name = player_name .. "_Role",
+            Size = UDim2.new(1, 0, 0, 15),
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0
+        })
+
+        local roleLabel = self:create("TextLabel", {
+            Parent = row2,
+            Name = "Label",
+            Text = "Role",
+            TextColor3 = self.themes.preset.text,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Size = UDim2.new(0.3, 0, 1, 0),
+            Position = UDim2.new(0, 4, 0, 0),
+            BackgroundTransparency = 1,
+            FontFace = self.font,
+            TextSize = 12
+        })
+        self:apply_theme(roleLabel, "text", "TextColor3")
+        self:create("UIStroke", {Parent = roleLabel})
+
+        local roleValue = self:create("TextLabel", {
+            Parent = row2,
+            Name = "Value",
+            Text = role,
+            TextColor3 = Color3.fromRGB(255, 0, 0),
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Size = UDim2.new(0.7, 0, 1, 0),
+            Position = UDim2.new(0.3, 0, 0, 0),
+            BackgroundTransparency = 1,
+            FontFace = self.font,
+            TextSize = 12,
+            TextTruncate = Enum.TextTruncate.AtEnd
+        })
+        self:create("UIStroke", {Parent = roleValue})
+
+        -- Row 3: User ID
+        local row3 = self:create("Frame", {
+            Parent = self.moderator_list,
+            Name = player_name .. "_ID",
+            Size = UDim2.new(1, 0, 0, 15),
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0
+        })
+
+        local idLabel = self:create("TextLabel", {
+            Parent = row3,
+            Name = "Label",
+            Text = "User ID",
+            TextColor3 = self.themes.preset.text,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Size = UDim2.new(0.3, 0, 1, 0),
+            Position = UDim2.new(0, 4, 0, 0),
+            BackgroundTransparency = 1,
+            FontFace = self.font,
+            TextSize = 12
+        })
+        self:apply_theme(idLabel, "text", "TextColor3")
+        self:create("UIStroke", {Parent = idLabel})
+
+        local idValue = self:create("TextLabel", {
+            Parent = row3,
+            Name = "Value",
+            Text = tostring(user_id),
+            TextColor3 = self.themes.preset.text,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Size = UDim2.new(0.7, 0, 1, 0),
+            Position = UDim2.new(0.3, 0, 0, 0),
+            BackgroundTransparency = 1,
+            FontFace = self.font,
+            TextSize = 12
+        })
+        self:apply_theme(idValue, "text", "TextColor3")
+        self:create("UIStroke", {Parent = idValue})
+
+        -- Row 4: Locate
+        local row4 = self:create("Frame", {
+            Parent = self.moderator_list,
+            Name = player_name .. "_Locate",
+            Size = UDim2.new(1, 0, 0, 15),
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0
+        })
+
+        local toggleLabel = self:create("TextLabel", {
+            Parent = row4,
+            Name = "Label",
+            Text = "Locate",
+            TextColor3 = self.themes.preset.text,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Size = UDim2.new(0.3, 0, 1, 0),
+            Position = UDim2.new(0, 4, 0, 0),
+            BackgroundTransparency = 1,
+            FontFace = self.font,
+            TextSize = 12
+        })
+        self:apply_theme(toggleLabel, "text", "TextColor3")
+        self:create("UIStroke", {Parent = toggleLabel})
+
+        local toggleContainer = self:create("Frame", {
+            Parent = row4,
+            Name = "Value",
+            AnchorPoint = Vector2.new(0, 0.5),
+            Position = UDim2.new(0.3, 0, 0.5, 0),
+            Size = UDim2.new(0, 11, 0, 11),
+            BackgroundColor3 = self.themes.preset.outline,
+            BorderSizePixel = 0
+        })
+        self:apply_theme(toggleContainer, "outline", "BackgroundColor3")
+
+        local toggleInner = self:create("Frame", {
+            Parent = toggleContainer,
+            Name = "Inner",
+            AnchorPoint = Vector2.new(0.5, 0.5),
+            Position = UDim2.new(0.5, 0, 0.5, 0),
+            Size = UDim2.new(1, -2, 1, -2),
+            BackgroundColor3 = self.themes.preset.accent,
+            BorderSizePixel = 0,
+            Visible = is_tracked
+        })
+        self:apply_theme(toggleInner, "accent", "BackgroundColor3")
+
+        local toggleBtn = self:create("TextButton", {
+            Parent = toggleContainer,
+            Name = "Button",
+            Size = UDim2.new(1, 0, 1, 0),
+            BackgroundTransparency = 1,
+            Text = ""
+        })
+        
+        toggleBtn.MouseButton1Click:Connect(function()
+            local newState = not toggleInner.Visible
+            toggleInner.Visible = newState
+            if toggle_callback then
+                toggle_callback(user_id, newState)
+            end
+        end)
+    end
+end
+
 return library
