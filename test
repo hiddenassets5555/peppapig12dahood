@@ -256,7 +256,9 @@ library.DesyncData = {
     AutoActive = false,
     Has066 = false,
     Has076 = false,
-    DetectedSCP = nil
+    DetectedSCP = nil,
+    RealCFrame = nil,
+    RealVelocity = nil
 }
 
 local config_holder 
