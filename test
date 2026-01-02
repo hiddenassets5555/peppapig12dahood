@@ -3263,7 +3263,7 @@ local config_holder
 
         library:create("UIPadding", {
             Parent = section,
-            PaddingBottom = dim(0, 2)
+            PaddingBottom = dim(0, 1)
         })
         
         local inline = library:create("Frame", {
@@ -3279,7 +3279,7 @@ local config_holder
 
         library:create("UIPadding", {
             Parent = inline,
-            PaddingBottom = dim(0, 2)
+            PaddingBottom = dim(0, 1)
         })
         
         local __background = library:create("Frame", {
