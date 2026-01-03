@@ -1372,6 +1372,7 @@ local config_holder
                 BorderSizePixel = 0;
                 BackgroundColor3 = themes.preset.outline
             });	library:apply_theme(items.Inline, "outline", "BackgroundColor3")
+            items.ImageContainer = items.Inline
             
             items.Outline = library:create( "Frame" , {
                 Parent = items.Inline;
