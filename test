@@ -2463,7 +2463,8 @@ local config_holder
             Name = "",
             Position = dim2(0, 1, 0, 1),
             BorderColor3 = rgb(0, 0, 0),
-            Size = dim2(1, -2, 1, -2),
+            Size = dim2(0, 0, 1, -2),
+            AutomaticSize = Enum.AutomaticSize.X,
             BorderSizePixel = 0,
             BackgroundColor3 = themes.preset.inline
         }) library:apply_theme(watermark_inline, "inline", "BackgroundColor3") 
@@ -2473,7 +2474,8 @@ local config_holder
             Name = "",
             Position = dim2(0, 1, 0, 1),
             BorderColor3 = rgb(0, 0, 0),
-            Size = dim2(1, -2, 1, -2),
+            Size = dim2(0, 0, 1, -2),
+            AutomaticSize = Enum.AutomaticSize.X,
             BorderSizePixel = 0,
             BackgroundColor3 = rgb(255, 255, 255)
         })
