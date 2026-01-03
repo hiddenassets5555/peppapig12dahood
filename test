@@ -4341,15 +4341,19 @@ local config_holder
             local section = setmetatable(cfg, library)
             section:button_holder({})
             section:button({name = "Copy", callback = function()
-                local color = flags[cfg.flag]
-                if type(color) == "table" and color.Color then
-                   color = color.Color
+                local colorData = flags[cfg.flag]
+                local color = colorData
+                local alpha = 1
+
+                if type(colorData) == "table" and colorData.Color then
+                   color = colorData.Color
+                   alpha = colorData.Transparency
                 end
                 
                 local r = math.floor(color.R * 255)
                 local g = math.floor(color.G * 255)
                 local b = math.floor(color.B * 255)
-                local colorStr = string.format("%d, %d, %d", r, g, b)
+                local colorStr = string.format("%d, %d, %d, %.5f", r, g, b, alpha)
                 
                 if setclipboard then
                     setclipboard(colorStr)
