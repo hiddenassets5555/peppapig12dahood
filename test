@@ -1401,7 +1401,7 @@ local config_holder
                 Name = "\0";
                 Size = dim2(1, 0, 1, 0);
                 BorderSizePixel = 0;
-                ScaleType = Enum.ScaleType.Fit;
+                ScaleType = Enum.ScaleType.Crop;
                 ClipsDescendants = true;
             });	
             library:create("UIAspectRatioConstraint", {
