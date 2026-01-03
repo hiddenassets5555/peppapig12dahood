@@ -1368,7 +1368,7 @@ local config_holder
                 Name = "\0";
                 Position = dim2(0, 10, 0, 28);
                 BorderColor3 = rgb(0, 0, 0);
-                Size = dim2(0, 68, 0, 67);
+                Size = dim2(0, 68, 0, 68);
                 BorderSizePixel = 0;
                 BackgroundColor3 = themes.preset.outline
             });	library:apply_theme(items.Inline, "outline", "BackgroundColor3")
@@ -1401,7 +1401,14 @@ local config_holder
                 Name = "\0";
                 Size = dim2(1, 0, 1, 0);
                 BorderSizePixel = 0;
+                ScaleType = Enum.ScaleType.Fit;
+                ClipsDescendants = true;
             });	
+            library:create("UIAspectRatioConstraint", {
+                Parent = items.Profile,
+                AspectRatio = 1,
+                DominantAxis = Enum.DominantAxis.Width
+            })
 
             local section = setmetatable(items, library)
             items.label = section:label({name = "Player: "})
