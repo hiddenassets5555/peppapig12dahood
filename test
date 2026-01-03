@@ -1197,8 +1197,8 @@ local config_holder
                 BorderColor3 = rgb(0, 0, 0);
                 Size = dim2(1, -2, 1, -2);
                 BorderSizePixel = 0;
-                BackgroundColor3 = themes.preset.outline
-            });	library:apply_theme(items.Accent, "outline", "BackgroundColor3")
+                BackgroundColor3 = themes.preset.accent
+            });	library:apply_theme(items.Accent, "accent", "BackgroundColor3")
             
             items.Background = library:create( "Frame" , {
                 Parent = items.Accent;
@@ -1326,9 +1326,9 @@ local config_holder
                 Parent = items.LowContrast;
                 BorderColor3 = rgb(0, 0, 0);
                 Size = dim2(1, 0, 0, 2);
-                BackgroundColor3 = themes.preset.outline;
+                BackgroundColor3 = themes.preset.accent;
                 BorderSizePixel = 0;
-            });	library:apply_theme(items.Accent, "outline", "BackgroundColor3");
+            });	library:apply_theme(items.Accent, "accent", "BackgroundColor3");
             
             items.Shadow = library:create( "Frame" , {
                 AnchorPoint = vec2(0, 1);
