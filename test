@@ -2212,7 +2212,7 @@ local config_holder
             end})
             local section = column:section({name = "Other"})
             section:label({name = "UI Bind"})
-            :keybind({callback = window.set_menu_visibility, key = Enum.KeyCode.Z})
+            :keybind({callback = window.set_menu_visibility, key = getgenv().UiBindKey})
             section:toggle({name = "Keybind List", flag = "keybind_list", default = true, callback = function(bool)
                 library.keybind_list_frame.Visible = bool
             end})
