@@ -1420,6 +1420,18 @@ local config_holder
             update_avatar_layout()
             items.ImageContainer:GetPropertyChangedSignal("Size"):Connect(update_avatar_layout)
 
+            local baseWindowH = 147
+            local baseAvatar = 68
+            local function update_avatar_by_window()
+                local winH = items.Window.Size.Y.Offset
+                if winH <= 0 then return end
+                local scale = winH / baseWindowH
+                local newImg = math.floor(baseAvatar * scale)
+                items.ImageContainer.Size = dim2(0, newImg, 0, newImg)
+            end
+            update_avatar_by_window()
+            items.Window:GetPropertyChangedSignal("Size"):Connect(update_avatar_by_window)
+
             local section = setmetatable(items, library)
             items.label = section:label({name = "Player: "})
             items.label.instance.TextWrapped = false
