@@ -1702,7 +1702,7 @@ local config_holder
                 AnchorPoint = vec2(0, 1),
                 Position = dim2(0, 0, 1, -10),
                 LayoutOrder = 1,
-                Visible = true,
+                Visible = false,
                 Active = true,
                 Draggable = false,
                 BorderColor3 = rgb(0, 0, 0),
