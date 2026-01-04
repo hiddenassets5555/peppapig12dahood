@@ -1699,6 +1699,8 @@ local config_holder
             local mod_outline = library:create("Frame", {
                 Parent = left_panel,
                 Name = "ModeratorList",
+                AnchorPoint = vec2(0, 1),
+                Position = dim2(0, 0, 1, -10),
                 LayoutOrder = 1,
                 Visible = true, -- Visible by default so user can see it
                 Active = true,
