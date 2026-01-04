@@ -1417,8 +1417,9 @@ local config_holder
                 items.holder.Position = dim2(0, newX, 0, 21)
                 items.holder.Size = dim2(1, -(newX + 4), 0, 0)
             end
-            update_avatar_layout()
-            items.ImageContainer:GetPropertyChangedSignal("Size"):Connect(update_avatar_layout)
+            items.ImageContainer:GetPropertyChangedSignal("Size"):Connect(function()
+                task.defer(update_avatar_layout)
+            end)
 
             local baseWindowH = 147
             local baseAvatar = 68
@@ -1432,11 +1433,30 @@ local config_holder
                 local bottomPad = 4
                 local maxImg = math.max(0, holderH - topPad - bottomPad)
                 local finalImg = math.min(newImg, maxImg)
-                items.ImageContainer.Size = dim2(0, finalImg, 0, finalImg)
+                if items.ImageContainer.Size.X.Offset ~= finalImg then
+                    items.ImageContainer.Size = dim2(0, finalImg, 0, finalImg)
+                end
             end
-            update_avatar_by_window()
-            items.Window:GetPropertyChangedSignal("Size"):Connect(update_avatar_by_window)
-            image_holder:GetPropertyChangedSignal("AbsoluteSize"):Connect(update_avatar_by_window)
+            local resizeBusy, pendingResize = false, false
+            local function schedule_resize()
+                if resizeBusy then
+                    pendingResize = true
+                    return
+                end
+                resizeBusy = true
+                task.defer(function()
+                    update_avatar_by_window()
+                    update_avatar_layout()
+                    resizeBusy = false
+                    if pendingResize then
+                        pendingResize = false
+                        schedule_resize()
+                    end
+                end)
+            end
+            schedule_resize()
+            items.Window:GetPropertyChangedSignal("Size"):Connect(schedule_resize)
+            image_holder:GetPropertyChangedSignal("AbsoluteSize"):Connect(schedule_resize)
 
             local section = setmetatable(items, library)
             items.label = section:label({name = "Player: "})
