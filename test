@@ -1688,10 +1688,10 @@ local config_holder
             local left_panel = library:create("Frame", {
                 Parent = sgui,
                 Name = "LeftPanel",
-                AnchorPoint = vec2(0, 0.5),
-                Position = dim2(0, 10, 0.5, 0),
-                Size = dim2(0, 182, 0.3, 0),
-                AutomaticSize = Enum.AutomaticSize.None,
+                AnchorPoint = vec2(0, 1),
+                Position = dim2(0, 10, 1, -10),
+                Size = dim2(0, 182, 0, 0),
+                AutomaticSize = Enum.AutomaticSize.Y,
                 BackgroundTransparency = 1,
             })
             
@@ -1702,7 +1702,7 @@ local config_holder
                 AnchorPoint = vec2(0, 1),
                 Position = dim2(0, 0, 1, -10),
                 LayoutOrder = 1,
-                Visible = false,
+                Visible = true,
                 Active = true,
                 Draggable = false,
                 BorderColor3 = rgb(0, 0, 0),
@@ -1785,7 +1785,7 @@ local config_holder
                 Size = dim2(1, 0, 1, 0),
                 BorderSizePixel = 0,
                 TextSize = 12,
-                TextXAlignment = Enum.TextXAlignment.Left,
+                TextXAlignment = Enum.TextXAlignment.Center,
                 BackgroundColor3 = themes.preset.text
             }, "text")
 
@@ -1795,11 +1795,6 @@ local config_holder
                 LineJoinMode = Enum.LineJoinMode.Miter
             })
             
-            library:create("UIPadding", {
-                Parent = mod_background,
-                Name = "",
-                PaddingLeft = dim(0, 5)
-            })
 
             local mod_list_container = library:create("Frame", {
                 Parent = mod_content,
