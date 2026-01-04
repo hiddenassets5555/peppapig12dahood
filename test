@@ -1690,7 +1690,7 @@ local config_holder
                 Name = "LeftPanel",
                 AnchorPoint = vec2(0, 0.5),
                 Position = dim2(0, 10, 0.5, 0),
-                Size = dim2(0, 182, 0.3, 0),
+                Size = dim2(0, 160, 0.3, 0),
                 AutomaticSize = Enum.AutomaticSize.None,
                 BackgroundTransparency = 1,
             })
@@ -1706,7 +1706,7 @@ local config_holder
                 Active = true,
                 Draggable = false,
                 BorderColor3 = rgb(0, 0, 0),
-                Size = dim2(1, 0, 0, 120),
+                Size = dim2(1, 0, 0, 96),
                 AutomaticSize = Enum.AutomaticSize.None,
                 BorderSizePixel = 0,
                 BackgroundColor3 = themes.preset.outline,
