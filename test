@@ -1411,6 +1411,15 @@ local config_holder
                 DominantAxis = Enum.DominantAxis.Width
             })
 
+            local function update_avatar_layout()
+                local imgSize = items.ImageContainer.Size.X.Offset
+                local newX = 10 + imgSize
+                items.holder.Position = dim2(0, newX, 0, 21)
+                items.holder.Size = dim2(1, -(newX + 4), 0, 0)
+            end
+            update_avatar_layout()
+            items.ImageContainer:GetPropertyChangedSignal("Size"):Connect(update_avatar_layout)
+
             local section = setmetatable(items, library)
             items.label = section:label({name = "Player: "})
             items.label.instance.TextWrapped = false
@@ -1440,6 +1449,10 @@ local config_holder
                 end
             end
         end
+
+        function cfg.set_avatar_size(px)
+            items.ImageContainer.Size = dim2(0, px, 0, px)
+        end 
 
         function cfg.change_profile(player)
             items.label.set(string.format("Player: %s (%s)", player.Name, player.DisplayName))
