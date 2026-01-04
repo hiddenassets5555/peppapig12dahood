@@ -1423,14 +1423,20 @@ local config_holder
             local baseWindowH = 147
             local baseAvatar = 68
             local function update_avatar_by_window()
-                local winH = items.Window.Size.Y.Offset
+                local winH = items.Window.AbsoluteSize.Y
                 if winH <= 0 then return end
                 local scale = winH / baseWindowH
                 local newImg = math.floor(baseAvatar * scale)
-                items.ImageContainer.Size = dim2(0, newImg, 0, newImg)
+                local holderH = image_holder.AbsoluteSize.Y
+                local topPad = 28
+                local bottomPad = 4
+                local maxImg = math.max(0, holderH - topPad - bottomPad)
+                local finalImg = math.min(newImg, maxImg)
+                items.ImageContainer.Size = dim2(0, finalImg, 0, finalImg)
             end
             update_avatar_by_window()
             items.Window:GetPropertyChangedSignal("Size"):Connect(update_avatar_by_window)
+            image_holder:GetPropertyChangedSignal("AbsoluteSize"):Connect(update_avatar_by_window)
 
             local section = setmetatable(items, library)
             items.label = section:label({name = "Player: "})
