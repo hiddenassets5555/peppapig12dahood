@@ -1688,9 +1688,10 @@ local config_holder
             local left_panel = library:create("Frame", {
                 Parent = sgui,
                 Name = "LeftPanel",
-                AnchorPoint = vec2(0, 0.5),
-                Position = dim2(0, 10, 0.5, 0), -- Left Middle
-                Size = dim2(0, 182, 0.3, 0),
+                AnchorPoint = vec2(0, 1),
+                Position = dim2(0, 10, 1, -10), -- Bottom Left, similar to keybinds
+                Size = dim2(0, 182, 0, 0),
+                AutomaticSize = Enum.AutomaticSize.Y,
                 BackgroundTransparency = 1,
             })
             
