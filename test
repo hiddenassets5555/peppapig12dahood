@@ -1785,6 +1785,7 @@ local config_holder
                 Size = dim2(1, 0, 1, 0),
                 BorderSizePixel = 0,
                 TextSize = 12,
+                TextXAlignment = Enum.TextXAlignment.Left,
                 BackgroundColor3 = themes.preset.text
             }, "text")
 
@@ -1792,6 +1793,12 @@ local config_holder
                 Parent = mod_text,
                 Name = "",
                 LineJoinMode = Enum.LineJoinMode.Miter
+            })
+            
+            library:create("UIPadding", {
+                Parent = mod_background,
+                Name = "",
+                PaddingLeft = dim(0, 5)
             })
 
             local mod_list_container = library:create("Frame", {
@@ -1809,9 +1816,16 @@ local config_holder
             library:create("UIListLayout", {
                 Parent = mod_list_bg,
                 Name = "",
-                Padding = dim(0, 2),
+                Padding = dim(0, -1),
                 FillDirection = Enum.FillDirection.Vertical,
                 SortOrder = Enum.SortOrder.LayoutOrder
+            })
+            
+            library:create("UIPadding", {
+                Parent = mod_list_bg,
+                Name = "",
+                PaddingBottom = dim(0, 4),
+                PaddingLeft = dim(0, 5)
             })
             
             -- [[ Info List ]]
