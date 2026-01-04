@@ -1688,10 +1688,10 @@ local config_holder
             local left_panel = library:create("Frame", {
                 Parent = sgui,
                 Name = "LeftPanel",
-                AnchorPoint = vec2(0, 1),
-                Position = dim2(0, 10, 1, -10),
-                Size = dim2(0, 182, 0, 0),
-                AutomaticSize = Enum.AutomaticSize.Y,
+                AnchorPoint = vec2(0, 0.5),
+                Position = dim2(0, 10, 0.5, 0),
+                Size = dim2(0, 182, 0.3, 0),
+                AutomaticSize = Enum.AutomaticSize.None,
                 BackgroundTransparency = 1,
             })
             
@@ -1706,13 +1706,12 @@ local config_holder
                 Active = true,
                 Draggable = false,
                 BorderColor3 = rgb(0, 0, 0),
-                Size = dim2(1, 0, 0, 0),
-                AutomaticSize = Enum.AutomaticSize.Y,
+                Size = dim2(1, 0, 0, 120),
+                AutomaticSize = Enum.AutomaticSize.None,
                 BorderSizePixel = 0,
                 BackgroundColor3 = themes.preset.outline
             })
             library:apply_theme(mod_outline, "outline", "BackgroundColor3")
-            library:make_resizable(mod_outline)
             library.moderator_list_frame = mod_outline
 
             local mod_inline = library:create("Frame", {
@@ -1967,15 +1966,11 @@ local config_holder
             library.keybind_list_frame = outline 
             
             if library.moderator_list_frame then
-                local function sync_mods_height()
-                    local h = library.keybind_list_frame and library.keybind_list_frame.AbsoluteSize.Y or 0
-                    if h > 0 then
-                        library.moderator_list_frame.AutomaticSize = Enum.AutomaticSize.None
-                        library.moderator_list_frame.Size = dim2(1, 0, 0, h)
-                    end
+                local h = library.keybind_list_frame and library.keybind_list_frame.AbsoluteSize.Y or 0
+                if h > 0 then
+                    library.moderator_list_frame.AutomaticSize = Enum.AutomaticSize.None
+                    library.moderator_list_frame.Size = dim2(1, 0, 0, h)
                 end
-                sync_mods_height()
-                outline:GetPropertyChangedSignal("AbsoluteSize"):Connect(sync_mods_height)
             end
             
             local inline = library:create("Frame", {
