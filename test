@@ -1688,10 +1688,10 @@ local config_holder
             local left_panel = library:create("Frame", {
                 Parent = sgui,
                 Name = "LeftPanel",
-                AnchorPoint = vec2(0, 1),
-                Position = dim2(0, 10, 1, -10), -- Bottom Left, similar to keybinds
-                Size = dim2(0, 182, 0, 0),
-                AutomaticSize = Enum.AutomaticSize.Y,
+                AnchorPoint = vec2(0, 0.5),
+                Position = dim2(0, 10, 0.5, 0),
+                Size = dim2(0, 182, 0.3, 0),
+                AutomaticSize = Enum.AutomaticSize.None,
                 BackgroundTransparency = 1,
             })
             
@@ -1956,6 +1956,18 @@ local config_holder
             library:apply_theme(outline, "outline", "BackgroundColor3") 
             library:make_resizable(outline)
             library.keybind_list_frame = outline 
+            
+            if library.moderator_list_frame then
+                local function sync_mods_height()
+                    local h = library.keybind_list_frame and library.keybind_list_frame.AbsoluteSize.Y or 0
+                    if h > 0 then
+                        library.moderator_list_frame.AutomaticSize = Enum.AutomaticSize.None
+                        library.moderator_list_frame.Size = dim2(1, 0, 0, h)
+                    end
+                end
+                sync_mods_height()
+                outline:GetPropertyChangedSignal("AbsoluteSize"):Connect(sync_mods_height)
+            end
             
             local inline = library:create("Frame", {
                 Parent = outline,
