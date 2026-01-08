@@ -2417,7 +2417,13 @@ local config_holder
             if espPreview and espPreview.items and espPreview.items.viewportframe then
                 espPreview.items.viewportframe.Visible = true
             end
-            espPreview.refresh_elements()
+            -- Call refresh_elements after character is loaded
+            task.spawn(function()
+                task.wait(0.5) -- Wait for character to load
+                if espPreview and espPreview.refresh_elements then
+                    espPreview.refresh_elements()
+                end
+            end)
         
 
         
@@ -3099,7 +3105,10 @@ local config_holder
         -- Function to update box position based on character bounds (like actual player ESP)
         cfg.updateBoxPosition = function()
             local objs = cfg.objects
-            if not cfg.character_model or not objs or not objs["box_handler"] or objs["box_handler"].Parent == library.cache then return end
+            if not cfg.character_model or not objs or not objs["box_handler"] or not objs["holder"] then return end
+            
+            -- Only update if holder is visible (parented to viewportframe, not cache)
+            if objs["holder"].Parent == library.cache then return end
             
             local character = cfg.character_model
             local camera = items.camera
