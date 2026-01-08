@@ -2958,7 +2958,8 @@ local config_holder
                 Color = rgb(255, 255, 255);
                 LineJoinMode = Enum.LineJoinMode.Miter;
                 Name = "\0";
-                Parent = objects[ "box_handler" ]
+                Parent = objects[ "box_handler" ];
+                Enabled = false  -- Disabled by default, only enabled when needed
             });
             
             -- Gradient for filled boxes (matching actual ESP)
@@ -3257,17 +3258,24 @@ local config_holder
                 objects["box_handler"].Parent = objects["holder"]
                 local boxColor = showCorner and getColor("esp_box_corner_c1", Color3.new(1, 1, 1)) or getColor("esp_box_c1", Color3.new(1, 1, 1))
                 
+                -- Disable UIStroke by default (only enabled for filled boxes if needed, but actual ESP doesn't use it)
+                if objects["box_color"] then
+                    objects["box_color"].Enabled = false
+                end
+                
                 -- Handle filled box background (matching actual ESP)
                 if showFilled then
                     local fillC1 = getColor("esp_fill_c1", Color3.new(1, 1, 1))
                     local fillC2 = getColor("esp_fill_c2", fillC1)
                     
                     objects["box_handler"].BackgroundTransparency = 0.5
-                    objects["Gradient1"].Enabled = true
-                    objects["Gradient1"].Color = ColorSequence.new{
-                        ColorSequenceKeypoint.new(0, fillC1),
-                        ColorSequenceKeypoint.new(1, fillC2)
-                    }
+                    if objects["Gradient1"] then
+                        objects["Gradient1"].Enabled = true
+                        objects["Gradient1"].Color = ColorSequence.new{
+                            ColorSequenceKeypoint.new(0, fillC1),
+                            ColorSequenceKeypoint.new(1, fillC2)
+                        }
+                    end
                     objects["box_handler"].BackgroundColor3 = Color3.new(1, 1, 1)
                 else
                     objects["box_handler"].BackgroundTransparency = 1
@@ -3292,6 +3300,8 @@ local config_holder
                 if objects["BottomRightSide"] then objects["BottomRightSide"].Visible = false end
                 if objects["BottomRightDown"] then objects["BottomRightDown"].Visible = false end
                 
+                -- Only show segments if corner boxes or regular boxes are enabled
+                -- If only filled boxes are enabled, don't show any segments (just the filled background)
                 if showCorner then
                     -- Corner Boxes (8 segments) - EXACTLY matching actual ESP positioning
                     -- Positions are absolute within holder (matching actual ESP screen coordinates)
