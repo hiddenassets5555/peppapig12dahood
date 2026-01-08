@@ -2792,7 +2792,7 @@ local config_holder
             if not sgui.Enabled or not items.viewportframe.Visible or not cfg.character_model then return end
             local now = tick()
             
-            -- Update camera/viewport cache periodically
+            -- Update camera/viewport cache periodically and sync FOV
             if now - lastCacheUpdate >= cacheUpdateInterval then
                 lastCacheUpdate = now
                 local currentCamera = workspace.CurrentCamera
@@ -2802,6 +2802,11 @@ local config_holder
                 end
                 if cachedCamera and (not cachedViewportSize or cachedViewportSize ~= cachedCamera.ViewportSize) then
                     cachedViewportSize = cachedCamera.ViewportSize
+                end
+                
+                -- Sync preview camera FOV with game camera FOV (important for accurate ESP sizing)
+                if cachedCamera and items.camera then
+                    items.camera.FieldOfView = cachedCamera.FieldOfView
                 end
             end
             
@@ -3103,21 +3108,25 @@ local config_holder
             local root = character:FindFirstChild("HumanoidRootPart")
             if not root then return end
             
+            -- Get actual game camera viewport size (CRITICAL: must use game camera, not preview viewport size!)
+            local currentCamera = workspace.CurrentCamera
+            local gameViewportSize = currentCamera and currentCamera.ViewportSize or Vector2.new(1920, 1080)
+            
             -- Use WorldToViewportPoint (ViewportFrame cameras use this, not WorldToScreenPoint)
-            local viewportSize = items.viewportframe.AbsoluteSize
+            local previewViewportSize = items.viewportframe.AbsoluteSize
             local screenPoint, onScreen = camera:WorldToViewportPoint(root.Position)
             
             if not onScreen or screenPoint.Z <= 0 then return end
             
-            -- Convert viewport coordinates (0-1) to pixel coordinates (matching actual ESP pos.X, pos.Y)
-            local posX = screenPoint.X * viewportSize.X
-            local posY = screenPoint.Y * viewportSize.Y
+            -- Convert viewport coordinates (0-1) to pixel coordinates within preview viewport
+            local posX = screenPoint.X * previewViewportSize.X
+            local posY = screenPoint.Y * previewViewportSize.Y
             
             -- Calculate box size using EXACT same method as actual ESP
             -- Actual ESP: local scaleFactor = (size * currentCamera.ViewportSize.Y) / (pos.Z * 2)
-            -- Note: screenPoint.Z from WorldToViewportPoint is distance in studs (same as pos.Z from WorldToScreenPoint)
+            -- CRITICAL: Use game camera viewport size for scale factor, not preview viewport size!
             local size = root.Size.Y
-            local scaleFactor = (size * viewportSize.Y) / (screenPoint.Z * 2)
+            local scaleFactor = (size * gameViewportSize.Y) / (screenPoint.Z * 2)
             local boxWidth = 3 * scaleFactor
             local boxHeight = 4.5 * scaleFactor
             
@@ -3405,6 +3414,17 @@ local config_holder
                             ColorSequenceKeypoint.new(0, fillC1),
                             ColorSequenceKeypoint.new(1, fillC2)
                         }
+                        
+                        -- Handle gradient animation (matching actual ESP)
+                        local animate = flags.esp_box_animate
+                        if animate then
+                            -- Smooth continuous rotation based on time
+                            local rotationSpeed = 45 -- Degrees per second
+                            local currentRotation = (os.clock() * rotationSpeed) % 360
+                            objects["Gradient1"].Rotation = currentRotation
+                        else
+                            objects["Gradient1"].Rotation = -45
+                        end
                     end
                     objects["box_handler"].BackgroundColor3 = Color3.new(1, 1, 1)
                 else
