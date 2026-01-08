@@ -2414,6 +2414,10 @@ local config_holder
             flags["Health_High"] = flags["Health_High"] or { Color = Color3.fromRGB(0, 255, 0) }
             local espPreview = window.esp_section:esp_preview({})
             window.esp_preview = espPreview
+            if espPreview and espPreview.items and espPreview.items.viewportframe then
+                espPreview.items.viewportframe.Visible = true
+            end
+            espPreview.refresh_elements()
         
 
         
@@ -2635,7 +2639,381 @@ local config_holder
     end 
 
     function library:esp_preview(properties)
-        local cfg = {items = {}}
+        local cfg = {items = {}, rotation = 0; objects = {}; character_model = nil}
+        local items = cfg.items
+
+        items.viewportframe = library:create( "ViewportFrame" , {
+            Parent = self.holder;
+            BackgroundTransparency = 1;
+            Size = dim2(1, 0, 0, 220);
+            BorderColor3 = rgb(0, 0, 0);
+            ZIndex = 1;
+            Position = dim2(0, 0, 0, 10);
+            BorderSizePixel = 0;
+            BackgroundColor3 = rgb(255, 255, 255)
+        });
+        
+        items.camera = library:create( "Camera" , {
+            FieldOfView = 70.00022888183594;
+            CameraType = Enum.CameraType.Track;
+            Focus = cfr(0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1);
+            CFrame = cfr(0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1);
+            Parent = items.viewportframe;
+            Name = "\0"
+        }); 
+
+        items.viewportframe.CurrentCamera = items.camera
+
+        items.worldmodel = library:create("WorldModel", {
+            Parent = items.viewportframe
+        })
+
+        local cached_emote_id = nil
+
+        local function update_character()
+            if cfg.character_model then cfg.character_model:Destroy() end
+            if not lp.Character then return end
+            
+            lp.Character.Archivable = true
+            local character = lp.Character:Clone()
+            if not character then return end
+            
+            character.Name = "PreviewCharacter"
+            if character:FindFirstChild("Animate") then character.Animate:Destroy() end
+            character.PrimaryPart = character:FindFirstChild("HumanoidRootPart")
+
+            
+            for _, obj in ipairs(character:GetDescendants()) do
+                if obj:IsA("BasePart") then
+                    obj.CastShadow = false
+                    obj.CanCollide = false
+                    obj.CanTouch = false
+                    obj.CanQuery = false
+                    obj.Massless = true
+                    if obj.Name == "HumanoidRootPart" then
+                        obj.Anchored = true
+                    else
+                        obj.Anchored = false
+                    end
+                elseif obj:IsA("Script") or obj:IsA("LocalScript") or obj:IsA("Sound") or obj:IsA("ParticleEmitter") or obj:IsA("Beam") or obj:IsA("Fire") or obj:IsA("Smoke") or obj:IsA("Sparkles") or obj:IsA("Trail") or obj:IsA("Light") or obj:IsA("Explosion") then
+                    obj:Destroy()
+                elseif obj:IsA("Decal") and obj.Name ~= "face" then
+                    obj:Destroy()
+                elseif obj:IsA("Texture") then
+                    obj:Destroy()
+                end
+            end
+            
+            local hum = character:FindFirstChild("Humanoid")
+            if hum then
+                hum.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+                hum.HealthDisplayType = Enum.HumanoidHealthDisplayType.AlwaysOff
+            end
+
+            character.Parent = items.worldmodel
+            items.camera.CameraSubject = character
+            
+            if cfg.objects["chams"] then
+                cfg.objects["chams"].Adornee = character
+            end
+
+            
+            task.spawn(function()
+                local anim = Instance.new("Animation")
+                
+                if cached_emote_id then
+                    anim.AnimationId = cached_emote_id
+                else
+                    anim.AnimationId = "rbxassetid://83716500004313"
+
+                    
+                    local success, result = pcall(function()
+                        return game:GetObjects("rbxassetid://83716500004313")[1]
+                    end)
+                    
+                    if success and result then
+                        local found_anim = result:IsA("Animation") and result or result:FindFirstChildWhichIsA("Animation")
+                        if found_anim then
+                            anim.AnimationId = found_anim.AnimationId
+                            cached_emote_id = anim.AnimationId
+                        end
+                        result:Destroy()
+                    end
+                end
+
+                local humanoid = character:FindFirstChild("Humanoid")
+                if humanoid then
+                    local animator = humanoid:FindFirstChildOfClass("Animator")
+                    if not animator then
+                        animator = Instance.new("Animator")
+                        animator.Parent = humanoid
+                    end
+                    local track = animator:LoadAnimation(anim)
+                    track.Priority = Enum.AnimationPriority.Action
+                    track.Looped = true
+                    track:Play()
+                end
+            end)
+
+            cfg.character_model = character
+        end
+
+        update_character()
+        library:connection(lp.CharacterAdded, function(char)
+            task.wait(10) 
+            if lp.Character == char then
+                update_character()
+            end
+        end)
+        
+        local chams = Instance.new("Highlight")
+        chams.Name = "PreviewChams"
+        chams.FillColor = Color3.fromRGB(0, 120, 255)
+        chams.OutlineColor = Color3.fromRGB(255, 255, 255)
+        chams.DepthMode = Enum.HighlightDepthMode.Occluded
+        chams.Enabled = false
+        chams.Adornee = cfg.character_model
+        chams.Parent = items.viewportframe
+        cfg.objects["chams"] = chams
+
+        local lastRotate = 0
+        local rotateInterval = 1/15 
+        local lastHealthUpdate = 0
+        local healthInterval = 0.2
+        local lastCacheUpdate = 0
+        local cacheUpdateInterval = 0.5 -- Update cache every 500ms
+
+        library:connection(run.Heartbeat, function()
+            if not sgui.Enabled or not items.viewportframe.Visible or not cfg.character_model then return end
+            local now = tick()
+            
+            -- Update camera/viewport cache periodically
+            if now - lastCacheUpdate >= cacheUpdateInterval then
+                lastCacheUpdate = now
+                local currentCamera = workspace.CurrentCamera
+                if currentCamera ~= cachedCamera then
+                    cachedCamera = currentCamera
+                    cachedViewportSize = nil
+                end
+                if cachedCamera and (not cachedViewportSize or cachedViewportSize ~= cachedCamera.ViewportSize) then
+                    cachedViewportSize = cachedCamera.ViewportSize
+                end
+            end
+            
+            if (now - lastRotate) >= rotateInterval then
+                lastRotate = now
+                cfg.rotation += 1.0 
+                if cfg.character_model.PrimaryPart then
+                    cfg.character_model:PivotTo(cfr(Vector3.new(0, 1, -6)) * angle(0, math.rad(cfg.rotation), 0))
+                end
+            end
+
+            
+            if (now - lastHealthUpdate) >= healthInterval then
+                lastHealthUpdate = now
+                if cfg.change_health then cfg.change_health() end
+            end
+        end)
+
+        local objects = cfg.objects; do 
+            objects[ "holder" ] = library:create( "Frame" , {
+                Parent = items.viewportframe;
+                Name = "\0";
+                BackgroundTransparency = 1;
+                Position = dim2(0.5, 0, 0.5, 10);
+                BorderColor3 = rgb(0, 0, 0);
+                Size = dim2(0, 135, 0, 190);
+                BorderSizePixel = 0;
+                AnchorPoint = vec2(0.5, 0.5);
+                BackgroundColor3 = rgb(255, 255, 255)
+            });
+            
+            objects["skeleton"] = library:create("Frame", {
+                Parent = library.cache,
+                Name = "skeleton",
+                BackgroundTransparency = 1,
+                Size = dim2(1, 0, 1, 0),
+                Position = dim2(0, 0, 0, 0)
+            })
+            local function skeleton_line(name, pos, size)
+                local f = library:create("Frame", {
+                    Parent = objects["skeleton"],
+                    Name = name,
+                    BackgroundColor3 = ESP_SETTINGS.SkeletonColor,
+                    BorderSizePixel = 0,
+                    Position = pos,
+                    Size = size
+                })
+                return f
+            end
+            local torso = skeleton_line("torso", dim2(0.5, -2, 0.25, 10), dim2(0, 4, 0.5, -20))
+            local head = skeleton_line("head", dim2(0.5, -6, 0.15, 0), dim2(0, 12, 0, 12))
+            local larm = skeleton_line("larm", dim2(0.4, -10, 0.3, 10), dim2(0, 12, 0.2, 0))
+            local rarm = skeleton_line("rarm", dim2(0.6, -2, 0.3, 10), dim2(0, 12, 0.2, 0))
+            local lleg = skeleton_line("lleg", dim2(0.48, -2, 0.75, -50), dim2(0, 3, 0.2, 0))
+            local rleg = skeleton_line("rleg", dim2(0.52, 0, 0.75, -50), dim2(0, 3, 0.2, 0))
+            
+            objects[ "box_outline" ] = library:create( "UIStroke" , {
+                Parent = library.cache;
+                LineJoinMode = Enum.LineJoinMode.Miter
+            });
+            
+            objects[ "name" ] = library:create( "TextLabel" , {
+                FontFace = library.font;
+                Parent = library.cache;
+                TextColor3 = flags["Name_Color"].Color;
+                BorderColor3 = rgb(0, 0, 0);
+                Text = string.format("%s (@%s)", lp.DisplayName, lp.Name);
+                Name = "\0";
+                TextStrokeTransparency = 0;
+                AnchorPoint = vec2(0, 1);
+                Size = dim2(1, 0, 0, 0);
+                BackgroundTransparency = 1;
+                Position = dim2(0, 0, 0, -5);
+                BorderSizePixel = 0;
+                AutomaticSize = Enum.AutomaticSize.Y;
+                TextSize = 12;
+            });
+            
+            objects[ "box_handler" ] = library:create( "Frame" , {
+                Parent = library.cache;
+                Name = "\0";
+                BackgroundTransparency = 1;
+                Position = dim2(0, 1, 0, 1);
+                BorderColor3 = rgb(0, 0, 0);
+                Size = dim2(1, -2, 1, -2);
+                BorderSizePixel = 0;
+                BackgroundColor3 = rgb(255, 255, 255)
+            });
+            
+            objects[ "box_color" ] = library:create( "UIStroke" , {
+                Color = rgb(255, 255, 255);
+                LineJoinMode = Enum.LineJoinMode.Miter;
+                Name = "\0";
+                Parent = objects[ "box_handler" ]
+            });
+            
+            objects[ "outline" ] = library:create( "Frame" , {
+                Parent = objects[ "box_handler" ];
+                Name = "\0";
+                BackgroundTransparency = 1;
+                Position = dim2(0, 1, 0, 1);
+                BorderColor3 = rgb(0, 0, 0);
+                Size = dim2(1, -2, 1, -2);
+                BorderSizePixel = 0;
+                BackgroundColor3 = rgb(255, 255, 255)
+            });
+            
+            library:create( "UIStroke" , {
+                Parent = objects[ "outline" ];
+                LineJoinMode = Enum.LineJoinMode.Miter
+            });  
+            
+            
+            
+            
+            
+                objects[ "healthbar_holder" ] = library:create( "Frame" , {
+                    AnchorPoint = vec2(1, 0);
+                    Parent = library.cache;
+                    Name = "\0";
+                    Position = dim2(0, -5, 0, 0);
+                    BorderColor3 = rgb(0, 0, 0);
+                    Size = dim2(0, 4, 1, 0);
+                    BorderSizePixel = 0;
+                    BackgroundColor3 = rgb(0, 0, 0)
+                });
+                
+                objects[ "healthbar" ] = library:create( "Frame" , {
+                    Parent = objects[ "healthbar_holder" ];
+                    Name = "\0";
+                    Position = dim2(0, 1, 0, 1);
+                    BorderColor3 = rgb(0, 0, 0);
+                    Size = dim2(1, -2, 1, -2);
+                    BorderSizePixel = 0;
+                    BackgroundColor3 = rgb(255, 255, 255)
+                });
+            
+
+            
+                objects[ "distance" ] = library:create( "TextLabel" , {
+                    FontFace = library.font;
+                    TextColor3 = flags["Distance_Color"].Color;
+                    BorderColor3 = rgb(0, 0, 0);
+                    Text = "127st";
+                    Parent = library.cache;
+                    TextStrokeTransparency = 0;
+                    Name = "\0";
+                    Size = dim2(1, 0, 0, 0);
+                    BackgroundTransparency = 1;
+                    Position = dim2(0, 0, 1, 5);
+                    BorderSizePixel = 0;
+                    AutomaticSize = Enum.AutomaticSize.Y;
+                    TextSize = 12;
+                });                
+            
+
+            
+                objects[ "weapon" ] = library:create( "TextLabel" , {
+                    FontFace = library.font;
+                    TextColor3 = flags["Weapon_Color"].Color;
+                    BorderColor3 = rgb(0, 0, 0);
+                    Text = "[ Weapon ]";
+                    Parent = library.cache;
+                    TextStrokeTransparency = 0;
+                    Name = "\0";
+                    Size = dim2(1, 0, 0, 0);
+                    BackgroundTransparency = 1;
+                    Position = dim2(0, 0, 1, 19);
+                    BorderSizePixel = 0;
+                    AutomaticSize = Enum.AutomaticSize.Y;
+                    TextSize = 12;
+                });
+            
+        end 
+
+        cfg.change_health = function()
+            if not cfg.character_model then return end
+            if flags[ "healthbar_holder" ] and flags[ "healthbar_holder" ].Parent ~= objects[ "holder" ] then 
+                return 
+            end
+
+            local humanoid = cfg.character_model:FindFirstChild("Humanoid")
+            if not humanoid then return end
+            
+            local multiplier = math.abs(math.sin(tick() * 2))
+            local color = flags[ "Health_Low" ].Color:Lerp( flags["Health_High"].Color, multiplier)
+            
+            objects[ "healthbar" ].Size = UDim2.new(1, -2, multiplier, -2)
+            objects[ "healthbar" ].Position = UDim2.new(0, 1, 1 - multiplier, 1)
+            objects[ "healthbar" ].BackgroundColor3 = color
+        end 
+
+        function cfg.refresh_elements( )                                
+            objects.holder.Parent = flags["Enabled"] and items.viewportframe or library.cache
+            objects["name"].TextColor3 = (flags["Name_Color"] and flags["Name_Color"].Color) or objects["name"].TextColor3
+            objects["distance"].TextColor3 = (flags["Distance_Color"] and flags["Distance_Color"].Color) or objects["distance"].TextColor3
+            objects["weapon"].TextColor3 = (flags["Weapon_Color"] and flags["Weapon_Color"].Color) or objects["weapon"].TextColor3
+            objects["name"].Parent = flags["Names"] and objects["holder"] or library.cache
+            objects["distance"].Parent = flags["Distance"] and objects["holder"] or library.cache
+            objects["weapon"].Parent = library.cache
+            objects["box_handler"].Parent = library.cache
+            objects["box_outline"].Parent = library.cache
+            local sk = objects["skeleton"]
+            if sk then
+                sk.Parent = flags["Skeleton"] and objects["holder"] or library.cache
+                for _, line in ipairs(sk:GetChildren()) do
+                    if line:IsA("Frame") then
+                        line.BackgroundColor3 = ESP_SETTINGS.SkeletonColor
+                    end
+                end
+            end
+            if cfg.objects["chams"] then
+                cfg.objects["chams"].Enabled = flags["Chams"] and true or false
+            end
+        end
+
+
         return setmetatable(cfg, library)
     end
 
