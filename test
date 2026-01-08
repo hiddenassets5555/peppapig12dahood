@@ -2924,14 +2924,35 @@ local config_holder
                 return segment
             end
             
-            objects["LeftTop"] = createCornerSegment("LeftTop", Vector2.new(0, 0))
-            objects["LeftSide"] = createCornerSegment("LeftSide", Vector2.new(0, 0))
-            objects["BottomSide"] = createCornerSegment("BottomSide", Vector2.new(0, 1))
-            objects["BottomDown"] = createCornerSegment("BottomDown", Vector2.new(0, 1))
-            objects["RightTop"] = createCornerSegment("RightTop", Vector2.new(1, 0))
-            objects["RightSide"] = createCornerSegment("RightSide", Vector2.new(0, 0))
-            objects["BottomRightSide"] = createCornerSegment("BottomRightSide", Vector2.new(1, 1))
-            objects["BottomRightDown"] = createCornerSegment("BottomRightDown", Vector2.new(1, 1))
+            -- Create corner segments as children of holder (not box_handler) to match actual ESP
+            local function createCornerSegmentForHolder(name, anchorPoint)
+                local segment = library:create("Frame", {
+                    Parent = objects["holder"],
+                    Name = name,
+                    BackgroundColor3 = Color3.new(1, 1, 1),
+                    BorderSizePixel = 0,
+                    Visible = false,
+                    AnchorPoint = anchorPoint or Vector2.new(0, 0),
+                    ZIndex = 2
+                })
+                -- Add outline
+                library:create("UIStroke", {
+                    Parent = segment,
+                    Color = Color3.new(0, 0, 0),
+                    Thickness = 1,
+                    LineJoinMode = Enum.LineJoinMode.Miter
+                })
+                return segment
+            end
+            
+            objects["LeftTop"] = createCornerSegmentForHolder("LeftTop", Vector2.new(0, 0))
+            objects["LeftSide"] = createCornerSegmentForHolder("LeftSide", Vector2.new(0, 0))
+            objects["BottomSide"] = createCornerSegmentForHolder("BottomSide", Vector2.new(0, 1))
+            objects["BottomDown"] = createCornerSegmentForHolder("BottomDown", Vector2.new(0, 1))
+            objects["RightTop"] = createCornerSegmentForHolder("RightTop", Vector2.new(1, 0))
+            objects["RightSide"] = createCornerSegmentForHolder("RightSide", Vector2.new(0, 0))
+            objects["BottomRightSide"] = createCornerSegmentForHolder("BottomRightSide", Vector2.new(1, 1))
+            objects["BottomRightDown"] = createCornerSegmentForHolder("BottomRightDown", Vector2.new(1, 1))
             
             objects[ "box_color" ] = library:create( "UIStroke" , {
                 Color = rgb(255, 255, 255);
@@ -3246,9 +3267,9 @@ local config_holder
                 
                 if showCorner then
                     -- Corner Boxes (8 segments) - EXACTLY matching actual ESP positioning
-                    -- Positions are relative to box_handler which is already positioned correctly
-                    local posX = 0  -- Relative to box_handler (which is at boxX, boxY)
-                    local posY = 0
+                    -- Positions are absolute within holder (matching actual ESP screen coordinates)
+                    local posX = boxX  -- Absolute position within holder
+                    local posY = boxY
                     
                     if objects["LeftTop"] then
                         objects["LeftTop"].Visible = true
@@ -3316,8 +3337,8 @@ local config_holder
                     end
                 elseif showBox then
                     -- Full Bounding Boxes (4 segments) - EXACTLY matching actual ESP
-                    local posX = 0
-                    local posY = 0
+                    local posX = boxX  -- Absolute position within holder
+                    local posY = boxY
                     
                     if objects["LeftTop"] then
                         objects["LeftTop"].Visible = true
