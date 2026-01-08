@@ -3048,7 +3048,7 @@ local config_holder
             
         end 
 
-        -- Function to update box position based on character bounds (defined after objects are created)
+        -- Function to update box position based on character bounds (like actual player ESP)
         cfg.updateBoxPosition = function()
             local objs = cfg.objects
             if not cfg.character_model or not objs or not objs["box_handler"] or objs["box_handler"].Parent == library.cache then return end
@@ -3060,24 +3060,42 @@ local config_holder
             local root = character:FindFirstChild("HumanoidRootPart")
             if not root then return end
             
-            -- Calculate character size in viewport (similar to actual ESP)
+            -- Use WorldToViewportPoint like actual ESP to get screen position
             local viewportSize = items.viewportframe.AbsoluteSize
-            local distance = (camera.CFrame.Position - root.Position).Magnitude
+            local screenPoint, onScreen = camera:WorldToViewportPoint(root.Position)
             
-            -- Use similar calculation as actual ESP
+            if not onScreen or screenPoint.Z <= 0 then return end
+            
+            -- Convert viewport coordinates to pixel coordinates
+            local posX = screenPoint.X * viewportSize.X
+            local posY = screenPoint.Y * viewportSize.Y
+            
+            -- Calculate box size using same method as actual ESP
+            local distance = screenPoint.Z
             local size = root.Size.Y
             local scaleFactor = (size * viewportSize.Y) / (distance * 2)
             local boxWidth = 3 * scaleFactor
             local boxHeight = 4.5 * scaleFactor
             
-            -- Center the box in the holder (which is centered in viewport)
+            -- Position box at character's screen position (like actual ESP)
+            -- Convert to relative position within holder
             if not objs["holder"] then return end
+            local holderPos = objs["holder"].AbsolutePosition
             local holderSize = objs["holder"].AbsoluteSize
-            local centerX = (holderSize.X - boxWidth) / 2
-            local centerY = (holderSize.Y - boxHeight) / 2
             
-            objs["box_handler"].Position = UDim2.new(0, centerX, 0, centerY)
+            -- Calculate offset from holder's top-left corner
+            local offsetX = posX - (holderPos.X - items.viewportframe.AbsolutePosition.X)
+            local offsetY = posY - (holderPos.Y - items.viewportframe.AbsolutePosition.Y)
+            
+            -- Center the box on the character's root position
+            objs["box_handler"].Position = UDim2.new(0, offsetX - boxWidth / 2, 0, offsetY - boxHeight / 2)
             objs["box_handler"].Size = UDim2.new(0, boxWidth, 0, boxHeight)
+            
+            -- Store position for use in refresh_elements
+            cfg._boxX = offsetX - boxWidth / 2
+            cfg._boxY = offsetY - boxHeight / 2
+            cfg._boxW = boxWidth
+            cfg._boxH = boxHeight
         end
 
         cfg.change_health = function()
@@ -3116,7 +3134,7 @@ local config_holder
             local espEnabled = flags.esp_enabled_dummy or false
             objects.holder.Parent = espEnabled and items.viewportframe or library.cache
             
-            -- Name - Position above the box
+            -- Name - Position above the box (like actual ESP)
             local nameEnabled = flags.esp_name_dummy or false
             objects["name"].Parent = (espEnabled and nameEnabled) and objects["holder"] or library.cache
             if nameEnabled then
@@ -3124,21 +3142,21 @@ local config_holder
                 local fontSize = tonumber(flags.esp_font_size_dummy) or 12
                 if fontSize < 5 then fontSize = 5 end
                 objects["name"].TextSize = fontSize
+                objects["name"].TextXAlignment = Enum.TextXAlignment.Center
+                objects["name"].AnchorPoint = vec2(0.5, 1)
                 
-                -- Position name above the box
-                if objects["box_handler"] and objects["box_handler"].Parent == objects["holder"] then
-                    local boxTop = objects["box_handler"].Position.Y.Offset
-                    objects["name"].Position = UDim2.new(0.5, 0, 0, boxTop - objects["name"].AbsoluteSize.Y - 2)
-                    objects["name"].AnchorPoint = vec2(0.5, 1)
-                    objects["name"].TextXAlignment = Enum.TextXAlignment.Center
+                -- Position name above the box (centered on character)
+                if cfg._boxY and objects["box_handler"] and objects["box_handler"].Parent == objects["holder"] then
+                    local holderPos = objects["holder"].AbsolutePosition
+                    local viewportPos = items.viewportframe.AbsolutePosition
+                    local offsetY = cfg._boxY - (holderPos.Y - viewportPos.Y)
+                    objects["name"].Position = UDim2.new(0.5, 0, 0, offsetY - 5)
                 else
                     objects["name"].Position = dim2(0.5, 0, 0, -5)
-                    objects["name"].AnchorPoint = vec2(0.5, 1)
-                    objects["name"].TextXAlignment = Enum.TextXAlignment.Center
                 end
             end
             
-            -- Distance - Position dynamically based on what's enabled
+            -- Distance - Position below health text (like actual ESP)
             local distanceEnabled = flags.esp_distance_dummy or false
             objects["distance"].Parent = (espEnabled and distanceEnabled) and objects["holder"] or library.cache
             if distanceEnabled then
@@ -3146,20 +3164,25 @@ local config_holder
                 local fontSize = tonumber(flags.esp_font_size_dummy) or 12
                 if fontSize < 5 then fontSize = 5 end
                 objects["distance"].TextSize = fontSize
+                objects["distance"].TextXAlignment = Enum.TextXAlignment.Center
+                objects["distance"].AnchorPoint = vec2(0.5, 0)
                 
-                -- Position distance text dynamically
+                -- Position distance text below health text or box
                 local offsetY = 0
                 if objects["health_text"] and objects["health_text"].Parent == objects["holder"] then
-                    offsetY = objects["health_text"].Position.Y.Offset + objects["health_text"].AbsoluteSize.Y + 2
-                elseif objects["box_handler"] and objects["box_handler"].Parent == objects["holder"] then
-                    offsetY = objects["box_handler"].Position.Y.Offset + objects["box_handler"].Size.Y.Offset + 2
+                    local holderPos = objects["holder"].AbsolutePosition
+                    local viewportPos = items.viewportframe.AbsolutePosition
+                    local healthY = objects["health_text"].Position.Y.Offset
+                    offsetY = healthY + objects["health_text"].AbsoluteSize.Y + 2
+                elseif cfg._boxY and cfg._boxH then
+                    local holderPos = objects["holder"].AbsolutePosition
+                    local viewportPos = items.viewportframe.AbsolutePosition
+                    offsetY = cfg._boxY - (holderPos.Y - viewportPos.Y) + cfg._boxH + 2
                 end
                 objects["distance"].Position = UDim2.new(0.5, 0, 0, offsetY)
-                objects["distance"].AnchorPoint = vec2(0.5, 0)
-                objects["distance"].TextXAlignment = Enum.TextXAlignment.Center
             end
             
-            -- Weapon - Position dynamically based on what's enabled
+            -- Weapon - Position below distance (like actual ESP)
             local weaponEnabled = flags.esp_weapon_dummy or false
             objects["weapon"].Parent = (espEnabled and weaponEnabled) and objects["holder"] or library.cache
             if weaponEnabled then
@@ -3167,22 +3190,24 @@ local config_holder
                 local fontSize = tonumber(flags.esp_font_size_dummy) or 12
                 if fontSize < 5 then fontSize = 5 end
                 objects["weapon"].TextSize = fontSize
+                objects["weapon"].TextXAlignment = Enum.TextXAlignment.Center
+                objects["weapon"].AnchorPoint = vec2(0.5, 0)
                 
-                -- Position weapon text dynamically
+                -- Position weapon text below distance or health text
                 local offsetY = 0
                 if objects["distance"] and objects["distance"].Parent == objects["holder"] then
                     offsetY = objects["distance"].Position.Y.Offset + objects["distance"].AbsoluteSize.Y + 2
                 elseif objects["health_text"] and objects["health_text"].Parent == objects["holder"] then
                     offsetY = objects["health_text"].Position.Y.Offset + objects["health_text"].AbsoluteSize.Y + 2
-                elseif objects["box_handler"] and objects["box_handler"].Parent == objects["holder"] then
-                    offsetY = objects["box_handler"].Position.Y.Offset + objects["box_handler"].Size.Y.Offset + 2
+                elseif cfg._boxY and cfg._boxH then
+                    local holderPos = objects["holder"].AbsolutePosition
+                    local viewportPos = items.viewportframe.AbsolutePosition
+                    offsetY = cfg._boxY - (holderPos.Y - viewportPos.Y) + cfg._boxH + 2
                 end
                 objects["weapon"].Position = UDim2.new(0.5, 0, 0, offsetY)
-                objects["weapon"].AnchorPoint = vec2(0.5, 0)
-                objects["weapon"].TextXAlignment = Enum.TextXAlignment.Center
             end
             
-            -- Health Text - Position right under the box
+            -- Health Text - Position right under the box (like actual ESP)
             local healthNumEnabled = flags.esp_health_num_dummy or false
             if not objects["health_text"] then
                 objects["health_text"] = library:create("TextLabel", {
@@ -3209,14 +3234,16 @@ local config_holder
                 local fontSize = tonumber(flags.esp_font_size_dummy) or 12
                 if fontSize < 5 then fontSize = 5 end
                 objects["health_text"].TextSize = fontSize
+                objects["health_text"].TextXAlignment = Enum.TextXAlignment.Center
+                objects["health_text"].AnchorPoint = vec2(0.5, 0)
                 
-                -- Position health text right under the box
-                -- Calculate offset based on box position
-                if objects["box_handler"] and objects["box_handler"].Parent == objects["holder"] then
-                    local boxBottom = objects["box_handler"].Position.Y.Offset + objects["box_handler"].Size.Y.Offset
-                    objects["health_text"].Position = UDim2.new(0.5, 0, 0, boxBottom + 2)
+                -- Position health text right under the box (centered on character)
+                if cfg._boxY and cfg._boxH and objects["box_handler"] and objects["box_handler"].Parent == objects["holder"] then
+                    local holderPos = objects["holder"].AbsolutePosition
+                    local viewportPos = items.viewportframe.AbsolutePosition
+                    local offsetY = cfg._boxY - (holderPos.Y - viewportPos.Y) + cfg._boxH
+                    objects["health_text"].Position = UDim2.new(0.5, 0, 0, offsetY + 2)
                 else
-                    -- If no box, position at bottom of holder
                     objects["health_text"].Position = UDim2.new(0.5, 0, 1, 0)
                 end
             end
@@ -3249,11 +3276,11 @@ local config_holder
                     end
                 end
                 
-                -- Get box dimensions from box_handler
-                local w = objects["box_handler"].Size.X.Offset
-                local h = objects["box_handler"].Size.Y.Offset
-                local boxX = objects["box_handler"].Position.X.Offset
-                local boxY = objects["box_handler"].Position.Y.Offset
+                -- Get box dimensions from box_handler or cached values
+                local w = cfg._boxW or objects["box_handler"].Size.X.Offset
+                local h = cfg._boxH or objects["box_handler"].Size.Y.Offset
+                local boxX = cfg._boxX or objects["box_handler"].Position.X.Offset
+                local boxY = cfg._boxY or objects["box_handler"].Position.Y.Offset
                 
                 -- Hide all segments first
                 if objects["LeftTop"] then objects["LeftTop"].Visible = false end
@@ -3393,13 +3420,26 @@ local config_holder
             end
             objects["box_outline"].Parent = library.cache
             
-            -- Health Bar
+            -- Health Bar - Position to the left of box (like actual ESP)
             local healthBarEnabled = flags.esp_health_bar_dummy or false
             if objects["healthbar_holder"] then
                 objects["healthbar_holder"].Parent = (espEnabled and healthBarEnabled) and objects["holder"] or library.cache
                 if healthBarEnabled then
                     local c1 = getColor("esp_health_bar_c1", Color3.new(0, 1, 0))
                     local c2 = getColor("esp_health_bar_c2", Color3.new(1, 0, 0))
+                    
+                    -- Position health bar to the left of the box (matching actual ESP: pos.X - w / 2 - 5)
+                    if cfg._boxX and cfg._boxW and cfg._boxH then
+                        local holderPos = objects["holder"].AbsolutePosition
+                        local viewportPos = items.viewportframe.AbsolutePosition
+                        local boxLeft = cfg._boxX - (holderPos.X - viewportPos.X)
+                        local boxTop = cfg._boxY - (holderPos.Y - viewportPos.Y)
+                        
+                        objects["healthbar_holder"].AnchorPoint = Vector2.new(1, 0)
+                        objects["healthbar_holder"].Position = UDim2.new(0, boxLeft - 5, 0, boxTop)
+                        objects["healthbar_holder"].Size = UDim2.new(0, 4, 0, cfg._boxH)
+                    end
+                    
                     if flags.esp_health_gradient then
                         -- Use gradient (simplified for preview)
                         objects["healthbar"].BackgroundColor3 = c1
