@@ -2786,36 +2786,7 @@ local config_holder
         local lastRefreshUpdate = 0
         local refreshUpdateInterval = 0.1 -- Refresh ESP visuals every 100ms
         
-        -- Function to update box position based on character bounds
-        cfg.updateBoxPosition = function()
-            if not cfg.character_model or not objects["box_handler"] or objects["box_handler"].Parent == library.cache then return end
-            
-            local character = cfg.character_model
-            local camera = items.camera
-            if not character or not camera then return end
-            
-            local root = character:FindFirstChild("HumanoidRootPart")
-            if not root then return end
-            
-            -- Calculate character size in viewport (similar to actual ESP)
-            local viewportSize = items.viewportframe.AbsoluteSize
-            local distance = (camera.CFrame.Position - root.Position).Magnitude
-            
-            -- Use similar calculation as actual ESP
-            local size = root.Size.Y
-            local scaleFactor = (size * viewportSize.Y) / (distance * 2)
-            local boxWidth = 3 * scaleFactor
-            local boxHeight = 4.5 * scaleFactor
-            
-            -- Center the box in the holder (which is centered in viewport)
-            local holderSize = objects["holder"].AbsoluteSize
-            local centerX = (holderSize.X - boxWidth) / 2
-            local centerY = (holderSize.Y - boxHeight) / 2
-            
-            objects["box_handler"].Position = UDim2.new(0, centerX, 0, centerY)
-            objects["box_handler"].Size = UDim2.new(0, boxWidth, 0, boxHeight)
-        end
-        local updateBoxPosition = cfg.updateBoxPosition
+        -- Function to update box position based on character bounds (will be defined after objects are created)
         
         library:connection(run.Heartbeat, function()
             if not sgui.Enabled or not items.viewportframe.Visible or not cfg.character_model then return end
@@ -3047,6 +3018,38 @@ local config_holder
                 });
             
         end 
+
+        -- Function to update box position based on character bounds (defined after objects are created)
+        cfg.updateBoxPosition = function()
+            if not cfg.character_model or not objects or not objects["box_handler"] or objects["box_handler"].Parent == library.cache then return end
+            
+            local character = cfg.character_model
+            local camera = items.camera
+            if not character or not camera then return end
+            
+            local root = character:FindFirstChild("HumanoidRootPart")
+            if not root then return end
+            
+            -- Calculate character size in viewport (similar to actual ESP)
+            local viewportSize = items.viewportframe.AbsoluteSize
+            local distance = (camera.CFrame.Position - root.Position).Magnitude
+            
+            -- Use similar calculation as actual ESP
+            local size = root.Size.Y
+            local scaleFactor = (size * viewportSize.Y) / (distance * 2)
+            local boxWidth = 3 * scaleFactor
+            local boxHeight = 4.5 * scaleFactor
+            
+            -- Center the box in the holder (which is centered in viewport)
+            if not objects["holder"] then return end
+            local holderSize = objects["holder"].AbsoluteSize
+            local centerX = (holderSize.X - boxWidth) / 2
+            local centerY = (holderSize.Y - boxHeight) / 2
+            
+            objects["box_handler"].Position = UDim2.new(0, centerX, 0, centerY)
+            objects["box_handler"].Size = UDim2.new(0, boxWidth, 0, boxHeight)
+        end
+        local updateBoxPosition = cfg.updateBoxPosition
 
         cfg.change_health = function()
             if not cfg.character_model then return end
