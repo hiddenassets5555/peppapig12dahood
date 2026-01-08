@@ -2786,6 +2786,37 @@ local config_holder
         local lastRefreshUpdate = 0
         local refreshUpdateInterval = 0.1 -- Refresh ESP visuals every 100ms
         
+        -- Function to update box position based on character bounds
+        cfg.updateBoxPosition = function()
+            if not cfg.character_model or not objects["box_handler"] or objects["box_handler"].Parent == library.cache then return end
+            
+            local character = cfg.character_model
+            local camera = items.camera
+            if not character or not camera then return end
+            
+            local root = character:FindFirstChild("HumanoidRootPart")
+            if not root then return end
+            
+            -- Calculate character size in viewport (similar to actual ESP)
+            local viewportSize = items.viewportframe.AbsoluteSize
+            local distance = (camera.CFrame.Position - root.Position).Magnitude
+            
+            -- Use similar calculation as actual ESP
+            local size = root.Size.Y
+            local scaleFactor = (size * viewportSize.Y) / (distance * 2)
+            local boxWidth = 3 * scaleFactor
+            local boxHeight = 4.5 * scaleFactor
+            
+            -- Center the box in the holder (which is centered in viewport)
+            local holderSize = objects["holder"].AbsoluteSize
+            local centerX = (holderSize.X - boxWidth) / 2
+            local centerY = (holderSize.Y - boxHeight) / 2
+            
+            objects["box_handler"].Position = UDim2.new(0, centerX, 0, centerY)
+            objects["box_handler"].Size = UDim2.new(0, boxWidth, 0, boxHeight)
+        end
+        local updateBoxPosition = cfg.updateBoxPosition
+        
         library:connection(run.Heartbeat, function()
             if not sgui.Enabled or not items.viewportframe.Visible or not cfg.character_model then return end
             local now = tick()
@@ -2817,10 +2848,17 @@ local config_holder
                 if cfg.change_health then cfg.change_health() end
             end
             
+            -- Update box position to follow character
+            updateBoxPosition()
+            
             -- Refresh ESP visuals periodically to sync with flag changes
             if (now - lastRefreshUpdate) >= refreshUpdateInterval then
                 lastRefreshUpdate = now
-                if cfg.refresh_elements then cfg.refresh_elements() end
+                if cfg.refresh_elements then 
+                    cfg.refresh_elements()
+                    -- Update box position after refresh to ensure corner boxes are positioned correctly
+                    updateBoxPosition()
+                end
             end
         end)
 
@@ -2894,6 +2932,35 @@ local config_holder
                 BorderSizePixel = 0;
                 BackgroundColor3 = rgb(255, 255, 255)
             });
+            
+            -- Corner Box Segments (8 segments like actual ESP)
+            local function createCornerSegment(name, anchorPoint)
+                local segment = library:create("Frame", {
+                    Parent = objects["box_handler"],
+                    Name = name,
+                    BackgroundColor3 = Color3.new(1, 1, 1),
+                    BorderSizePixel = 0,
+                    Visible = false,
+                    AnchorPoint = anchorPoint or Vector2.new(0, 0)
+                })
+                -- Add outline
+                library:create("UIStroke", {
+                    Parent = segment,
+                    Color = Color3.new(0, 0, 0),
+                    Thickness = 1,
+                    LineJoinMode = Enum.LineJoinMode.Miter
+                })
+                return segment
+            end
+            
+            objects["LeftTop"] = createCornerSegment("LeftTop", Vector2.new(0, 0))
+            objects["LeftSide"] = createCornerSegment("LeftSide", Vector2.new(0, 0))
+            objects["BottomSide"] = createCornerSegment("BottomSide", Vector2.new(0, 1))
+            objects["BottomDown"] = createCornerSegment("BottomDown", Vector2.new(0, 1))
+            objects["RightTop"] = createCornerSegment("RightTop", Vector2.new(1, 0))
+            objects["RightSide"] = createCornerSegment("RightSide", Vector2.new(0, 0))
+            objects["BottomRightSide"] = createCornerSegment("BottomRightSide", Vector2.new(1, 1))
+            objects["BottomRightDown"] = createCornerSegment("BottomRightDown", Vector2.new(1, 1))
             
             objects[ "box_color" ] = library:create( "UIStroke" , {
                 Color = rgb(255, 255, 255);
@@ -2999,6 +3066,9 @@ local config_holder
         end 
 
         function cfg.refresh_elements( )
+            -- Update box position first to ensure dimensions are correct
+            if cfg.updateBoxPosition then cfg.updateBoxPosition() end
+            
             -- Helper function to get color from flag
             local function getColor(flagName, defaultColor)
                 local flag = flags[flagName]
@@ -3014,7 +3084,7 @@ local config_holder
             local espEnabled = flags.esp_enabled_dummy or false
             objects.holder.Parent = espEnabled and items.viewportframe or library.cache
             
-            -- Name
+            -- Name - Position above the box
             local nameEnabled = flags.esp_name_dummy or false
             objects["name"].Parent = (espEnabled and nameEnabled) and objects["holder"] or library.cache
             if nameEnabled then
@@ -3022,9 +3092,21 @@ local config_holder
                 local fontSize = tonumber(flags.esp_font_size_dummy) or 12
                 if fontSize < 5 then fontSize = 5 end
                 objects["name"].TextSize = fontSize
+                
+                -- Position name above the box
+                if objects["box_handler"] and objects["box_handler"].Parent == objects["holder"] then
+                    local boxTop = objects["box_handler"].Position.Y.Offset
+                    objects["name"].Position = UDim2.new(0.5, 0, 0, boxTop - objects["name"].AbsoluteSize.Y - 2)
+                    objects["name"].AnchorPoint = vec2(0.5, 1)
+                    objects["name"].TextXAlignment = Enum.TextXAlignment.Center
+                else
+                    objects["name"].Position = dim2(0.5, 0, 0, -5)
+                    objects["name"].AnchorPoint = vec2(0.5, 1)
+                    objects["name"].TextXAlignment = Enum.TextXAlignment.Center
+                end
             end
             
-            -- Distance
+            -- Distance - Position dynamically based on what's enabled
             local distanceEnabled = flags.esp_distance_dummy or false
             objects["distance"].Parent = (espEnabled and distanceEnabled) and objects["holder"] or library.cache
             if distanceEnabled then
@@ -3032,9 +3114,20 @@ local config_holder
                 local fontSize = tonumber(flags.esp_font_size_dummy) or 12
                 if fontSize < 5 then fontSize = 5 end
                 objects["distance"].TextSize = fontSize
+                
+                -- Position distance text dynamically
+                local offsetY = 0
+                if objects["health_text"] and objects["health_text"].Parent == objects["holder"] then
+                    offsetY = objects["health_text"].Position.Y.Offset + objects["health_text"].AbsoluteSize.Y + 2
+                elseif objects["box_handler"] and objects["box_handler"].Parent == objects["holder"] then
+                    offsetY = objects["box_handler"].Position.Y.Offset + objects["box_handler"].Size.Y.Offset + 2
+                end
+                objects["distance"].Position = UDim2.new(0.5, 0, 0, offsetY)
+                objects["distance"].AnchorPoint = vec2(0.5, 0)
+                objects["distance"].TextXAlignment = Enum.TextXAlignment.Center
             end
             
-            -- Weapon
+            -- Weapon - Position dynamically based on what's enabled
             local weaponEnabled = flags.esp_weapon_dummy or false
             objects["weapon"].Parent = (espEnabled and weaponEnabled) and objects["holder"] or library.cache
             if weaponEnabled then
@@ -3042,9 +3135,22 @@ local config_holder
                 local fontSize = tonumber(flags.esp_font_size_dummy) or 12
                 if fontSize < 5 then fontSize = 5 end
                 objects["weapon"].TextSize = fontSize
+                
+                -- Position weapon text dynamically
+                local offsetY = 0
+                if objects["distance"] and objects["distance"].Parent == objects["holder"] then
+                    offsetY = objects["distance"].Position.Y.Offset + objects["distance"].AbsoluteSize.Y + 2
+                elseif objects["health_text"] and objects["health_text"].Parent == objects["holder"] then
+                    offsetY = objects["health_text"].Position.Y.Offset + objects["health_text"].AbsoluteSize.Y + 2
+                elseif objects["box_handler"] and objects["box_handler"].Parent == objects["holder"] then
+                    offsetY = objects["box_handler"].Position.Y.Offset + objects["box_handler"].Size.Y.Offset + 2
+                end
+                objects["weapon"].Position = UDim2.new(0.5, 0, 0, offsetY)
+                objects["weapon"].AnchorPoint = vec2(0.5, 0)
+                objects["weapon"].TextXAlignment = Enum.TextXAlignment.Center
             end
             
-            -- Health Text
+            -- Health Text - Position right under the box
             local healthNumEnabled = flags.esp_health_num_dummy or false
             if not objects["health_text"] then
                 objects["health_text"] = library:create("TextLabel", {
@@ -3057,10 +3163,12 @@ local config_holder
                     Name = "\0",
                     Size = dim2(1, 0, 0, 0),
                     BackgroundTransparency = 1,
-                    Position = dim2(0, 0, 1, 33),
+                    Position = dim2(0, 0, 1, 0),
+                    AnchorPoint = vec2(0.5, 0),
                     BorderSizePixel = 0,
                     AutomaticSize = Enum.AutomaticSize.Y,
                     TextSize = 12,
+                    TextXAlignment = Enum.TextXAlignment.Center,
                 })
             end
             objects["health_text"].Parent = (espEnabled and healthNumEnabled) and objects["holder"] or library.cache
@@ -3069,6 +3177,16 @@ local config_holder
                 local fontSize = tonumber(flags.esp_font_size_dummy) or 12
                 if fontSize < 5 then fontSize = 5 end
                 objects["health_text"].TextSize = fontSize
+                
+                -- Position health text right under the box
+                -- Calculate offset based on box position
+                if objects["box_handler"] and objects["box_handler"].Parent == objects["holder"] then
+                    local boxBottom = objects["box_handler"].Position.Y.Offset + objects["box_handler"].Size.Y.Offset
+                    objects["health_text"].Position = UDim2.new(0.5, 0, 0, boxBottom + 2)
+                else
+                    -- If no box, position at bottom of holder
+                    objects["health_text"].Position = UDim2.new(0.5, 0, 1, 0)
+                end
             end
             
             -- Boxes (Bounding Box, Corner Box, Filled Box)
@@ -3078,10 +3196,9 @@ local config_holder
             
             if (showBox or showCorner or showFilled) and espEnabled then
                 objects["box_handler"].Parent = objects["holder"]
-                objects["box_color"].Color = showCorner and getColor("esp_box_corner_c1", Color3.new(1, 1, 1)) or getColor("esp_box_c1", Color3.new(1, 1, 1))
-                objects["box_color"].Thickness = tonumber(flags.esp_width_dummy) or 1
+                local boxColor = showCorner and getColor("esp_box_corner_c1", Color3.new(1, 1, 1)) or getColor("esp_box_c1", Color3.new(1, 1, 1))
                 
-                -- Handle filled box
+                -- Handle filled box background
                 if showFilled then
                     objects["box_handler"].BackgroundTransparency = 0.5
                     local fillC1 = getColor("esp_fill_c1", Color3.new(0, 0, 0))
@@ -3089,8 +3206,123 @@ local config_holder
                 else
                     objects["box_handler"].BackgroundTransparency = 1
                 end
+                
+                -- Get box dimensions from box_handler
+                local w = objects["box_handler"].Size.X.Offset
+                local h = objects["box_handler"].Size.Y.Offset
+                local boxX = objects["box_handler"].Position.X.Offset
+                local boxY = objects["box_handler"].Position.Y.Offset
+                
+                -- Hide all segments first
+                if objects["LeftTop"] then objects["LeftTop"].Visible = false end
+                if objects["LeftSide"] then objects["LeftSide"].Visible = false end
+                if objects["BottomSide"] then objects["BottomSide"].Visible = false end
+                if objects["BottomDown"] then objects["BottomDown"].Visible = false end
+                if objects["RightTop"] then objects["RightTop"].Visible = false end
+                if objects["RightSide"] then objects["RightSide"].Visible = false end
+                if objects["BottomRightSide"] then objects["BottomRightSide"].Visible = false end
+                if objects["BottomRightDown"] then objects["BottomRightDown"].Visible = false end
+                
+                if showCorner then
+                    -- Corner Boxes (8 segments) - matching actual ESP
+                    if objects["LeftTop"] then
+                        objects["LeftTop"].Visible = true
+                        objects["LeftTop"].Position = UDim2.new(0, 0, 0, 0)
+                        objects["LeftTop"].Size = UDim2.new(0, w / 5, 0, 1)
+                        objects["LeftTop"].BackgroundColor3 = boxColor
+                        objects["LeftTop"].BackgroundTransparency = 0
+                    end
+                    if objects["LeftSide"] then
+                        objects["LeftSide"].Visible = true
+                        objects["LeftSide"].Position = UDim2.new(0, 0, 0, 0)
+                        objects["LeftSide"].Size = UDim2.new(0, 1, 0, h / 5)
+                        objects["LeftSide"].BackgroundColor3 = boxColor
+                        objects["LeftSide"].BackgroundTransparency = 0
+                    end
+                    if objects["BottomSide"] then
+                        objects["BottomSide"].Visible = true
+                        objects["BottomSide"].Position = UDim2.new(0, 0, 1, 0)
+                        objects["BottomSide"].Size = UDim2.new(0, 1, 0, h / 5)
+                        objects["BottomSide"].BackgroundColor3 = boxColor
+                        objects["BottomSide"].BackgroundTransparency = 0
+                    end
+                    if objects["BottomDown"] then
+                        objects["BottomDown"].Visible = true
+                        objects["BottomDown"].Position = UDim2.new(0, 0, 1, 0)
+                        objects["BottomDown"].Size = UDim2.new(0, w / 5, 0, 1)
+                        objects["BottomDown"].BackgroundColor3 = boxColor
+                        objects["BottomDown"].BackgroundTransparency = 0
+                    end
+                    if objects["RightTop"] then
+                        objects["RightTop"].Visible = true
+                        objects["RightTop"].Position = UDim2.new(1, 0, 0, 0)
+                        objects["RightTop"].Size = UDim2.new(0, w / 5, 0, 1)
+                        objects["RightTop"].BackgroundColor3 = boxColor
+                        objects["RightTop"].BackgroundTransparency = 0
+                    end
+                    if objects["RightSide"] then
+                        objects["RightSide"].Visible = true
+                        objects["RightSide"].Position = UDim2.new(1, -1, 0, 0)
+                        objects["RightSide"].Size = UDim2.new(0, 1, 0, h / 5)
+                        objects["RightSide"].BackgroundColor3 = boxColor
+                        objects["RightSide"].BackgroundTransparency = 0
+                    end
+                    if objects["BottomRightSide"] then
+                        objects["BottomRightSide"].Visible = true
+                        objects["BottomRightSide"].Position = UDim2.new(1, 0, 1, 0)
+                        objects["BottomRightSide"].Size = UDim2.new(0, 1, 0, h / 5)
+                        objects["BottomRightSide"].BackgroundColor3 = boxColor
+                        objects["BottomRightSide"].BackgroundTransparency = 0
+                    end
+                    if objects["BottomRightDown"] then
+                        objects["BottomRightDown"].Visible = true
+                        objects["BottomRightDown"].Position = UDim2.new(1, 0, 1, 0)
+                        objects["BottomRightDown"].Size = UDim2.new(0, w / 5, 0, 1)
+                        objects["BottomRightDown"].BackgroundColor3 = boxColor
+                        objects["BottomRightDown"].BackgroundTransparency = 0
+                    end
+                elseif showBox then
+                    -- Full Bounding Boxes (4 segments) - matching actual ESP
+                    if objects["LeftTop"] then
+                        objects["LeftTop"].Visible = true
+                        objects["LeftTop"].Position = UDim2.new(0, 0, 0, 0)
+                        objects["LeftTop"].Size = UDim2.new(0, w, 0, 1)
+                        objects["LeftTop"].BackgroundColor3 = boxColor
+                        objects["LeftTop"].BackgroundTransparency = 0
+                    end
+                    if objects["LeftSide"] then
+                        objects["LeftSide"].Visible = true
+                        objects["LeftSide"].Position = UDim2.new(0, 0, 0, 0)
+                        objects["LeftSide"].Size = UDim2.new(0, 1, 0, h)
+                        objects["LeftSide"].BackgroundColor3 = boxColor
+                        objects["LeftSide"].BackgroundTransparency = 0
+                    end
+                    if objects["BottomSide"] then
+                        objects["BottomSide"].Visible = true
+                        objects["BottomSide"].Position = UDim2.new(0, 0, 1, 0)
+                        objects["BottomSide"].Size = UDim2.new(0, w, 0, 1)
+                        objects["BottomSide"].BackgroundColor3 = boxColor
+                        objects["BottomSide"].BackgroundTransparency = 0
+                    end
+                    if objects["RightSide"] then
+                        objects["RightSide"].Visible = true
+                        objects["RightSide"].Position = UDim2.new(1, -1, 0, 0)
+                        objects["RightSide"].Size = UDim2.new(0, 1, 0, h)
+                        objects["RightSide"].BackgroundColor3 = boxColor
+                        objects["RightSide"].BackgroundTransparency = 0
+                    end
+                end
             else
                 objects["box_handler"].Parent = library.cache
+                -- Hide all segments
+                if objects["LeftTop"] then objects["LeftTop"].Visible = false end
+                if objects["LeftSide"] then objects["LeftSide"].Visible = false end
+                if objects["BottomSide"] then objects["BottomSide"].Visible = false end
+                if objects["BottomDown"] then objects["BottomDown"].Visible = false end
+                if objects["RightTop"] then objects["RightTop"].Visible = false end
+                if objects["RightSide"] then objects["RightSide"].Visible = false end
+                if objects["BottomRightSide"] then objects["BottomRightSide"].Visible = false end
+                if objects["BottomRightDown"] then objects["BottomRightDown"].Visible = false end
             end
             objects["box_outline"].Parent = library.cache
             
@@ -3124,8 +3356,12 @@ local config_holder
             -- Chams
             if cfg.objects["chams"] then
                 local chamsEnabled = flags.esp_chams_dummy or false
-                cfg.objects["chams"].Enabled = (espEnabled and chamsEnabled) and true or false
-                if chamsEnabled then
+                local shouldShow = (espEnabled and chamsEnabled) and true or false
+                cfg.objects["chams"].Enabled = shouldShow
+                
+                -- Ensure chams is properly attached to character
+                if shouldShow and cfg.character_model then
+                    cfg.objects["chams"].Adornee = cfg.character_model
                     cfg.objects["chams"].FillColor = getColor("esp_chams_c1", Color3.new(1, 0, 0))
                     cfg.objects["chams"].OutlineColor = getColor("esp_chams_c2", Color3.new(1, 1, 1))
                     
@@ -3147,6 +3383,11 @@ local config_holder
                         cfg.objects["chams"].FillTransparency = fillTrans
                         cfg.objects["chams"].OutlineTransparency = outlineTrans
                     end
+                    
+                    -- Ensure chams is visible
+                    cfg.objects["chams"].DepthMode = Enum.HighlightDepthMode.Occluded
+                elseif not shouldShow then
+                    cfg.objects["chams"].Enabled = false
                 end
             end
         end
