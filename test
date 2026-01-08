@@ -409,33 +409,33 @@ local config_holder
 
         library:connection(uis.InputChanged, function(input, game_event) 
             if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-                -- Cache viewport size
-                if not cachedViewportSize then
-                    cachedCamera = workspace.CurrentCamera
-                    if cachedCamera then
-                        cachedViewportSize = cachedCamera.ViewportSize
-                    end
-                end
-                if not cachedViewportSize then return end
+                -- Always get fresh viewport size to avoid stale cache issues
+                local currentCamera = workspace.CurrentCamera
+                if not currentCamera then return end
                 
-                local viewport_x = cachedViewportSize.X
-                local viewport_y = cachedViewportSize.Y
+                local viewportSize = currentCamera.ViewportSize
+                if not viewportSize or viewportSize.X <= 0 or viewportSize.Y <= 0 then return end
+                
+                -- Update cache
+                cachedCamera = currentCamera
+                cachedViewportSize = viewportSize
+                
+                local viewport_x = viewportSize.X
+                local viewport_y = viewportSize.Y
+                
+                local frameSize = frame.Size
+                local frameWidth = frameSize.X.Offset
+                local frameHeight = frameSize.Y.Offset
+                
+                -- Calculate new position with proper bounds checking
+                local newX = start_size.X.Offset + (input.Position.X - start.X)
+                local newY = start_size.Y.Offset + (input.Position.Y - start.Y)
+                
+                -- Clamp to ensure frame stays within viewport bounds
+                newX = clamp(newX, 0, math.max(0, viewport_x - frameWidth))
+                newY = clamp(newY, 0, math.max(0, viewport_y - frameHeight))
 
-                local current_position = dim2(
-                    0,
-                    clamp(
-                        start_size.X.Offset + (input.Position.X - start.X),
-                        0,
-                        viewport_x - frame.Size.X.Offset
-                    ),
-                    0,
-                    clamp(
-                        start_size.Y.Offset + (input.Position.Y - start.Y),
-                        0,
-                        viewport_y - frame.Size.Y.Offset
-                    )
-                )
-
+                local current_position = dim2(0, newX, 0, newY)
                 frame.Position = current_position
                 
                 if dependents_registry[frame] then
@@ -2467,11 +2467,27 @@ local config_holder
                 local main_pos_y = main_frame.Position.Y.Offset
                 local main_size_x = main_frame.Size.X.Offset
                 
-                local slot1_x = main_pos_x + main_size_x + 2
+                -- Validate main position to prevent tabs from going to left edge
+                if main_pos_x < 0 then
+                    main_pos_x = 0
+                end
+                
+                -- Get viewport size for bounds checking
+                local currentCamera = workspace.CurrentCamera
+                if not currentCamera then return end
+                local viewportSize = currentCamera.ViewportSize
+                if not viewportSize or viewportSize.X <= 0 then return end
+                
+                -- Ensure slot1_x is at least 2 pixels from left edge to prevent tabs from bugging
+                local slot1_x = math.max(2, main_pos_x + main_size_x + 2)
                 local slot1_y = main_pos_y
                 
+                -- Ensure slot1_x doesn't exceed viewport
+                slot1_x = math.min(slot1_x, viewportSize.X - 10)
+                
                 if playerlist and playerlist.items and playerlist.items.main_holder then
-                     playerlist.items.main_holder.Position = dim2(0, main_pos_x - 531, 0, main_pos_y)
+                     local playerlist_x = math.max(0, main_pos_x - 531)
+                     playerlist.items.main_holder.Position = dim2(0, playerlist_x, 0, main_pos_y)
                 end
                 
                 if style_enabled then
