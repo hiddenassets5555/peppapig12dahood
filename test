@@ -2257,6 +2257,31 @@ local config_holder
             local section = column:section({name = "Other"})
             section:label({name = "UI Bind"})
             :keybind({callback = window.set_menu_visibility, key = getgenv().UiBindKey})
+            section:toggle({name = "Anti AFK", flag = "anti_afk", default = false, callback = function(v)
+                if v then
+                    -- Initialize anti-AFK if not already active
+                    if not getgenv().AntiAFKActive then
+                        getgenv().AntiAFKActive = true
+                        local VirtualUser = game:GetService("VirtualUser")
+                        local LocalPlayer = game:GetService("Players").LocalPlayer
+                        
+                        -- Connect to Idled event to prevent AFK kicks
+                        if not getgenv().AntiAFKConnection then
+                            getgenv().AntiAFKConnection = LocalPlayer.Idled:Connect(function()
+                                VirtualUser:CaptureController()
+                                VirtualUser:ClickButton2(Vector2.new())
+                            end)
+                        end
+                    end
+                else
+                    -- Disable anti-AFK
+                    getgenv().AntiAFKActive = false
+                    if getgenv().AntiAFKConnection then
+                        getgenv().AntiAFKConnection:Disconnect()
+                        getgenv().AntiAFKConnection = nil
+                    end
+                end
+            end})
             section:toggle({name = "Keybind List", flag = "keybind_list", default = true, callback = function(bool)
                 library.keybind_list_frame.Visible = bool
             end})
