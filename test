@@ -3123,9 +3123,15 @@ local config_holder
             
             -- Use WorldToViewportPoint (ViewportFrame cameras use this, not WorldToScreenPoint)
             local previewViewportSize = items.viewportframe.AbsoluteSize
+            if previewViewportSize.X <= 0 or previewViewportSize.Y <= 0 then return end
+            
             local screenPoint, onScreen = camera:WorldToViewportPoint(root.Position)
             
-            if not onScreen or screenPoint.Z <= 0 then return end
+            if not onScreen or screenPoint.Z <= 0 then 
+                -- Character is off-screen, hide ESP elements
+                if objs["box_handler"] then objs["box_handler"].Visible = false end
+                return 
+            end
             
             -- Convert viewport coordinates (0-1) to pixel coordinates within preview viewport
             local posX = screenPoint.X * previewViewportSize.X
@@ -3151,6 +3157,7 @@ local config_holder
             -- Position box at character's screen position (EXACTLY like actual ESP: pos.X - w/2, pos.Y - h/2)
             objs["box_handler"].Position = UDim2.new(0, holderRelativeX - boxWidth / 2, 0, holderRelativeY - boxHeight / 2)
             objs["box_handler"].Size = UDim2.new(0, boxWidth, 0, boxHeight)
+            objs["box_handler"].Visible = true
             
             -- Store positions for use in refresh_elements (matching actual ESP coordinate system)
             -- These are the character center coordinates (pos.X, pos.Y) relative to holder
@@ -3212,8 +3219,20 @@ local config_holder
             end
             
             -- Main holder visibility
+            -- For preview, always show holder if any ESP element is enabled (even if main ESP toggle is off)
             local espEnabled = flags.esp_enabled_dummy or false
-            objects.holder.Parent = espEnabled and items.viewportframe or library.cache
+            local hasAnyEspElement = espEnabled or 
+                (flags.esp_box_dummy) or 
+                (flags.esp_box_corner_dummy) or 
+                (flags.esp_fill_dummy) or 
+                (flags.esp_name_dummy) or 
+                (flags.esp_distance_dummy) or 
+                (flags.esp_weapon_dummy) or 
+                (flags.esp_health_num_dummy) or 
+                (flags.esp_health_bar_dummy) or 
+                (flags.esp_chams_dummy)
+            
+            objects.holder.Parent = hasAnyEspElement and items.viewportframe or library.cache
             
             -- Name - Position above the box (EXACTLY like actual ESP: pos.X, pos.Y - h/2 - 9)
             local nameEnabled = flags.esp_name_dummy or false
@@ -3402,7 +3421,8 @@ local config_holder
             local showCorner = flags.esp_box_corner_dummy or false
             local showFilled = flags.esp_fill_dummy or false
             
-            if (showBox or showCorner or showFilled) and espEnabled then
+            -- For preview, show boxes if enabled (even if main ESP toggle is off)
+            if (showBox or showCorner or showFilled) and hasAnyEspElement then
                 objects["box_handler"].Parent = objects["holder"]
                 local boxColor = showCorner and getColor("esp_box_corner_c1", Color3.new(1, 1, 1)) or getColor("esp_box_c1", Color3.new(1, 1, 1))
                 
