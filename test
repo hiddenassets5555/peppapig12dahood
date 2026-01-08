@@ -1598,7 +1598,7 @@ local config_holder
             }); 
 
             library:apply_theme(dock_outline, "outline", "BackgroundColor3"); 
-            library:draggify(dock_outline);
+            -- library:draggify(dock_outline); -- Disabled to make dock unmoveable
 
             local dock_inline = library:create("Frame", {
                 Parent = dock_outline,
