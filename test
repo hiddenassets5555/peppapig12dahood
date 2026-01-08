@@ -2414,9 +2414,6 @@ local config_holder
             flags["Health_High"] = flags["Health_High"] or { Color = Color3.fromRGB(0, 255, 0) }
             local espPreview = window.esp_section:esp_preview({})
             window.esp_preview = espPreview
-            if espPreview and espPreview.items and espPreview.items.viewportframe then
-                espPreview.items.viewportframe.Visible = true
-            end
         
 
         
@@ -2638,105 +2635,7 @@ local config_holder
     end 
 
     function library:esp_preview(properties)
-        local cfg = {items = {}, rotation = 0; objects = {}; character_model = nil}
-        local items = cfg.items
-
-        items.viewportframe = library:create( "ViewportFrame" , {
-            Parent = self.holder;
-            BackgroundTransparency = 1;
-            Size = dim2(1, 0, 0, 220);
-            BorderColor3 = rgb(0, 0, 0);
-            ZIndex = 1;
-            Position = dim2(0, 0, 0, 10);
-            BorderSizePixel = 0;
-            BackgroundColor3 = rgb(255, 255, 255)
-        });
-        
-        items.camera = library:create( "Camera" , {
-            FieldOfView = 70.00022888183594;
-            CameraType = Enum.CameraType.Track;
-            Focus = cfr(0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1);
-            CFrame = cfr(0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1);
-            Parent = items.viewportframe;
-            Name = "\0"
-        }); 
-
-        items.viewportframe.CurrentCamera = items.camera
-
-        items.worldmodel = library:create("WorldModel", {
-            Parent = items.viewportframe
-        })
-
-        local cached_emote_id = nil
-
-        local function update_character()
-            if cfg.character_model then cfg.character_model:Destroy() end
-            if not lp.Character then return end
-            
-            lp.Character.Archivable = true
-            local character = lp.Character:Clone()
-            if not character then return end
-            
-            character.Name = "PreviewCharacter"
-            if character:FindFirstChild("Animate") then character.Animate:Destroy() end
-            character.PrimaryPart = character:FindFirstChild("HumanoidRootPart")
-
-            
-            for _, obj in ipairs(character:GetDescendants()) do
-                if obj:IsA("BasePart") then
-                    obj.CastShadow = false
-                    obj.CanCollide = false
-                    obj.CanTouch = false
-                    obj.CanQuery = false
-                    obj.Massless = true
-                    if obj.Name == "HumanoidRootPart" then
-                        obj.Anchored = true
-                    else
-                        obj.Anchored = false
-                    end
-                elseif obj:IsA("Script") or obj:IsA("LocalScript") or obj:IsA("Sound") or obj:IsA("ParticleEmitter") or obj:IsA("Beam") or obj:IsA("Fire") or obj:IsA("Smoke") or obj:IsA("Sparkles") or obj:IsA("Trail") or obj:IsA("Light") or obj:IsA("Explosion") then
-                    obj:Destroy()
-                elseif obj:IsA("Decal") and obj.Name ~= "face" then
-                    obj:Destroy()
-                elseif obj:IsA("Texture") then
-                    obj:Destroy()
-                end
-            end
-            
-            local hum = character:FindFirstChild("Humanoid")
-            if hum then
-                hum.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
-                hum.HealthDisplayType = Enum.HumanoidHealthDisplayType.AlwaysOff
-            end
-
-            character.Parent = items.worldmodel
-            items.camera.CameraSubject = character
-        end
-
-        update_character()
-        library:connection(lp.CharacterAdded, function(char)
-            task.wait(10) 
-            if lp.Character == char then
-                update_character()
-            end
-        end)
-
-        local lastRotate = 0
-        local rotateInterval = 1/15 
-        
-        library:connection(run.Heartbeat, function()
-            if not sgui.Enabled or not items.viewportframe.Visible or not cfg.character_model then return end
-            local now = tick()
-            
-            if (now - lastRotate) >= rotateInterval then
-                lastRotate = now
-                cfg.rotation += 1.0 
-                if cfg.character_model.PrimaryPart then
-                    cfg.character_model:PivotTo(cfr(Vector3.new(0, 1, -6)) * angle(0, math.rad(cfg.rotation), 0))
-                end
-            end
-        end)
-
+        local cfg = {items = {}}
         return setmetatable(cfg, library)
     end
 
