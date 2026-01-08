@@ -2881,16 +2881,17 @@ local config_holder
                 Parent = library.cache;
                 TextColor3 = flags["Name_Color"].Color;
                 BorderColor3 = rgb(0, 0, 0);
-                Text = string.format("%s (@%s)", lp.DisplayName, lp.Name);
+                Text = lp.DisplayName or lp.Name;  -- Match actual ESP (just DisplayName, not @username)
                 Name = "\0";
                 TextStrokeTransparency = 0;
-                AnchorPoint = vec2(0, 1);
-                Size = dim2(1, 0, 0, 0);
+                AnchorPoint = Vector2.new(0.5, 1);
+                Size = UDim2.new(0, 200, 0, 0);
                 BackgroundTransparency = 1;
                 Position = dim2(0, 0, 0, -5);
                 BorderSizePixel = 0;
                 AutomaticSize = Enum.AutomaticSize.Y;
                 TextSize = 12;
+                TextXAlignment = Enum.TextXAlignment.Center;
             });
             
             objects[ "box_handler" ] = library:create( "Frame" , {
@@ -2990,25 +2991,36 @@ local config_holder
             
             
             
-                objects[ "healthbar_holder" ] = library:create( "Frame" , {
-                    AnchorPoint = vec2(1, 0);
-                    Parent = library.cache;
-                    Name = "\0";
-                    Position = dim2(0, -5, 0, 0);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(0, 4, 1, 0);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(0, 0, 0)
+                -- Behind healthbar (matching actual ESP structure)
+                objects["behind_healthbar"] = library:create("Frame", {
+                    Parent = library.cache,
+                    Name = "BehindHealthbar",
+                    BackgroundColor3 = Color3.new(0, 0, 0),
+                    BorderSizePixel = 0,
+                    Size = UDim2.new(0, 2, 0, 100),
+                    Position = UDim2.new(0, 0, 0, 0),
+                    Visible = false,
+                    ZIndex = 1
                 });
                 
-                objects[ "healthbar" ] = library:create( "Frame" , {
-                    Parent = objects[ "healthbar_holder" ];
-                    Name = "\0";
-                    Position = dim2(0, 1, 0, 1);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -2, 1, -2);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(255, 255, 255)
+                -- Healthbar (matching actual ESP structure)
+                objects["healthbar"] = library:create("Frame", {
+                    Parent = library.cache,
+                    Name = "Healthbar",
+                    BackgroundColor3 = Color3.new(0, 1, 0),
+                    BorderSizePixel = 0,
+                    Size = UDim2.new(0, 2, 0, 100),
+                    Position = UDim2.new(0, 0, 0, 0),
+                    Visible = false,
+                    ZIndex = 2
+                });
+                
+                -- Healthbar gradient (matching actual ESP)
+                objects["healthbar_gradient"] = library:create("UIGradient", {
+                    Parent = objects["healthbar"],
+                    Name = "HealthbarGradient",
+                    Enabled = false,
+                    Rotation = -90
                 });
             
 
@@ -3067,7 +3079,7 @@ local config_holder
             
             if not onScreen or screenPoint.Z <= 0 then return end
             
-            -- Convert viewport coordinates to pixel coordinates
+            -- Convert viewport coordinates to pixel coordinates (this is pos.X, pos.Y in actual ESP)
             local posX = screenPoint.X * viewportSize.X
             local posY = screenPoint.Y * viewportSize.Y
             
@@ -3078,23 +3090,24 @@ local config_holder
             local boxWidth = 3 * scaleFactor
             local boxHeight = 4.5 * scaleFactor
             
-            -- Position box at character's screen position (like actual ESP)
-            -- Convert to relative position within holder
+            -- Store character center position (pos.X, pos.Y) for text positioning
             if not objs["holder"] then return end
             local holderPos = objs["holder"].AbsolutePosition
-            local holderSize = objs["holder"].AbsoluteSize
+            local viewportPos = items.viewportframe.AbsolutePosition
             
-            -- Calculate offset from holder's top-left corner
-            local offsetX = posX - (holderPos.X - items.viewportframe.AbsolutePosition.X)
-            local offsetY = posY - (holderPos.Y - items.viewportframe.AbsolutePosition.Y)
+            -- Calculate positions relative to holder
+            local holderRelativeX = posX - (holderPos.X - viewportPos.X)
+            local holderRelativeY = posY - (holderPos.Y - viewportPos.Y)
             
-            -- Center the box on the character's root position
-            objs["box_handler"].Position = UDim2.new(0, offsetX - boxWidth / 2, 0, offsetY - boxHeight / 2)
+            -- Position box at character's screen position (like actual ESP: pos.X - w/2, pos.Y - h/2)
+            objs["box_handler"].Position = UDim2.new(0, holderRelativeX - boxWidth / 2, 0, holderRelativeY - boxHeight / 2)
             objs["box_handler"].Size = UDim2.new(0, boxWidth, 0, boxHeight)
             
-            -- Store position for use in refresh_elements
-            cfg._boxX = offsetX - boxWidth / 2
-            cfg._boxY = offsetY - boxHeight / 2
+            -- Store positions for use in refresh_elements (matching actual ESP coordinate system)
+            cfg._posX = holderRelativeX  -- Character center X (like pos.X in actual ESP)
+            cfg._posY = holderRelativeY  -- Character center Y (like pos.Y in actual ESP)
+            cfg._boxX = holderRelativeX - boxWidth / 2  -- Box left edge
+            cfg._boxY = holderRelativeY - boxHeight / 2  -- Box top edge
             cfg._boxW = boxWidth
             cfg._boxH = boxHeight
         end
@@ -3135,7 +3148,7 @@ local config_holder
             local espEnabled = flags.esp_enabled_dummy or false
             objects.holder.Parent = espEnabled and items.viewportframe or library.cache
             
-            -- Name - Position above the box (like actual ESP)
+            -- Name - Position above the box (EXACTLY like actual ESP: pos.X, pos.Y - h/2 - 9)
             local nameEnabled = flags.esp_name_dummy or false
             objects["name"].Parent = (espEnabled and nameEnabled) and objects["holder"] or library.cache
             if nameEnabled then
@@ -3144,20 +3157,50 @@ local config_holder
                 if fontSize < 5 then fontSize = 5 end
                 objects["name"].TextSize = fontSize
                 objects["name"].TextXAlignment = Enum.TextXAlignment.Center
-                objects["name"].AnchorPoint = vec2(0.5, 1)
+                objects["name"].AnchorPoint = Vector2.new(0.5, 1)
+                objects["name"].Size = UDim2.new(0, 200, 0, fontSize + 4)
+                objects["name"].Text = lp.DisplayName or lp.Name  -- Update name text
                 
-                -- Position name above the box (centered on character)
-                if cfg._boxY and objects["box_handler"] and objects["box_handler"].Parent == objects["holder"] then
-                    local holderPos = objects["holder"].AbsolutePosition
-                    local viewportPos = items.viewportframe.AbsolutePosition
-                    local offsetY = cfg._boxY - (holderPos.Y - viewportPos.Y)
-                    objects["name"].Position = UDim2.new(0.5, 0, 0, offsetY - 5)
+                -- Position name exactly like actual ESP: pos.X, pos.Y - h/2 - 9
+                if cfg._posX and cfg._posY and cfg._boxH then
+                    objects["name"].Position = UDim2.new(0, cfg._posX, 0, cfg._posY - cfg._boxH / 2 - 9)
                 else
                     objects["name"].Position = dim2(0.5, 0, 0, -5)
                 end
             end
             
-            -- Distance - Position below health text (like actual ESP)
+            -- Weapon - Position below box (EXACTLY like actual ESP: pos.X, pos.Y + h/2 + textOffset)
+            local weaponEnabled = flags.esp_weapon_dummy or false
+            local weaponVisible = false
+            local textOffset = 7
+            objects["weapon"].Parent = (espEnabled and weaponEnabled) and objects["holder"] or library.cache
+            if weaponEnabled then
+                weaponVisible = true
+                objects["weapon"].TextColor3 = getColor("esp_weapon_c1", Color3.new(1, 1, 1))
+                local fontSize = tonumber(flags.esp_font_size_dummy) or 12
+                if fontSize < 5 then fontSize = 5 end
+                objects["weapon"].TextSize = fontSize
+                objects["weapon"].TextXAlignment = Enum.TextXAlignment.Center
+                objects["weapon"].AnchorPoint = Vector2.new(0.5, 0)
+                objects["weapon"].Size = UDim2.new(0, 200, 0, fontSize + 4)
+                
+                -- Get weapon name from character
+                local weapon = "None"
+                if cfg.character_model then
+                    local tool = cfg.character_model:FindFirstChildWhichIsA("Tool")
+                    if tool then weapon = tool.Name end
+                end
+                objects["weapon"].Text = weapon
+                
+                -- Position weapon exactly like actual ESP: pos.X, pos.Y + h/2 + textOffset
+                if cfg._posX and cfg._posY and cfg._boxH then
+                    objects["weapon"].Position = UDim2.new(0, cfg._posX, 0, cfg._posY + cfg._boxH / 2 + textOffset)
+                else
+                    objects["weapon"].Position = dim2(0.5, 0, 0, 0)
+                end
+            end
+            
+            -- Distance - Position below weapon (EXACTLY like actual ESP: pos.X, pos.Y + h/2 + currentDistOffset)
             local distanceEnabled = flags.esp_distance_dummy or false
             objects["distance"].Parent = (espEnabled and distanceEnabled) and objects["holder"] or library.cache
             if distanceEnabled then
@@ -3166,49 +3209,25 @@ local config_holder
                 if fontSize < 5 then fontSize = 5 end
                 objects["distance"].TextSize = fontSize
                 objects["distance"].TextXAlignment = Enum.TextXAlignment.Center
-                objects["distance"].AnchorPoint = vec2(0.5, 0)
+                objects["distance"].AnchorPoint = Vector2.new(0.5, 0)
+                objects["distance"].Size = UDim2.new(0, 200, 0, fontSize + 4)
+                objects["distance"].Text = "127 studs"  -- Preview distance
                 
-                -- Position distance text below health text or box
-                local offsetY = 0
-                if objects["health_text"] and objects["health_text"].Parent == objects["holder"] then
-                    local holderPos = objects["holder"].AbsolutePosition
-                    local viewportPos = items.viewportframe.AbsolutePosition
-                    local healthY = objects["health_text"].Position.Y.Offset
-                    offsetY = healthY + objects["health_text"].AbsoluteSize.Y + 2
-                elseif cfg._boxY and cfg._boxH then
-                    local holderPos = objects["holder"].AbsolutePosition
-                    local viewportPos = items.viewportframe.AbsolutePosition
-                    offsetY = cfg._boxY - (holderPos.Y - viewportPos.Y) + cfg._boxH + 2
+                -- Calculate offset like actual ESP
+                local currentDistOffset = textOffset
+                if weaponVisible then
+                    currentDistOffset = currentDistOffset + fontSize + 2
                 end
-                objects["distance"].Position = UDim2.new(0.5, 0, 0, offsetY)
+                
+                -- Position distance exactly like actual ESP: pos.X, pos.Y + h/2 + currentDistOffset
+                if cfg._posX and cfg._posY and cfg._boxH then
+                    objects["distance"].Position = UDim2.new(0, cfg._posX, 0, cfg._posY + cfg._boxH / 2 + currentDistOffset)
+                else
+                    objects["distance"].Position = dim2(0.5, 0, 0, 0)
+                end
             end
             
-            -- Weapon - Position below distance (like actual ESP)
-            local weaponEnabled = flags.esp_weapon_dummy or false
-            objects["weapon"].Parent = (espEnabled and weaponEnabled) and objects["holder"] or library.cache
-            if weaponEnabled then
-                objects["weapon"].TextColor3 = getColor("esp_weapon_c1", Color3.new(1, 1, 1))
-                local fontSize = tonumber(flags.esp_font_size_dummy) or 12
-                if fontSize < 5 then fontSize = 5 end
-                objects["weapon"].TextSize = fontSize
-                objects["weapon"].TextXAlignment = Enum.TextXAlignment.Center
-                objects["weapon"].AnchorPoint = vec2(0.5, 0)
-                
-                -- Position weapon text below distance or health text
-                local offsetY = 0
-                if objects["distance"] and objects["distance"].Parent == objects["holder"] then
-                    offsetY = objects["distance"].Position.Y.Offset + objects["distance"].AbsoluteSize.Y + 2
-                elseif objects["health_text"] and objects["health_text"].Parent == objects["holder"] then
-                    offsetY = objects["health_text"].Position.Y.Offset + objects["health_text"].AbsoluteSize.Y + 2
-                elseif cfg._boxY and cfg._boxH then
-                    local holderPos = objects["holder"].AbsolutePosition
-                    local viewportPos = items.viewportframe.AbsolutePosition
-                    offsetY = cfg._boxY - (holderPos.Y - viewportPos.Y) + cfg._boxH + 2
-                end
-                objects["weapon"].Position = UDim2.new(0.5, 0, 0, offsetY)
-            end
-            
-            -- Health Text - Position right under the box (like actual ESP)
+            -- Health Text - Position to left of box (EXACTLY like actual ESP: pos.X - w/2 - 18, pos.Y - h/2 + h * (1 - health) + 3)
             local healthNumEnabled = flags.esp_health_num_dummy or false
             if not objects["health_text"] then
                 objects["health_text"] = library:create("TextLabel", {
@@ -3216,13 +3235,13 @@ local config_holder
                     Parent = library.cache,
                     TextColor3 = Color3.new(1, 1, 1),
                     BorderColor3 = rgb(0, 0, 0),
-                    Text = "100 HP",
+                    Text = "100",
                     TextStrokeTransparency = 0,
                     Name = "\0",
-                    Size = dim2(1, 0, 0, 0),
+                    Size = UDim2.new(0, 50, 0, 0),
                     BackgroundTransparency = 1,
                     Position = dim2(0, 0, 1, 0),
-                    AnchorPoint = vec2(0.5, 0),
+                    AnchorPoint = Vector2.new(0.5, 0.5),
                     BorderSizePixel = 0,
                     AutomaticSize = Enum.AutomaticSize.Y,
                     TextSize = 12,
@@ -3231,21 +3250,40 @@ local config_holder
             end
             objects["health_text"].Parent = (espEnabled and healthNumEnabled) and objects["holder"] or library.cache
             if healthNumEnabled then
-                objects["health_text"].TextColor3 = getColor("esp_health_num_c1", Color3.new(1, 1, 1))
                 local fontSize = tonumber(flags.esp_font_size_dummy) or 12
                 if fontSize < 5 then fontSize = 5 end
                 objects["health_text"].TextSize = fontSize
                 objects["health_text"].TextXAlignment = Enum.TextXAlignment.Center
-                objects["health_text"].AnchorPoint = vec2(0.5, 0)
+                objects["health_text"].AnchorPoint = Vector2.new(0.5, 0.5)
+                objects["health_text"].Size = UDim2.new(0, 50, 0, fontSize + 4)
                 
-                -- Position health text right under the box (centered on character)
-                if cfg._boxY and cfg._boxH and objects["box_handler"] and objects["box_handler"].Parent == objects["holder"] then
-                    local holderPos = objects["holder"].AbsolutePosition
-                    local viewportPos = items.viewportframe.AbsolutePosition
-                    local offsetY = cfg._boxY - (holderPos.Y - viewportPos.Y) + cfg._boxH
-                    objects["health_text"].Position = UDim2.new(0.5, 0, 0, offsetY + 2)
+                -- Get health from character
+                local health = 100
+                local maxHealth = 100
+                if cfg.character_model then
+                    local humanoid = cfg.character_model:FindFirstChild("Humanoid")
+                    if humanoid then
+                        health = math.clamp(humanoid.Health, 0, humanoid.MaxHealth)
+                        maxHealth = humanoid.MaxHealth
+                    end
+                end
+                objects["health_text"].Text = tostring(math.floor(health))
+                
+                -- Handle dynamic health color
+                if flags.esp_health_dynamic then
+                    local healthRatio = health / maxHealth
+                    objects["health_text"].TextColor3 = Color3.fromHSV(healthRatio * 0.3, 1, 1)
                 else
-                    objects["health_text"].Position = UDim2.new(0.5, 0, 1, 0)
+                    objects["health_text"].TextColor3 = getColor("esp_health_num_c1", Color3.new(1, 1, 1))
+                end
+                
+                -- Position health text exactly like actual ESP: pos.X - w/2 - 18, pos.Y - h/2 + h * (1 - healthRatio) + 3
+                if cfg._posX and cfg._posY and cfg._boxW and cfg._boxH then
+                    local healthRatio = health / maxHealth
+                    local healthY = cfg._posY - cfg._boxH / 2 + cfg._boxH * (1 - healthRatio) + 3
+                    objects["health_text"].Position = UDim2.new(0, cfg._posX - cfg._boxW / 2 - 18, 0, healthY)
+                else
+                    objects["health_text"].Position = UDim2.new(0.5, 0, 0.5, 0)
                 end
             end
             
@@ -3304,13 +3342,15 @@ local config_holder
                 -- If only filled boxes are enabled, don't show any segments (just the filled background)
                 if showCorner then
                     -- Corner Boxes (8 segments) - EXACTLY matching actual ESP positioning
-                    -- Positions are absolute within holder (matching actual ESP screen coordinates)
-                    local posX = boxX  -- Absolute position within holder
-                    local posY = boxY
+                    -- Use character center position (pos.X, pos.Y) like actual ESP
+                    local posX = cfg._posX or boxX  -- Character center X
+                    local posY = cfg._posY or boxY  -- Character center Y
+                    local boxLeft = posX - w / 2
+                    local boxTop = posY - h / 2
                     
                     if objects["LeftTop"] then
                         objects["LeftTop"].Visible = true
-                        objects["LeftTop"].Position = UDim2.new(0, posX, 0, posY)
+                        objects["LeftTop"].Position = UDim2.new(0, boxLeft, 0, boxTop)
                         objects["LeftTop"].Size = UDim2.new(0, w / 5, 0, 1)
                         objects["LeftTop"].AnchorPoint = Vector2.new(0, 0)
                         objects["LeftTop"].BackgroundColor3 = boxColor
@@ -3318,7 +3358,7 @@ local config_holder
                     end
                     if objects["LeftSide"] then
                         objects["LeftSide"].Visible = true
-                        objects["LeftSide"].Position = UDim2.new(0, posX, 0, posY)
+                        objects["LeftSide"].Position = UDim2.new(0, boxLeft, 0, boxTop)
                         objects["LeftSide"].Size = UDim2.new(0, 1, 0, h / 5)
                         objects["LeftSide"].AnchorPoint = Vector2.new(0, 0)
                         objects["LeftSide"].BackgroundColor3 = boxColor
@@ -3326,7 +3366,7 @@ local config_holder
                     end
                     if objects["BottomSide"] then
                         objects["BottomSide"].Visible = true
-                        objects["BottomSide"].Position = UDim2.new(0, posX, 0, posY + h)
+                        objects["BottomSide"].Position = UDim2.new(0, boxLeft, 0, posY + h / 2)
                         objects["BottomSide"].Size = UDim2.new(0, 1, 0, h / 5)
                         objects["BottomSide"].AnchorPoint = Vector2.new(0, 1)
                         objects["BottomSide"].BackgroundColor3 = boxColor
@@ -3334,7 +3374,7 @@ local config_holder
                     end
                     if objects["BottomDown"] then
                         objects["BottomDown"].Visible = true
-                        objects["BottomDown"].Position = UDim2.new(0, posX, 0, posY + h)
+                        objects["BottomDown"].Position = UDim2.new(0, boxLeft, 0, posY + h / 2)
                         objects["BottomDown"].Size = UDim2.new(0, w / 5, 0, 1)
                         objects["BottomDown"].AnchorPoint = Vector2.new(0, 1)
                         objects["BottomDown"].BackgroundColor3 = boxColor
@@ -3342,7 +3382,7 @@ local config_holder
                     end
                     if objects["RightTop"] then
                         objects["RightTop"].Visible = true
-                        objects["RightTop"].Position = UDim2.new(0, posX + w, 0, posY)
+                        objects["RightTop"].Position = UDim2.new(0, posX + w / 2, 0, boxTop)
                         objects["RightTop"].Size = UDim2.new(0, w / 5, 0, 1)
                         objects["RightTop"].AnchorPoint = Vector2.new(1, 0)
                         objects["RightTop"].BackgroundColor3 = boxColor
@@ -3350,7 +3390,7 @@ local config_holder
                     end
                     if objects["RightSide"] then
                         objects["RightSide"].Visible = true
-                        objects["RightSide"].Position = UDim2.new(0, posX + w - 1, 0, posY)
+                        objects["RightSide"].Position = UDim2.new(0, posX + w / 2 - 1, 0, boxTop)
                         objects["RightSide"].Size = UDim2.new(0, 1, 0, h / 5)
                         objects["RightSide"].AnchorPoint = Vector2.new(0, 0)
                         objects["RightSide"].BackgroundColor3 = boxColor
@@ -3358,7 +3398,7 @@ local config_holder
                     end
                     if objects["BottomRightSide"] then
                         objects["BottomRightSide"].Visible = true
-                        objects["BottomRightSide"].Position = UDim2.new(0, posX + w, 0, posY + h)
+                        objects["BottomRightSide"].Position = UDim2.new(0, posX + w / 2, 0, posY + h / 2)
                         objects["BottomRightSide"].Size = UDim2.new(0, 1, 0, h / 5)
                         objects["BottomRightSide"].AnchorPoint = Vector2.new(1, 1)
                         objects["BottomRightSide"].BackgroundColor3 = boxColor
@@ -3366,7 +3406,7 @@ local config_holder
                     end
                     if objects["BottomRightDown"] then
                         objects["BottomRightDown"].Visible = true
-                        objects["BottomRightDown"].Position = UDim2.new(0, posX + w, 0, posY + h)
+                        objects["BottomRightDown"].Position = UDim2.new(0, posX + w / 2, 0, posY + h / 2)
                         objects["BottomRightDown"].Size = UDim2.new(0, w / 5, 0, 1)
                         objects["BottomRightDown"].AnchorPoint = Vector2.new(1, 1)
                         objects["BottomRightDown"].BackgroundColor3 = boxColor
@@ -3374,12 +3414,14 @@ local config_holder
                     end
                 elseif showBox then
                     -- Full Bounding Boxes (4 segments) - EXACTLY matching actual ESP
-                    local posX = boxX  -- Absolute position within holder
-                    local posY = boxY
+                    local posX = cfg._posX or boxX  -- Character center X
+                    local posY = cfg._posY or boxY  -- Character center Y
+                    local boxLeft = posX - w / 2
+                    local boxTop = posY - h / 2
                     
                     if objects["LeftTop"] then
                         objects["LeftTop"].Visible = true
-                        objects["LeftTop"].Position = UDim2.new(0, posX, 0, posY)
+                        objects["LeftTop"].Position = UDim2.new(0, boxLeft, 0, boxTop)
                         objects["LeftTop"].Size = UDim2.new(0, w, 0, 1)
                         objects["LeftTop"].AnchorPoint = Vector2.new(0, 0)
                         objects["LeftTop"].BackgroundColor3 = boxColor
@@ -3387,7 +3429,7 @@ local config_holder
                     end
                     if objects["LeftSide"] then
                         objects["LeftSide"].Visible = true
-                        objects["LeftSide"].Position = UDim2.new(0, posX, 0, posY)
+                        objects["LeftSide"].Position = UDim2.new(0, boxLeft, 0, boxTop)
                         objects["LeftSide"].Size = UDim2.new(0, 1, 0, h)
                         objects["LeftSide"].AnchorPoint = Vector2.new(0, 0)
                         objects["LeftSide"].BackgroundColor3 = boxColor
@@ -3395,7 +3437,7 @@ local config_holder
                     end
                     if objects["BottomSide"] then
                         objects["BottomSide"].Visible = true
-                        objects["BottomSide"].Position = UDim2.new(0, posX, 0, posY + h)
+                        objects["BottomSide"].Position = UDim2.new(0, boxLeft, 0, posY + h / 2)
                         objects["BottomSide"].Size = UDim2.new(0, w, 0, 1)
                         objects["BottomSide"].AnchorPoint = Vector2.new(0, 1)
                         objects["BottomSide"].BackgroundColor3 = boxColor
@@ -3403,7 +3445,7 @@ local config_holder
                     end
                     if objects["RightSide"] then
                         objects["RightSide"].Visible = true
-                        objects["RightSide"].Position = UDim2.new(0, posX + w - 1, 0, posY)
+                        objects["RightSide"].Position = UDim2.new(0, posX + w / 2 - 1, 0, boxTop)
                         objects["RightSide"].Size = UDim2.new(0, 1, 0, h)
                         objects["RightSide"].AnchorPoint = Vector2.new(0, 0)
                         objects["RightSide"].BackgroundColor3 = boxColor
@@ -3430,32 +3472,68 @@ local config_holder
             end
             objects["box_outline"].Parent = library.cache
             
-            -- Health Bar - Position to the left of box (like actual ESP)
+            -- Health Bar - Position to the left of box (EXACTLY like actual ESP: pos.X - w/2 - 5)
             local healthBarEnabled = flags.esp_health_bar_dummy or false
-            if objects["healthbar_holder"] then
-                objects["healthbar_holder"].Parent = (espEnabled and healthBarEnabled) and objects["holder"] or library.cache
+            if objects["healthbar"] and objects["behind_healthbar"] then
+                objects["healthbar"].Parent = (espEnabled and healthBarEnabled) and objects["holder"] or library.cache
+                objects["behind_healthbar"].Parent = (espEnabled and healthBarEnabled) and objects["holder"] or library.cache
+                
                 if healthBarEnabled then
                     local c1 = getColor("esp_health_bar_c1", Color3.new(0, 1, 0))
                     local c2 = getColor("esp_health_bar_c2", Color3.new(1, 0, 0))
                     
-                    -- Position health bar to the left of the box (matching actual ESP: pos.X - w / 2 - 5)
-                    if cfg._boxX and cfg._boxW and cfg._boxH then
-                        local holderPos = objects["holder"].AbsolutePosition
-                        local viewportPos = items.viewportframe.AbsolutePosition
-                        local boxLeft = cfg._boxX - (holderPos.X - viewportPos.X)
-                        local boxTop = cfg._boxY - (holderPos.Y - viewportPos.Y)
+                    -- Get health from character
+                    local health = 100
+                    local maxHealth = 100
+                    if cfg.character_model then
+                        local humanoid = cfg.character_model:FindFirstChild("Humanoid")
+                        if humanoid then
+                            health = math.clamp(humanoid.Health, 0, humanoid.MaxHealth)
+                            maxHealth = humanoid.MaxHealth
+                        end
+                    end
+                    local healthRatio = health / maxHealth
+                    
+                    -- Position health bar exactly like actual ESP: pos.X - w/2 - 5
+                    if cfg._posX and cfg._posY and cfg._boxW and cfg._boxH then
+                        local healthBarX = cfg._posX - cfg._boxW / 2 - 5
+                        local healthBarTop = cfg._posY - cfg._boxH / 2
+                        local healthBarHeight = cfg._boxH * healthRatio
+                        local healthBarY = healthBarTop + cfg._boxH * (1 - healthRatio)
                         
-                        objects["healthbar_holder"].AnchorPoint = Vector2.new(1, 0)
-                        objects["healthbar_holder"].Position = UDim2.new(0, boxLeft - 5, 0, boxTop)
-                        objects["healthbar_holder"].Size = UDim2.new(0, 4, 0, cfg._boxH)
+                        -- Behind healthbar (full height background)
+                        objects["behind_healthbar"].Visible = true
+                        objects["behind_healthbar"].Position = UDim2.new(0, healthBarX, 0, healthBarTop)
+                        objects["behind_healthbar"].Size = UDim2.new(0, 2, 0, cfg._boxH)
+                        
+                        -- Healthbar (actual health, positioned from bottom)
+                        objects["healthbar"].Visible = true
+                        objects["healthbar"].Position = UDim2.new(0, healthBarX, 0, healthBarY)
+                        objects["healthbar"].Size = UDim2.new(0, 2, 0, healthBarHeight)
                     end
                     
+                    -- Handle gradient (matching actual ESP)
                     if flags.esp_health_gradient then
-                        -- Use gradient (simplified for preview)
-                        objects["healthbar"].BackgroundColor3 = c1
+                        if objects["healthbar_gradient"] then
+                            objects["healthbar_gradient"].Enabled = true
+                            objects["healthbar_gradient"].Color = ColorSequence.new{
+                                ColorSequenceKeypoint.new(0, c1),
+                                ColorSequenceKeypoint.new(1, c2)
+                            }
+                            objects["healthbar_gradient"].Offset = Vector2.new(0, healthRatio - 1)
+                            objects["healthbar"].BackgroundColor3 = Color3.new(1, 1, 1)
+                        else
+                            objects["healthbar"].BackgroundColor3 = c1
+                        end
                     else
+                        if objects["healthbar_gradient"] then
+                            objects["healthbar_gradient"].Enabled = false
+                        end
                         objects["healthbar"].BackgroundColor3 = c1
                     end
+                else
+                    objects["healthbar"].Visible = false
+                    objects["behind_healthbar"].Visible = false
                 end
             end
             
