@@ -3103,20 +3103,21 @@ local config_holder
             local root = character:FindFirstChild("HumanoidRootPart")
             if not root then return end
             
-            -- Use WorldToViewportPoint like actual ESP to get screen position
+            -- Use WorldToViewportPoint (ViewportFrame cameras use this, not WorldToScreenPoint)
             local viewportSize = items.viewportframe.AbsoluteSize
             local screenPoint, onScreen = camera:WorldToViewportPoint(root.Position)
             
             if not onScreen or screenPoint.Z <= 0 then return end
             
-            -- Convert viewport coordinates to pixel coordinates (this is pos.X, pos.Y in actual ESP)
+            -- Convert viewport coordinates (0-1) to pixel coordinates (matching actual ESP pos.X, pos.Y)
             local posX = screenPoint.X * viewportSize.X
             local posY = screenPoint.Y * viewportSize.Y
             
-            -- Calculate box size using same method as actual ESP
-            local distance = screenPoint.Z
+            -- Calculate box size using EXACT same method as actual ESP
+            -- Actual ESP: local scaleFactor = (size * currentCamera.ViewportSize.Y) / (pos.Z * 2)
+            -- Note: screenPoint.Z from WorldToViewportPoint is distance in studs (same as pos.Z from WorldToScreenPoint)
             local size = root.Size.Y
-            local scaleFactor = (size * viewportSize.Y) / (distance * 2)
+            local scaleFactor = (size * viewportSize.Y) / (screenPoint.Z * 2)
             local boxWidth = 3 * scaleFactor
             local boxHeight = 4.5 * scaleFactor
             
@@ -3125,15 +3126,16 @@ local config_holder
             local holderPos = objs["holder"].AbsolutePosition
             local viewportPos = items.viewportframe.AbsolutePosition
             
-            -- Calculate positions relative to holder
+            -- Calculate positions relative to holder (accounting for viewport position within holder)
             local holderRelativeX = posX - (holderPos.X - viewportPos.X)
             local holderRelativeY = posY - (holderPos.Y - viewportPos.Y)
             
-            -- Position box at character's screen position (like actual ESP: pos.X - w/2, pos.Y - h/2)
+            -- Position box at character's screen position (EXACTLY like actual ESP: pos.X - w/2, pos.Y - h/2)
             objs["box_handler"].Position = UDim2.new(0, holderRelativeX - boxWidth / 2, 0, holderRelativeY - boxHeight / 2)
             objs["box_handler"].Size = UDim2.new(0, boxWidth, 0, boxHeight)
             
             -- Store positions for use in refresh_elements (matching actual ESP coordinate system)
+            -- These are the character center coordinates (pos.X, pos.Y) relative to holder
             cfg._posX = holderRelativeX  -- Character center X (like pos.X in actual ESP)
             cfg._posY = holderRelativeY  -- Character center Y (like pos.Y in actual ESP)
             cfg._boxX = holderRelativeX - boxWidth / 2  -- Box left edge
@@ -3199,13 +3201,22 @@ local config_holder
             local nameEnabled = flags.esp_name_dummy or false
             objects["name"].Parent = (espEnabled and nameEnabled) and objects["holder"] or library.cache
             if nameEnabled then
-                objects["name"].TextColor3 = getColor("esp_name_c1", Color3.new(1, 1, 1))
-                local fontSize = tonumber(flags.esp_font_size_dummy) or 12
+                -- Apply font style (matching actual ESP applyTextStyle function)
+                local fontSize = tonumber(flags.esp_font_size_dummy) or 8
                 if fontSize < 5 then fontSize = 5 end
+                local selectedFont = flags.settings_font_dummy or "Minecraft"
+                local fontFace = library.fonts and library.fonts[selectedFont]
+                
                 objects["name"].TextSize = fontSize
+                if fontFace then
+                    objects["name"].FontFace = fontFace
+                else
+                    objects["name"].Font = Enum.Font.RobotoMono
+                end
                 objects["name"].TextXAlignment = Enum.TextXAlignment.Center
                 objects["name"].AnchorPoint = Vector2.new(0.5, 1)
                 objects["name"].Size = UDim2.new(0, 200, 0, fontSize + 4)
+                objects["name"].TextColor3 = getColor("esp_name_c1", Color3.new(1, 1, 1))
                 
                 -- Use DisplayName or Name based on esp_use_display_dummy flag (matching actual ESP)
                 if flags.esp_use_display_dummy then
@@ -3229,13 +3240,23 @@ local config_holder
             objects["weapon"].Parent = (espEnabled and weaponEnabled) and objects["holder"] or library.cache
             if weaponEnabled then
                 weaponVisible = true
-                objects["weapon"].TextColor3 = getColor("esp_weapon_c1", Color3.new(1, 1, 1))
-                local fontSize = tonumber(flags.esp_font_size_dummy) or 12
+                
+                -- Apply font style (matching actual ESP applyTextStyle function)
+                local fontSize = tonumber(flags.esp_font_size_dummy) or 8
                 if fontSize < 5 then fontSize = 5 end
+                local selectedFont = flags.settings_font_dummy or "Minecraft"
+                local fontFace = library.fonts and library.fonts[selectedFont]
+                
                 objects["weapon"].TextSize = fontSize
+                if fontFace then
+                    objects["weapon"].FontFace = fontFace
+                else
+                    objects["weapon"].Font = Enum.Font.RobotoMono
+                end
                 objects["weapon"].TextXAlignment = Enum.TextXAlignment.Center
                 objects["weapon"].AnchorPoint = Vector2.new(0.5, 0)
                 objects["weapon"].Size = UDim2.new(0, 200, 0, fontSize + 4)
+                objects["weapon"].TextColor3 = getColor("esp_weapon_c1", Color3.new(1, 1, 1))
                 
                 -- Get weapon name from character
                 local weapon = "None"
@@ -3257,13 +3278,22 @@ local config_holder
             local distanceEnabled = flags.esp_distance_dummy or false
             objects["distance"].Parent = (espEnabled and distanceEnabled) and objects["holder"] or library.cache
             if distanceEnabled then
-                objects["distance"].TextColor3 = getColor("esp_distance_c1", Color3.new(1, 1, 1))
-                local fontSize = tonumber(flags.esp_font_size_dummy) or 12
+                -- Apply font style (matching actual ESP applyTextStyle function)
+                local fontSize = tonumber(flags.esp_font_size_dummy) or 8
                 if fontSize < 5 then fontSize = 5 end
+                local selectedFont = flags.settings_font_dummy or "Minecraft"
+                local fontFace = library.fonts and library.fonts[selectedFont]
+                
                 objects["distance"].TextSize = fontSize
+                if fontFace then
+                    objects["distance"].FontFace = fontFace
+                else
+                    objects["distance"].Font = Enum.Font.RobotoMono
+                end
                 objects["distance"].TextXAlignment = Enum.TextXAlignment.Center
                 objects["distance"].AnchorPoint = Vector2.new(0.5, 0)
                 objects["distance"].Size = UDim2.new(0, 200, 0, fontSize + 4)
+                objects["distance"].TextColor3 = getColor("esp_distance_c1", Color3.new(1, 1, 1))
                 objects["distance"].Text = "127 studs"  -- Preview distance
                 
                 -- Calculate offset like actual ESP
@@ -3303,9 +3333,18 @@ local config_holder
             end
             objects["health_text"].Parent = (espEnabled and healthNumEnabled) and objects["holder"] or library.cache
             if healthNumEnabled then
-                local fontSize = tonumber(flags.esp_font_size_dummy) or 12
+                -- Apply font style (matching actual ESP applyTextStyle function)
+                local fontSize = tonumber(flags.esp_font_size_dummy) or 8
                 if fontSize < 5 then fontSize = 5 end
+                local selectedFont = flags.settings_font_dummy or "Minecraft"
+                local fontFace = library.fonts and library.fonts[selectedFont]
+                
                 objects["health_text"].TextSize = fontSize
+                if fontFace then
+                    objects["health_text"].FontFace = fontFace
+                else
+                    objects["health_text"].Font = Enum.Font.RobotoMono
+                end
                 objects["health_text"].TextXAlignment = Enum.TextXAlignment.Center
                 objects["health_text"].AnchorPoint = Vector2.new(0.5, 0.5)
                 objects["health_text"].Size = UDim2.new(0, 50, 0, fontSize + 4)
