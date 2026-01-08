@@ -2915,12 +2915,15 @@ local config_holder
                     Visible = false,
                     AnchorPoint = anchorPoint or Vector2.new(0, 0)
                 })
-                -- Add outline
-                library:create("UIStroke", {
+                -- Add outline (matching actual ESP AddOutline function - creates a black outline frame)
+                local outline = library:create("Frame", {
                     Parent = segment,
-                    Color = Color3.new(0, 0, 0),
-                    Thickness = 1,
-                    LineJoinMode = Enum.LineJoinMode.Miter
+                    Name = "Outline",
+                    BackgroundColor3 = Color3.new(0, 0, 0),
+                    BorderSizePixel = 0,
+                    Position = UDim2.new(0, -1, 0, -1),
+                    Size = UDim2.new(1, 2, 1, 2),
+                    ZIndex = segment.ZIndex - 1
                 })
                 return segment
             end
@@ -2936,12 +2939,39 @@ local config_holder
                     AnchorPoint = anchorPoint or Vector2.new(0, 0),
                     ZIndex = 2
                 })
-                -- Add outline
-                library:create("UIStroke", {
+                -- Add outline (EXACTLY matching actual ESP AddOutline function with thickness=1)
+                local t = 1
+                library:create("Frame", {
                     Parent = segment,
-                    Color = Color3.new(0, 0, 0),
-                    Thickness = 1,
-                    LineJoinMode = Enum.LineJoinMode.Miter
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = Color3.new(0, 0, 0),
+                    Position = UDim2.new(0, -t, 0, -t),
+                    Size = UDim2.new(1, t*2, 0, t),
+                    ZIndex = segment.ZIndex - 1
+                })
+                library:create("Frame", {
+                    Parent = segment,
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = Color3.new(0, 0, 0),
+                    Position = UDim2.new(0, -t, 1, 0),
+                    Size = UDim2.new(1, t*2, 0, t),
+                    ZIndex = segment.ZIndex - 1
+                })
+                library:create("Frame", {
+                    Parent = segment,
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = Color3.new(0, 0, 0),
+                    Position = UDim2.new(0, -t, 0, 0),
+                    Size = UDim2.new(0, t, 1, 0),
+                    ZIndex = segment.ZIndex - 1
+                })
+                library:create("Frame", {
+                    Parent = segment,
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = Color3.new(0, 0, 0),
+                    Position = UDim2.new(1, 0, 0, 0),
+                    Size = UDim2.new(0, t, 1, 0),
+                    ZIndex = segment.ZIndex - 1
                 })
                 return segment
             end
@@ -3114,19 +3144,36 @@ local config_holder
 
         cfg.change_health = function()
             if not cfg.character_model then return end
-            if flags[ "healthbar_holder" ] and flags[ "healthbar_holder" ].Parent ~= objects[ "holder" ] then 
-                return 
-            end
-
+            
             local humanoid = cfg.character_model:FindFirstChild("Humanoid")
             if not humanoid then return end
             
-            local multiplier = math.abs(math.sin(tick() * 2))
-            local color = flags[ "Health_Low" ].Color:Lerp( flags["Health_High"].Color, multiplier)
+            local health = math.clamp(humanoid.Health, 0, humanoid.MaxHealth)
+            local maxHealth = humanoid.MaxHealth
+            local healthRatio = health / maxHealth
             
-            objects[ "healthbar" ].Size = UDim2.new(1, -2, multiplier, -2)
-            objects[ "healthbar" ].Position = UDim2.new(0, 1, 1 - multiplier, 1)
-            objects[ "healthbar" ].BackgroundColor3 = color
+            -- Update health bar position and size (matching actual ESP)
+            if objects["healthbar"] and objects["behind_healthbar"] and cfg._posX and cfg._posY and cfg._boxW and cfg._boxH then
+                local healthBarX = cfg._posX - cfg._boxW / 2 - 5
+                local healthBarTop = cfg._posY - cfg._boxH / 2
+                local healthBarHeight = cfg._boxH * healthRatio
+                local healthBarY = healthBarTop + cfg._boxH * (1 - healthRatio)
+                
+                -- Update healthbar position and size
+                objects["healthbar"].Position = UDim2.new(0, healthBarX, 0, healthBarY)
+                objects["healthbar"].Size = UDim2.new(0, 2, 0, healthBarHeight)
+                
+                -- Update health text if it exists
+                if objects["health_text"] and objects["health_text"].Parent == objects["holder"] then
+                    objects["health_text"].Text = tostring(math.floor(health))
+                    if flags.esp_health_dynamic then
+                        objects["health_text"].TextColor3 = Color3.fromHSV(healthRatio * 0.3, 1, 1)
+                    end
+                    -- Update health text position
+                    local healthTextY = healthBarTop + cfg._boxH * (1 - healthRatio) + 3
+                    objects["health_text"].Position = UDim2.new(0, cfg._posX - cfg._boxW / 2 - 18, 0, healthTextY)
+                end
+            end
         end 
 
         function cfg.refresh_elements( )
@@ -3159,7 +3206,13 @@ local config_holder
                 objects["name"].TextXAlignment = Enum.TextXAlignment.Center
                 objects["name"].AnchorPoint = Vector2.new(0.5, 1)
                 objects["name"].Size = UDim2.new(0, 200, 0, fontSize + 4)
-                objects["name"].Text = lp.DisplayName or lp.Name  -- Update name text
+                
+                -- Use DisplayName or Name based on esp_use_display_dummy flag (matching actual ESP)
+                if flags.esp_use_display_dummy then
+                    objects["name"].Text = lp.DisplayName or lp.Name
+                else
+                    objects["name"].Text = lp.Name
+                end
                 
                 -- Position name exactly like actual ESP: pos.X, pos.Y - h/2 - 9
                 if cfg._posX and cfg._posY and cfg._boxH then
@@ -3548,19 +3601,18 @@ local config_holder
                 end
             end
             
-            -- Chams
+            -- Chams (matching actual ESP)
             if cfg.objects["chams"] then
                 local chamsEnabled = flags.esp_chams_dummy or false
                 local shouldShow = (espEnabled and chamsEnabled) and true or false
-                cfg.objects["chams"].Enabled = shouldShow
                 
-                -- Ensure chams is properly attached to character
                 if shouldShow and cfg.character_model then
+                    cfg.objects["chams"].Enabled = true
                     cfg.objects["chams"].Adornee = cfg.character_model
                     cfg.objects["chams"].FillColor = getColor("esp_chams_c1", Color3.new(1, 0, 0))
                     cfg.objects["chams"].OutlineColor = getColor("esp_chams_c2", Color3.new(1, 1, 1))
                     
-                    -- Handle transparency
+                    -- Handle transparency (matching actual ESP)
                     local fillTrans = 0.5
                     if type(flags.esp_chams_c1) == "table" and flags.esp_chams_c1.Transparency then
                         fillTrans = 1 - flags.esp_chams_c1.Transparency
@@ -3579,9 +3631,9 @@ local config_holder
                         cfg.objects["chams"].OutlineTransparency = outlineTrans
                     end
                     
-                    -- Ensure chams is visible
-                    cfg.objects["chams"].DepthMode = Enum.HighlightDepthMode.Occluded
-                elseif not shouldShow then
+                    -- Set depth mode (matching actual ESP: AlwaysOnTop)
+                    cfg.objects["chams"].DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                else
                     cfg.objects["chams"].Enabled = false
                 end
             end
