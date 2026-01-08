@@ -2270,7 +2270,7 @@ local config_holder
             local section = column:section({name = "Other"})
             section:label({name = "UI Bind"})
             :keybind({callback = window.set_menu_visibility, key = getgenv().UiBindKey})
-            section:toggle({name = "Anti AFK", flag = "anti_afk", default = false, callback = function(v)
+            section:toggle({name = "Anti AFK", flag = "anti_afk", default = true, callback = function(v)
                 if v then
                     -- Initialize anti-AFK if not already active
                     if not getgenv().AntiAFKActive then
@@ -2783,6 +2783,9 @@ local config_holder
         local lastCacheUpdate = 0
         local cacheUpdateInterval = 0.5 -- Update cache every 500ms
 
+        local lastRefreshUpdate = 0
+        local refreshUpdateInterval = 0.1 -- Refresh ESP visuals every 100ms
+        
         library:connection(run.Heartbeat, function()
             if not sgui.Enabled or not items.viewportframe.Visible or not cfg.character_model then return end
             local now = tick()
@@ -2812,6 +2815,12 @@ local config_holder
             if (now - lastHealthUpdate) >= healthInterval then
                 lastHealthUpdate = now
                 if cfg.change_health then cfg.change_health() end
+            end
+            
+            -- Refresh ESP visuals periodically to sync with flag changes
+            if (now - lastRefreshUpdate) >= refreshUpdateInterval then
+                lastRefreshUpdate = now
+                if cfg.refresh_elements then cfg.refresh_elements() end
             end
         end)
 
@@ -2989,30 +2998,158 @@ local config_holder
             objects[ "healthbar" ].BackgroundColor3 = color
         end 
 
-        function cfg.refresh_elements( )                                
-            objects.holder.Parent = flags["Enabled"] and items.viewportframe or library.cache
-            objects["name"].TextColor3 = (flags["Name_Color"] and flags["Name_Color"].Color) or objects["name"].TextColor3
-            objects["distance"].TextColor3 = (flags["Distance_Color"] and flags["Distance_Color"].Color) or objects["distance"].TextColor3
-            objects["weapon"].TextColor3 = (flags["Weapon_Color"] and flags["Weapon_Color"].Color) or objects["weapon"].TextColor3
-            objects["name"].Parent = flags["Names"] and objects["holder"] or library.cache
-            objects["distance"].Parent = flags["Distance"] and objects["holder"] or library.cache
-            objects["weapon"].Parent = library.cache
-            objects["box_handler"].Parent = library.cache
+        function cfg.refresh_elements( )
+            -- Helper function to get color from flag
+            local function getColor(flagName, defaultColor)
+                local flag = flags[flagName]
+                if type(flag) == "table" and flag.Color then
+                    return flag.Color
+                elseif type(flag) == "Color3" then
+                    return flag
+                end
+                return defaultColor or Color3.new(1, 1, 1)
+            end
+            
+            -- Main holder visibility
+            local espEnabled = flags.esp_enabled_dummy or false
+            objects.holder.Parent = espEnabled and items.viewportframe or library.cache
+            
+            -- Name
+            local nameEnabled = flags.esp_name_dummy or false
+            objects["name"].Parent = (espEnabled and nameEnabled) and objects["holder"] or library.cache
+            if nameEnabled then
+                objects["name"].TextColor3 = getColor("esp_name_c1", Color3.new(1, 1, 1))
+                local fontSize = tonumber(flags.esp_font_size_dummy) or 12
+                if fontSize < 5 then fontSize = 5 end
+                objects["name"].TextSize = fontSize
+            end
+            
+            -- Distance
+            local distanceEnabled = flags.esp_distance_dummy or false
+            objects["distance"].Parent = (espEnabled and distanceEnabled) and objects["holder"] or library.cache
+            if distanceEnabled then
+                objects["distance"].TextColor3 = getColor("esp_distance_c1", Color3.new(1, 1, 1))
+                local fontSize = tonumber(flags.esp_font_size_dummy) or 12
+                if fontSize < 5 then fontSize = 5 end
+                objects["distance"].TextSize = fontSize
+            end
+            
+            -- Weapon
+            local weaponEnabled = flags.esp_weapon_dummy or false
+            objects["weapon"].Parent = (espEnabled and weaponEnabled) and objects["holder"] or library.cache
+            if weaponEnabled then
+                objects["weapon"].TextColor3 = getColor("esp_weapon_c1", Color3.new(1, 1, 1))
+                local fontSize = tonumber(flags.esp_font_size_dummy) or 12
+                if fontSize < 5 then fontSize = 5 end
+                objects["weapon"].TextSize = fontSize
+            end
+            
+            -- Health Text
+            local healthNumEnabled = flags.esp_health_num_dummy or false
+            if not objects["health_text"] then
+                objects["health_text"] = library:create("TextLabel", {
+                    FontFace = library.font,
+                    Parent = library.cache,
+                    TextColor3 = Color3.new(1, 1, 1),
+                    BorderColor3 = rgb(0, 0, 0),
+                    Text = "100 HP",
+                    TextStrokeTransparency = 0,
+                    Name = "\0",
+                    Size = dim2(1, 0, 0, 0),
+                    BackgroundTransparency = 1,
+                    Position = dim2(0, 0, 1, 33),
+                    BorderSizePixel = 0,
+                    AutomaticSize = Enum.AutomaticSize.Y,
+                    TextSize = 12,
+                })
+            end
+            objects["health_text"].Parent = (espEnabled and healthNumEnabled) and objects["holder"] or library.cache
+            if healthNumEnabled then
+                objects["health_text"].TextColor3 = getColor("esp_health_num_c1", Color3.new(1, 1, 1))
+                local fontSize = tonumber(flags.esp_font_size_dummy) or 12
+                if fontSize < 5 then fontSize = 5 end
+                objects["health_text"].TextSize = fontSize
+            end
+            
+            -- Boxes (Bounding Box, Corner Box, Filled Box)
+            local showBox = flags.esp_box_dummy or false
+            local showCorner = flags.esp_box_corner_dummy or false
+            local showFilled = flags.esp_fill_dummy or false
+            
+            if (showBox or showCorner or showFilled) and espEnabled then
+                objects["box_handler"].Parent = objects["holder"]
+                objects["box_color"].Color = showCorner and getColor("esp_box_corner_c1", Color3.new(1, 1, 1)) or getColor("esp_box_c1", Color3.new(1, 1, 1))
+                objects["box_color"].Thickness = tonumber(flags.esp_width_dummy) or 1
+                
+                -- Handle filled box
+                if showFilled then
+                    objects["box_handler"].BackgroundTransparency = 0.5
+                    local fillC1 = getColor("esp_fill_c1", Color3.new(0, 0, 0))
+                    objects["box_handler"].BackgroundColor3 = fillC1
+                else
+                    objects["box_handler"].BackgroundTransparency = 1
+                end
+            else
+                objects["box_handler"].Parent = library.cache
+            end
             objects["box_outline"].Parent = library.cache
-            local sk = objects["skeleton"]
-            if sk then
-                sk.Parent = flags["Skeleton"] and objects["holder"] or library.cache
-                for _, line in ipairs(sk:GetChildren()) do
-                    if line:IsA("Frame") then
-                        line.BackgroundColor3 = ESP_SETTINGS.SkeletonColor
+            
+            -- Health Bar
+            local healthBarEnabled = flags.esp_health_bar_dummy or false
+            if objects["healthbar_holder"] then
+                objects["healthbar_holder"].Parent = (espEnabled and healthBarEnabled) and objects["holder"] or library.cache
+                if healthBarEnabled then
+                    local c1 = getColor("esp_health_bar_c1", Color3.new(0, 1, 0))
+                    local c2 = getColor("esp_health_bar_c2", Color3.new(1, 0, 0))
+                    if flags.esp_health_gradient then
+                        -- Use gradient (simplified for preview)
+                        objects["healthbar"].BackgroundColor3 = c1
+                    else
+                        objects["healthbar"].BackgroundColor3 = c1
                     end
                 end
             end
+            
+            -- Skeleton (if exists)
+            local sk = objects["skeleton"]
+            if sk then
+                sk.Parent = library.cache -- Skeleton not currently in ESP flags, keep hidden
+                for _, line in ipairs(sk:GetChildren()) do
+                    if line:IsA("Frame") then
+                        line.BackgroundColor3 = ESP_SETTINGS and ESP_SETTINGS.SkeletonColor or Color3.new(1, 1, 1)
+                    end
+                end
+            end
+            
+            -- Chams
             if cfg.objects["chams"] then
-                cfg.objects["chams"].Enabled = flags["Chams"] and true or false
+                local chamsEnabled = flags.esp_chams_dummy or false
+                cfg.objects["chams"].Enabled = (espEnabled and chamsEnabled) and true or false
+                if chamsEnabled then
+                    cfg.objects["chams"].FillColor = getColor("esp_chams_c1", Color3.new(1, 0, 0))
+                    cfg.objects["chams"].OutlineColor = getColor("esp_chams_c2", Color3.new(1, 1, 1))
+                    
+                    -- Handle transparency
+                    local fillTrans = 0.5
+                    if type(flags.esp_chams_c1) == "table" and flags.esp_chams_c1.Transparency then
+                        fillTrans = 1 - flags.esp_chams_c1.Transparency
+                    end
+                    local outlineTrans = 0
+                    if type(flags.esp_chams_c2) == "table" and flags.esp_chams_c2.Transparency then
+                        outlineTrans = 1 - flags.esp_chams_c2.Transparency
+                    end
+                    
+                    if flags.esp_chams_thermal then
+                        local breathe = math.abs(math.sin(tick() * 2))
+                        cfg.objects["chams"].FillTransparency = fillTrans * breathe
+                        cfg.objects["chams"].OutlineTransparency = outlineTrans * breathe
+                    else
+                        cfg.objects["chams"].FillTransparency = fillTrans
+                        cfg.objects["chams"].OutlineTransparency = outlineTrans
+                    end
+                end
             end
         end
-
 
         return setmetatable(cfg, library)
     end
