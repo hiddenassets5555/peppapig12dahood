@@ -19,6 +19,10 @@ local cas = cloneref(game:GetService("ContextActionService"))
 local lp = players.LocalPlayer
 local camera = workspace.CurrentCamera
 
+-- Cache for UI optimization
+local cachedCamera = nil
+local cachedViewportSize = nil
+
 local vec2 = Vector2.new
 local vec3 = Vector3.new
 local dim2 = UDim2.new
@@ -405,8 +409,17 @@ local config_holder
 
         library:connection(uis.InputChanged, function(input, game_event) 
             if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-                local viewport_x = camera.ViewportSize.X
-                local viewport_y = camera.ViewportSize.Y
+                -- Cache viewport size
+                if not cachedViewportSize then
+                    cachedCamera = workspace.CurrentCamera
+                    if cachedCamera then
+                        cachedViewportSize = cachedCamera.ViewportSize
+                    end
+                end
+                if not cachedViewportSize then return end
+                
+                local viewport_x = cachedViewportSize.X
+                local viewport_y = cachedViewportSize.Y
 
                 local current_position = dim2(
                     0,
@@ -2751,11 +2764,25 @@ local config_holder
         local rotateInterval = 1/15 
         local lastHealthUpdate = 0
         local healthInterval = 0.2
+        local lastCacheUpdate = 0
+        local cacheUpdateInterval = 0.5 -- Update cache every 500ms
 
         library:connection(run.Heartbeat, function()
             if not sgui.Enabled or not items.viewportframe.Visible or not cfg.character_model then return end
             local now = tick()
             
+            -- Update camera/viewport cache periodically
+            if now - lastCacheUpdate >= cacheUpdateInterval then
+                lastCacheUpdate = now
+                local currentCamera = workspace.CurrentCamera
+                if currentCamera ~= cachedCamera then
+                    cachedCamera = currentCamera
+                    cachedViewportSize = nil
+                end
+                if cachedCamera and (not cachedViewportSize or cachedViewportSize ~= cachedCamera.ViewportSize) then
+                    cachedViewportSize = cachedCamera.ViewportSize
+                end
+            end
             
             if (now - lastRotate) >= rotateInterval then
                 lastRotate = now
