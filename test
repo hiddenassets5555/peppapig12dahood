@@ -2820,7 +2820,7 @@ local config_holder
             end
             
             -- Update box position to follow character
-            updateBoxPosition()
+            if cfg.updateBoxPosition then cfg.updateBoxPosition() end
             
             -- Refresh ESP visuals periodically to sync with flag changes
             if (now - lastRefreshUpdate) >= refreshUpdateInterval then
@@ -2828,7 +2828,7 @@ local config_holder
                 if cfg.refresh_elements then 
                     cfg.refresh_elements()
                     -- Update box position after refresh to ensure corner boxes are positioned correctly
-                    updateBoxPosition()
+                    if cfg.updateBoxPosition then cfg.updateBoxPosition() end
                 end
             end
         end)
@@ -3021,7 +3021,8 @@ local config_holder
 
         -- Function to update box position based on character bounds (defined after objects are created)
         cfg.updateBoxPosition = function()
-            if not cfg.character_model or not objects or not objects["box_handler"] or objects["box_handler"].Parent == library.cache then return end
+            local objs = cfg.objects
+            if not cfg.character_model or not objs or not objs["box_handler"] or objs["box_handler"].Parent == library.cache then return end
             
             local character = cfg.character_model
             local camera = items.camera
@@ -3041,15 +3042,14 @@ local config_holder
             local boxHeight = 4.5 * scaleFactor
             
             -- Center the box in the holder (which is centered in viewport)
-            if not objects["holder"] then return end
-            local holderSize = objects["holder"].AbsoluteSize
+            if not objs["holder"] then return end
+            local holderSize = objs["holder"].AbsoluteSize
             local centerX = (holderSize.X - boxWidth) / 2
             local centerY = (holderSize.Y - boxHeight) / 2
             
-            objects["box_handler"].Position = UDim2.new(0, centerX, 0, centerY)
-            objects["box_handler"].Size = UDim2.new(0, boxWidth, 0, boxHeight)
+            objs["box_handler"].Position = UDim2.new(0, centerX, 0, centerY)
+            objs["box_handler"].Size = UDim2.new(0, boxWidth, 0, boxHeight)
         end
-        local updateBoxPosition = cfg.updateBoxPosition
 
         cfg.change_health = function()
             if not cfg.character_model then return end
