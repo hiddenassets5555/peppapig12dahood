@@ -2940,6 +2940,14 @@ local config_holder
                 Parent = objects[ "box_handler" ]
             });
             
+            -- Gradient for filled boxes (matching actual ESP)
+            objects["Gradient1"] = library:create("UIGradient", {
+                Parent = objects["box_handler"],
+                Name = "Gradient1",
+                Enabled = false,
+                Rotation = -45
+            });
+            
             objects[ "outline" ] = library:create( "Frame" , {
                 Parent = objects[ "box_handler" ];
                 Name = "\0";
@@ -3201,13 +3209,23 @@ local config_holder
                 objects["box_handler"].Parent = objects["holder"]
                 local boxColor = showCorner and getColor("esp_box_corner_c1", Color3.new(1, 1, 1)) or getColor("esp_box_c1", Color3.new(1, 1, 1))
                 
-                -- Handle filled box background
+                -- Handle filled box background (matching actual ESP)
                 if showFilled then
+                    local fillC1 = getColor("esp_fill_c1", Color3.new(1, 1, 1))
+                    local fillC2 = getColor("esp_fill_c2", fillC1)
+                    
                     objects["box_handler"].BackgroundTransparency = 0.5
-                    local fillC1 = getColor("esp_fill_c1", Color3.new(0, 0, 0))
-                    objects["box_handler"].BackgroundColor3 = fillC1
+                    objects["Gradient1"].Enabled = true
+                    objects["Gradient1"].Color = ColorSequence.new{
+                        ColorSequenceKeypoint.new(0, fillC1),
+                        ColorSequenceKeypoint.new(1, fillC2)
+                    }
+                    objects["box_handler"].BackgroundColor3 = Color3.new(1, 1, 1)
                 else
                     objects["box_handler"].BackgroundTransparency = 1
+                    if objects["Gradient1"] then
+                        objects["Gradient1"].Enabled = false
+                    end
                 end
                 
                 -- Get box dimensions from box_handler
@@ -3227,93 +3245,118 @@ local config_holder
                 if objects["BottomRightDown"] then objects["BottomRightDown"].Visible = false end
                 
                 if showCorner then
-                    -- Corner Boxes (8 segments) - matching actual ESP
+                    -- Corner Boxes (8 segments) - EXACTLY matching actual ESP positioning
+                    -- Positions are relative to box_handler which is already positioned correctly
+                    local posX = 0  -- Relative to box_handler (which is at boxX, boxY)
+                    local posY = 0
+                    
                     if objects["LeftTop"] then
                         objects["LeftTop"].Visible = true
-                        objects["LeftTop"].Position = UDim2.new(0, 0, 0, 0)
+                        objects["LeftTop"].Position = UDim2.new(0, posX, 0, posY)
                         objects["LeftTop"].Size = UDim2.new(0, w / 5, 0, 1)
+                        objects["LeftTop"].AnchorPoint = Vector2.new(0, 0)
                         objects["LeftTop"].BackgroundColor3 = boxColor
                         objects["LeftTop"].BackgroundTransparency = 0
                     end
                     if objects["LeftSide"] then
                         objects["LeftSide"].Visible = true
-                        objects["LeftSide"].Position = UDim2.new(0, 0, 0, 0)
+                        objects["LeftSide"].Position = UDim2.new(0, posX, 0, posY)
                         objects["LeftSide"].Size = UDim2.new(0, 1, 0, h / 5)
+                        objects["LeftSide"].AnchorPoint = Vector2.new(0, 0)
                         objects["LeftSide"].BackgroundColor3 = boxColor
                         objects["LeftSide"].BackgroundTransparency = 0
                     end
                     if objects["BottomSide"] then
                         objects["BottomSide"].Visible = true
-                        objects["BottomSide"].Position = UDim2.new(0, 0, 1, 0)
+                        objects["BottomSide"].Position = UDim2.new(0, posX, 0, posY + h)
                         objects["BottomSide"].Size = UDim2.new(0, 1, 0, h / 5)
+                        objects["BottomSide"].AnchorPoint = Vector2.new(0, 1)
                         objects["BottomSide"].BackgroundColor3 = boxColor
                         objects["BottomSide"].BackgroundTransparency = 0
                     end
                     if objects["BottomDown"] then
                         objects["BottomDown"].Visible = true
-                        objects["BottomDown"].Position = UDim2.new(0, 0, 1, 0)
+                        objects["BottomDown"].Position = UDim2.new(0, posX, 0, posY + h)
                         objects["BottomDown"].Size = UDim2.new(0, w / 5, 0, 1)
+                        objects["BottomDown"].AnchorPoint = Vector2.new(0, 1)
                         objects["BottomDown"].BackgroundColor3 = boxColor
                         objects["BottomDown"].BackgroundTransparency = 0
                     end
                     if objects["RightTop"] then
                         objects["RightTop"].Visible = true
-                        objects["RightTop"].Position = UDim2.new(1, 0, 0, 0)
+                        objects["RightTop"].Position = UDim2.new(0, posX + w, 0, posY)
                         objects["RightTop"].Size = UDim2.new(0, w / 5, 0, 1)
+                        objects["RightTop"].AnchorPoint = Vector2.new(1, 0)
                         objects["RightTop"].BackgroundColor3 = boxColor
                         objects["RightTop"].BackgroundTransparency = 0
                     end
                     if objects["RightSide"] then
                         objects["RightSide"].Visible = true
-                        objects["RightSide"].Position = UDim2.new(1, -1, 0, 0)
+                        objects["RightSide"].Position = UDim2.new(0, posX + w - 1, 0, posY)
                         objects["RightSide"].Size = UDim2.new(0, 1, 0, h / 5)
+                        objects["RightSide"].AnchorPoint = Vector2.new(0, 0)
                         objects["RightSide"].BackgroundColor3 = boxColor
                         objects["RightSide"].BackgroundTransparency = 0
                     end
                     if objects["BottomRightSide"] then
                         objects["BottomRightSide"].Visible = true
-                        objects["BottomRightSide"].Position = UDim2.new(1, 0, 1, 0)
+                        objects["BottomRightSide"].Position = UDim2.new(0, posX + w, 0, posY + h)
                         objects["BottomRightSide"].Size = UDim2.new(0, 1, 0, h / 5)
+                        objects["BottomRightSide"].AnchorPoint = Vector2.new(1, 1)
                         objects["BottomRightSide"].BackgroundColor3 = boxColor
                         objects["BottomRightSide"].BackgroundTransparency = 0
                     end
                     if objects["BottomRightDown"] then
                         objects["BottomRightDown"].Visible = true
-                        objects["BottomRightDown"].Position = UDim2.new(1, 0, 1, 0)
+                        objects["BottomRightDown"].Position = UDim2.new(0, posX + w, 0, posY + h)
                         objects["BottomRightDown"].Size = UDim2.new(0, w / 5, 0, 1)
+                        objects["BottomRightDown"].AnchorPoint = Vector2.new(1, 1)
                         objects["BottomRightDown"].BackgroundColor3 = boxColor
                         objects["BottomRightDown"].BackgroundTransparency = 0
                     end
                 elseif showBox then
-                    -- Full Bounding Boxes (4 segments) - matching actual ESP
+                    -- Full Bounding Boxes (4 segments) - EXACTLY matching actual ESP
+                    local posX = 0
+                    local posY = 0
+                    
                     if objects["LeftTop"] then
                         objects["LeftTop"].Visible = true
-                        objects["LeftTop"].Position = UDim2.new(0, 0, 0, 0)
+                        objects["LeftTop"].Position = UDim2.new(0, posX, 0, posY)
                         objects["LeftTop"].Size = UDim2.new(0, w, 0, 1)
+                        objects["LeftTop"].AnchorPoint = Vector2.new(0, 0)
                         objects["LeftTop"].BackgroundColor3 = boxColor
                         objects["LeftTop"].BackgroundTransparency = 0
                     end
                     if objects["LeftSide"] then
                         objects["LeftSide"].Visible = true
-                        objects["LeftSide"].Position = UDim2.new(0, 0, 0, 0)
+                        objects["LeftSide"].Position = UDim2.new(0, posX, 0, posY)
                         objects["LeftSide"].Size = UDim2.new(0, 1, 0, h)
+                        objects["LeftSide"].AnchorPoint = Vector2.new(0, 0)
                         objects["LeftSide"].BackgroundColor3 = boxColor
                         objects["LeftSide"].BackgroundTransparency = 0
                     end
                     if objects["BottomSide"] then
                         objects["BottomSide"].Visible = true
-                        objects["BottomSide"].Position = UDim2.new(0, 0, 1, 0)
+                        objects["BottomSide"].Position = UDim2.new(0, posX, 0, posY + h)
                         objects["BottomSide"].Size = UDim2.new(0, w, 0, 1)
+                        objects["BottomSide"].AnchorPoint = Vector2.new(0, 1)
                         objects["BottomSide"].BackgroundColor3 = boxColor
                         objects["BottomSide"].BackgroundTransparency = 0
                     end
                     if objects["RightSide"] then
                         objects["RightSide"].Visible = true
-                        objects["RightSide"].Position = UDim2.new(1, -1, 0, 0)
+                        objects["RightSide"].Position = UDim2.new(0, posX + w - 1, 0, posY)
                         objects["RightSide"].Size = UDim2.new(0, 1, 0, h)
+                        objects["RightSide"].AnchorPoint = Vector2.new(0, 0)
                         objects["RightSide"].BackgroundColor3 = boxColor
                         objects["RightSide"].BackgroundTransparency = 0
                     end
+                    
+                    -- Hide unused corner segments
+                    if objects["BottomDown"] then objects["BottomDown"].Visible = false end
+                    if objects["RightTop"] then objects["RightTop"].Visible = false end
+                    if objects["BottomRightSide"] then objects["BottomRightSide"].Visible = false end
+                    if objects["BottomRightDown"] then objects["BottomRightDown"].Visible = false end
                 end
             else
                 objects["box_handler"].Parent = library.cache
