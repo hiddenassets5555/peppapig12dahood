@@ -254,9 +254,7 @@ local function loadCustomFont()
     return Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
 end
 
--- Menu / library UI only (Tahoma or Source Sans). Not tied to ESP font flags in main.lua.
-library.ui_font = loadCustomFont()
-library.font = library.ui_font
+library.font = loadCustomFont()
 library.DesyncData = {
     AutoActive = false,
     Has066 = false,
@@ -632,55 +630,52 @@ local config_holder
     library.fonts = {}
     
     function library:init_fonts()
-        local function RegisterFont(Name, Weight, Style, Asset)
-            local dir = library.directory or "TraeScript"
-            if not isfolder(dir) then makefolder(dir) end
-            if not isfolder(dir.."/assets") then makefolder(dir.."/assets") end
-            if not isfolder(dir.."/fonts") then makefolder(dir.."/fonts") end
-            
-            if isfile(dir.."/assets/"..Asset.Id) then
-                delfile(dir.."/assets/"..Asset.Id)
-            end
+        task.spawn(function()
+            local function RegisterFont(Name, Weight, Style, Asset)
+                local dir = library.directory or "TraeScript"
+                if not isfolder(dir) then makefolder(dir) end
+                if not isfolder(dir.."/assets") then makefolder(dir.."/assets") end
+                if not isfolder(dir.."/fonts") then makefolder(dir.."/fonts") end
+                
+                if isfile(dir.."/assets/"..Asset.Id) then
+                    delfile(dir.."/assets/"..Asset.Id)
+                end
 
-            writefile(dir.."/assets/"..Asset.Id, Asset.Font)
+                writefile(dir.."/assets/"..Asset.Id, Asset.Font)
 
-            local styleStr = type(Style) == "string" and Style:lower() or "normal"
-            local Data = {
-                name = Name,
-                faces = {
-                    {
-                        name = "Regular",
-                        weight = Weight,
-                        style = styleStr,
-                        assetId = getcustomasset(dir.."/assets/"..Asset.Id),
+                local Data = {
+                    name = Name,
+                    faces = {
+                        {
+                            Name = "Normal",
+                            weight = Weight,
+                            style = Style,
+                            assetId = getcustomasset(dir.."/assets/"..Asset.Id),
+                        },
                     },
-                },
-            }
+                }
 
-            writefile(dir.."/fonts/"..Name .. ".font", http_service:JSONEncode(Data))
+                writefile(dir.."/fonts/"..Name .. ".font", http_service:JSONEncode(Data))
 
-            return getcustomasset(dir.."/fonts/"..Name .. ".font");
-        end
-        
-        pcall(function()
-            local Tahoma = RegisterFont("Tahoma", 400, "Normal", {
-                Id = "Tahoma.ttf",
-                Font = game:HttpGet("https://github.com/KingVonOBlockJoyce/OctoHook-UI/raw/refs/heads/main/fs-tahoma-8px%20(3).ttf"),
-            })
-            library.fonts["Plex"] = Font.new(Tahoma, Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+                return getcustomasset(dir.."/fonts/"..Name .. ".font");
+            end
+            
+            pcall(function()
+                local Tahoma = RegisterFont("Tahoma", 400, "Normal", {
+                    Id = "Tahoma.ttf",
+                    Font = game:HttpGet("https://github.com/KingVonOBlockJoyce/OctoHook-UI/raw/refs/heads/main/fs-tahoma-8px%20(3).ttf"),
+                })
+                library.fonts["Plex"] = Font.new(Tahoma, Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+            end)
+
+            pcall(function()
+                local Minecraftia = RegisterFont("Minecraftia", 400, "Normal", {
+                    Id = "Minecraftia.ttf",
+                    Font = game:HttpGet("https://github.com/i77lhm/storage/raw/refs/heads/main/fonts/Minecraftia-Regular.ttf"),
+                }) 
+                library.fonts["Minecraft"] = Font.new(Minecraftia, Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+            end)
         end)
-
-        pcall(function()
-            local Minecraftia = RegisterFont("Minecraftia", 400, "Normal", {
-                Id = "Minecraftia.ttf",
-                Font = game:HttpGet("https://github.com/i77lhm/storage/raw/refs/heads/main/fonts/Minecraftia-Regular.ttf"),
-            })
-            library.fonts["Minecraft"] = Font.new(Minecraftia, Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-        end)
-
-        library.fonts["System"] = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-
-        -- library.font / library.ui_font stay loadCustomFont(); Minecraft & Plex are for ESP / Drawing only (main.lua flags).
     end
     library:init_fonts()
 
@@ -693,7 +688,6 @@ local config_holder
         Name = "",
         DisplayOrder = 10001, 
     })
-    library.tooltip_sgui = tooltip_sgui
 
     function library:tool_tip(options) 
         local cfg = {
@@ -1174,31 +1168,6 @@ local config_holder
         ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     })
 
-    library.sgui = sgui
-    library.notif_holder = notif_holder
-
-    function library:refresh_ui_font()
-        local face = library.ui_font or library.font
-        if typeof(face) ~= "Font" then
-            return
-        end
-        library.font = face
-        for _, root in ipairs({ library.sgui, library.notif_holder, library.tooltip_sgui }) do
-            if root then
-                for _, d in ipairs(root:GetDescendants()) do
-                    if d:IsA("TextLabel") or d:IsA("TextButton") or d:IsA("TextBox") then
-                        d.FontFace = face
-                    end
-                end
-            end
-        end
-    end
-
-    -- Legacy name: always reapplies menu font only (ignores ESP font picks).
-    function library:apply_ui_font(_)
-        library:refresh_ui_font()
-    end
-
     function library:fold_elements(origin, elements)
         for _, x in next, elements do 
             local flag = library.visible_flags[x]
@@ -1220,7 +1189,7 @@ local config_holder
                 Name = "\0";
                 Position = dim2(0, 400, 0, 500);
                 BorderColor3 = rgb(0, 0, 0);
-                Size = dim2(0, 322, 0, 165);
+                Size = dim2(0, 322, 0, 147);
                 BorderSizePixel = 0;
                 BackgroundColor3 = themes.preset.outline
             });	library:apply_theme(items.Window, "outline", "BackgroundColor3"); library:draggify(items.Window)
@@ -1482,11 +1451,6 @@ local config_holder
             items.label.instance.TextTruncate = Enum.TextTruncate.AtEnd
             items.label.instance.Size = dim2(1, 0, 0, 14)
             items.label.instance.Parent.Size = dim2(1, -4, 0, 14)
-            items.aimPartLabel = section:label({name = "Silent aim: --"})
-            items.aimPartLabel.instance.TextWrapped = false
-            items.aimPartLabel.instance.TextTruncate = Enum.TextTruncate.AtEnd
-            items.aimPartLabel.instance.Size = dim2(1, 0, 0, 14)
-            items.aimPartLabel.instance.Parent.Size = dim2(1, -4, 0, 14)
             items.slider = section:slider({name = "Health", custom = rgb(255, 0, 0), min = 0, max = 100, default = 50, input = true})
             
             library:create( "UIStroke" , {
@@ -1516,13 +1480,7 @@ local config_holder
         function cfg.change_profile(player)
             items.label.set(string.format("Player: %s (%s)", player.Name, player.DisplayName))
             items.Profile.Image = "rbxthumb://type=AvatarHeadShot&id=" .. player.UserId .. "&w=420&h=420"
-        end
-
-        function cfg.set_aim_part(text)
-            if items.aimPartLabel and items.aimPartLabel.set then
-                items.aimPartLabel.set(tostring(text or "Silent aim: --"))
-            end
-        end
+        end 
 
         return setmetatable(cfg, library)
     end     
@@ -5902,25 +5860,21 @@ local config_holder
         function cfg.set(value) 
             local selected = {}
 
-            for _, v in next, cfg.option_instances do
-                local on = (v.Text == value) or (cfg.multi and find(value, v.Text))
-                if on then
+            local is_table = type(value) == "table"
+
+            for _,v in next, cfg.option_instances do 
+                if v.Text == value or (is_table and find(value, v.Text)) then 
                     insert(selected, v.Text)
+                    cfg.multi_items = selected
                     v.TextColor3 = themes.preset.accent
-                else
+                else 
                     v.TextColor3 = themes.preset.text
                 end
             end
 
-            if cfg.multi then
-                cfg.multi_items = selected
-                text.Text = #selected > 0 and concat(selected, ", ") or "nun"
-                flags[cfg.flag] = selected
-            else
-                text.Text = selected[1] or "nun"
-                flags[cfg.flag] = selected[1]
-            end
-            cfg.callback(flags[cfg.flag])
+            text.Text = is_table and concat(selected, ", ") or selected[1] or "nun"
+            flags[cfg.flag] = is_table and selected or selected[1]
+            cfg.callback(flags[cfg.flag]) 
         end
         
         function cfg:refresh_options(refreshed_list) 
