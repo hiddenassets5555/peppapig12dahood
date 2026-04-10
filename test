@@ -2556,57 +2556,84 @@ local config_holder
             brand = brandStr,
         }
 
-        local watermark_outline = library:create("Frame", {
+        local function wm_chip(parent, layoutOrder)
+            local out = library:create("Frame", {
+                Parent = parent,
+                Name = "WMChip",
+                LayoutOrder = layoutOrder,
+                AutomaticSize = Enum.AutomaticSize.X,
+                Size = dim2(0, 0, 0, 24),
+                BorderSizePixel = 0,
+                BackgroundColor3 = themes.preset.outline,
+                ClipsDescendants = false,
+            })
+            library:apply_theme(out, "outline", "BackgroundColor3")
+
+            local accentBar = library:create("Frame", {
+                Parent = out,
+                Name = "AccentBar",
+                Position = dim2(0, 2, 0, 2),
+                BorderColor3 = rgb(0, 0, 0),
+                Size = dim2(1, -4, 0, 2),
+                BorderSizePixel = 0,
+                BackgroundColor3 = themes.preset.accent,
+            })
+            library:apply_theme(accentBar, "accent", "BackgroundColor3")
+
+            local inl = library:create("Frame", {
+                Parent = out,
+                Position = dim2(0, 1, 0, 1),
+                BorderColor3 = rgb(0, 0, 0),
+                Size = dim2(1, -2, 1, -2),
+                BorderSizePixel = 0,
+                BackgroundColor3 = themes.preset.inline,
+                ClipsDescendants = false,
+            })
+            library:apply_theme(inl, "inline", "BackgroundColor3")
+
+            local bg = library:create("Frame", {
+                Parent = inl,
+                Position = dim2(0, 1, 0, 1),
+                BorderColor3 = rgb(0, 0, 0),
+                Size = dim2(1, -2, 1, -2),
+                BorderSizePixel = 0,
+                BackgroundColor3 = rgb(255, 255, 255),
+                ClipsDescendants = false,
+            })
+
+            local grad = library:create("UIGradient", {
+                Parent = bg,
+                Rotation = 90,
+                Color = rgbseq{
+                    rgbkey(0, rgb(15, 15, 15)),
+                    rgbkey(1, rgb(30, 30, 30))
+                }
+            })
+            library:apply_theme(grad, "contrast", "Color")
+
+            return out, bg
+        end
+
+        local watermark_root = library:create("Frame", {
             Parent = sgui,
-            Name = "",
+            Name = "Watermark",
             BorderColor3 = rgb(0, 0, 0),
             AnchorPoint = vec2(1, 1),
             Position = dim2(1, -20, 0, 20),
+            AutomaticSize = Enum.AutomaticSize.X,
             Size = dim2(0, 0, 0, 24),
             BorderSizePixel = 0,
-            BackgroundColor3 = themes.preset.outline,
-            ClipsDescendants = false
-        }) library:apply_theme(watermark_outline, "outline", "BackgroundColor3") 
-        watermark_outline.Position = dim_offset(watermark_outline.AbsolutePosition.X, watermark_outline.AbsolutePosition.Y)
-        library:draggify(watermark_outline)
-
-        local watermark_inline = library:create("Frame", {
-            Parent = watermark_outline,
-            Name = "",
-            Position = dim2(0, 1, 0, 1),
-            BorderColor3 = rgb(0, 0, 0),
-            Size = dim2(1, -2, 1, -2),
-            BorderSizePixel = 0,
-            BackgroundColor3 = themes.preset.inline,
-            ClipsDescendants = false
-        }) library:apply_theme(watermark_inline, "inline", "BackgroundColor3") 
-        
-        local watermark_background = library:create("Frame", {
-            Parent = watermark_inline,
-            Name = "",
-            Position = dim2(0, 1, 0, 1),
-            BorderColor3 = rgb(0, 0, 0),
-            Size = dim2(1, -2, 1, -2),
-            BorderSizePixel = 0,
-            BackgroundColor3 = rgb(255, 255, 255),
-            ClipsDescendants = false
+            BackgroundTransparency = 1,
+            ClipsDescendants = false,
         })
-        
-        local UIGradient = library:create("UIGradient", {
-            Parent = watermark_background,
-            Name = "",
-            Rotation = 90,
-            Color = rgbseq{
-                rgbkey(0, rgb(15, 15, 15)),
-                rgbkey(1, rgb(30, 30, 30))
-            }
-        }) library:apply_theme(UIGradient, "contrast", "Color") 
+        watermark_root.Position = dim_offset(watermark_root.AbsolutePosition.X, watermark_root.AbsolutePosition.Y)
+        library:draggify(watermark_root)
 
         local row = library:create("Frame", {
-            Parent = watermark_background,
+            Parent = watermark_root,
             Name = "WMRow",
-            Position = dim2(0, 2, 0, 2),
-            Size = dim2(1, -4, 1, -4),
+            AutomaticSize = Enum.AutomaticSize.X,
+            Size = dim2(0, 0, 1, 0),
             BackgroundTransparency = 1,
             BorderSizePixel = 0,
         })
@@ -2617,29 +2644,21 @@ local config_holder
             VerticalAlignment = Enum.VerticalAlignment.Center,
             HorizontalAlignment = Enum.HorizontalAlignment.Left,
             SortOrder = Enum.SortOrder.LayoutOrder,
-            Padding = dim(0, 8),
+            Padding = dim(0, 10),
         })
 
-        local brandCell = library:create("Frame", {
-            Parent = row,
-            Name = "WMBrand",
-            LayoutOrder = 1,
-            AutomaticSize = Enum.AutomaticSize.X,
-            Size = dim2(0, 0, 1, -4),
-            BackgroundColor3 = themes.preset.accent,
-            BackgroundTransparency = 0.62,
-            BorderSizePixel = 0,
-        }) library:apply_theme(brandCell, "accent", "BackgroundColor3")
+        local _, brandBg = wm_chip(row, 1)
+        local _, timeBg = wm_chip(row, 2)
 
         library:create("UIPadding", {
-            Parent = brandCell,
-            PaddingLeft = dim(0, 8),
-            PaddingRight = dim(0, 8),
+            Parent = brandBg,
+            PaddingLeft = dim(0, 6),
+            PaddingRight = dim(0, 6),
         })
 
         local brandLabel = library:create("TextLabel", {
-            Parent = brandCell,
-            Name = "",
+            Parent = brandBg,
+            Name = "Brand",
             FontFace = library.watermark_font or library.font,
             TextColor3 = themes.preset.text,
             BorderColor3 = rgb(0, 0, 0),
@@ -2652,41 +2671,17 @@ local config_holder
             TextWrapped = false,
             TextTruncate = Enum.TextTruncate.None,
         })
-
-        library:create("UIStroke", {
-            Parent = brandLabel,
-            Name = "",
-            LineJoinMode = Enum.LineJoinMode.Miter
-        })
-
-        local divider = library:create("Frame", {
-            Parent = row,
-            Name = "WMDivider",
-            LayoutOrder = 2,
-            Size = dim2(0, 1, 1, -8),
-            BorderSizePixel = 0,
-            BackgroundColor3 = themes.preset.outline,
-        }) library:apply_theme(divider, "outline", "BackgroundColor3")
-
-        local timeCell = library:create("Frame", {
-            Parent = row,
-            Name = "WMTime",
-            LayoutOrder = 3,
-            AutomaticSize = Enum.AutomaticSize.X,
-            Size = dim2(0, 0, 1, 0),
-            BackgroundTransparency = 1,
-            BorderSizePixel = 0,
-        })
+        library:create("UIStroke", {Parent = brandLabel, LineJoinMode = Enum.LineJoinMode.Miter})
 
         library:create("UIPadding", {
-            Parent = timeCell,
-            PaddingLeft = dim(0, 0),
-            PaddingRight = dim(0, 4),
+            Parent = timeBg,
+            PaddingLeft = dim(0, 6),
+            PaddingRight = dim(0, 6),
         })
 
         local timeLabel = library:create("TextLabel", {
-            Parent = timeCell,
-            Name = "",
+            Parent = timeBg,
+            Name = "Time",
             FontFace = library.watermark_font or library.font,
             TextColor3 = themes.preset.text,
             BorderColor3 = rgb(0, 0, 0),
@@ -2699,49 +2694,28 @@ local config_holder
             TextWrapped = false,
             TextTruncate = Enum.TextTruncate.None,
         })
-
-        library:create("UIStroke", {
-            Parent = timeLabel,
-            Name = "",
-            LineJoinMode = Enum.LineJoinMode.Miter
-        })
-        
-        local accent = library:create("Frame", {
-            Parent = watermark_outline,
-            Name = "",
-            Position = dim2(0, 2, 0, 2),
-            BorderColor3 = rgb(0, 0, 0),
-            Size = dim2(1, -4, 0, 2),
-            BorderSizePixel = 0,
-            BackgroundColor3 = themes.preset.accent
-        }) library:apply_theme(accent, "accent", "BackgroundColor3") 
+        library:create("UIStroke", {Parent = timeLabel, LineJoinMode = Enum.LineJoinMode.Miter})
 
         local currentTimeStr = timeDefault
 
         function cfg.change_text(input)
             currentTimeStr = tostring(input or "")
             timeLabel.Text = "  " .. currentTimeStr .. "  "
-            local listGaps = 16
-            local bw = brandLabel.TextBounds.X + 16
-            local tw = timeLabel.TextBounds.X
-            watermark_outline.Size = dim2(0, bw + listGaps + 1 + tw + 6, 0, 24)
-        end 
+        end
 
-        function cfg.set_visible(bool) 
-            watermark_outline.Visible = bool
-        end 
+        function cfg.set_visible(bool)
+            watermark_root.Visible = bool
+        end
 
         function cfg.set_brand(s)
             brandStr = tostring(s or "")
             cfg.brand = brandStr
             brandLabel.Text = brandStr
-            cfg.change_text(currentTimeStr)
         end
 
         cfg.change_text(timeDefault)
 
-        return cfg 
-
+        return cfg
     end 
 
     function library:esp_preview(properties)
