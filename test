@@ -529,8 +529,8 @@ local config_holder
     function library:load_config(config_json) 
         local config = http_service:JSONDecode(config_json)
     
-        for _, v in next, config do 
-            local function_set = library.config_flags[_]
+        for k, v in next, config do 
+            local function_set = library.config_flags[k]
             
             if function_set then 
                 if type(v) == "table" and v["Transparency"] and v["Color"] then
@@ -540,7 +540,15 @@ local config_holder
                 else 
                     function_set(v)
                 end
-            end 
+            elseif k ~= "config_name_list" and k ~= "config_name_text_box" then
+                -- Keys not registered yet (or legacy): still mirror into flags so runtime reads match save
+                local t = type(v)
+                if t == "boolean" or t == "number" then
+                    flags[k] = v
+                elseif t == "string" and flags[k] ~= nil and type(flags[k]) == "string" then
+                    flags[k] = v
+                end
+            end
         end 
     end 
     
@@ -2273,7 +2281,7 @@ local config_holder
             local section = column:section({name = "Other"})
             section:label({name = "UI Bind"})
             :keybind({callback = window.set_menu_visibility, key = getgenv().UiBindKey})
-            section:toggle({name = "Anti AFK", flag = "anti_afk", default = true, callback = function(v)
+            section:toggle({name = "Anti AFK", flag = "anti_afk", default = false, callback = function(v)
                 if v then
                     -- Initialize anti-AFK if not already active
                     if not getgenv().AntiAFKActive then
@@ -2306,14 +2314,14 @@ local config_holder
                     library.info_list_frame.Visible = bool
                 end
             end})
-            section:toggle({name = "Watermark", flag = "watermark", default = false, callback = function(bool)
+            section:toggle({name = "Watermark", flag = "watermark", default = true, callback = function(bool)
                 watermark.set_visible(bool)
             end})
-            library.keybind_list_frame.Visible = true
+            library.keybind_list_frame.Visible = (flags.keybind_list ~= false)
             if library.info_list_frame then
                 library.info_list_frame.Visible = (flags.information_list ~= false)
             end
-            watermark.set_visible(false)
+            watermark.set_visible(flags.watermark ~= false)
             section:button_holder({})
             section:button({name = "Copy JobId", callback = function()
                 setclipboard(game.JobId)
@@ -2622,8 +2630,8 @@ local config_holder
             Parent = sgui,
             Name = "Watermark",
             BorderColor3 = rgb(0, 0, 0),
-            AnchorPoint = vec2(0, 0),
-            Position = dim2(0, 20, 0, 20),
+            AnchorPoint = vec2(1, 0),
+            Position = dim2(1, -20, 0, 20),
             AutomaticSize = Enum.AutomaticSize.X,
             Size = dim2(0, 0, 0, 24),
             BorderSizePixel = 0,
@@ -2651,31 +2659,8 @@ local config_holder
             Padding = dim(0, 10),
         })
 
-        local _, brandBg = wm_chip(row, 1)
-        local _, timeBg = wm_chip(row, 2)
-
-        library:create("UIPadding", {
-            Parent = brandBg,
-            PaddingLeft = dim(0, 6),
-            PaddingRight = dim(0, 6),
-        })
-
-        local brandLabel = library:create("TextLabel", {
-            Parent = brandBg,
-            Name = "Brand",
-            FontFace = library.watermark_font or library.font,
-            TextColor3 = themes.preset.text,
-            BorderColor3 = rgb(0, 0, 0),
-            Text = brandStr,
-            Size = dim2(0, 0, 1, 0),
-            AutomaticSize = Enum.AutomaticSize.X,
-            BackgroundTransparency = 1,
-            BorderSizePixel = 0,
-            TextSize = 12,
-            TextWrapped = false,
-            TextTruncate = Enum.TextTruncate.None,
-        })
-        library:create("UIStroke", {Parent = brandLabel, LineJoinMode = Enum.LineJoinMode.Miter})
+        local _, timeBg = wm_chip(row, 1)
+        local _, brandBg = wm_chip(row, 2)
 
         library:create("UIPadding", {
             Parent = timeBg,
@@ -2699,6 +2684,29 @@ local config_holder
             TextTruncate = Enum.TextTruncate.None,
         })
         library:create("UIStroke", {Parent = timeLabel, LineJoinMode = Enum.LineJoinMode.Miter})
+
+        library:create("UIPadding", {
+            Parent = brandBg,
+            PaddingLeft = dim(0, 6),
+            PaddingRight = dim(0, 6),
+        })
+
+        local brandLabel = library:create("TextLabel", {
+            Parent = brandBg,
+            Name = "Brand",
+            FontFace = library.watermark_font or library.font,
+            TextColor3 = themes.preset.text,
+            BorderColor3 = rgb(0, 0, 0),
+            Text = brandStr,
+            Size = dim2(0, 0, 1, 0),
+            AutomaticSize = Enum.AutomaticSize.X,
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0,
+            TextSize = 12,
+            TextWrapped = false,
+            TextTruncate = Enum.TextTruncate.None,
+        })
+        library:create("UIStroke", {Parent = brandLabel, LineJoinMode = Enum.LineJoinMode.Miter})
 
         local currentTimeStr = timeDefault
 
@@ -4218,45 +4226,27 @@ local config_holder
                 Position = dim2(0, 0, 0, 0),
                 BorderColor3 = rgb(0, 0, 0),
                 Size = dim2(0, 0, 0, 14),
-                BorderSizePixel = 0,
-                BackgroundColor3 = rgb(255, 255, 255)
-            })
-            
-            local text = library:create("TextLabel", {
-                Parent = left_components,
-                FontFace = library.font,
-                TextColor3 = themes.preset.text,
-                BorderColor3 = rgb(0, 0, 0),
-                Text = cfg.name,
-                Name = "text",
-                BackgroundTransparency = 1,
-                Size = dim2(0, 0, 1, -1),
-                BorderSizePixel = 0,
                 AutomaticSize = Enum.AutomaticSize.X,
-                TextSize = 12,
+                BorderSizePixel = 0,
                 BackgroundColor3 = rgb(255, 255, 255)
             })
-            cfg["text_label"] = text
-        
-            library:create("UIStroke", {
-                Parent = text,
-                LineJoinMode = Enum.LineJoinMode.Miter
-            })
-        
+
             library:create("UIListLayout", {
                 Parent = left_components,
-                Padding = dim(0, 5),
+                Padding = dim(0, 7),
                 Name = "_",
-                FillDirection = Enum.FillDirection.Horizontal
+                FillDirection = Enum.FillDirection.Horizontal,
+                VerticalAlignment = Enum.VerticalAlignment.Center,
             })
         
             -- Plain TextButton: no default UIStroke (avoids accent-looking border); outer ring is outline until hover.
             local toggle = library:create_plain("TextButton", {
                 Parent = left_components,
                 Name = "!toggle",
+                LayoutOrder = 1,
                 Text = "",
                 AutoButtonColor = false,
-                Position = dim2(0, 0, 0, 2),
+                Position = dim2(0, 0, 0, 0),
                 BorderColor3 = rgb(0, 0, 0),
                 Size = dim2(0, 14, 0, 14),
                 BorderSizePixel = 0,
@@ -4320,6 +4310,30 @@ local config_holder
                 }
             }) library:apply_theme(UIGradient, "contrast", "Color") 
 
+            local text = library:create("TextLabel", {
+                Parent = left_components,
+                FontFace = library.font,
+                TextColor3 = themes.preset.text,
+                BorderColor3 = rgb(0, 0, 0),
+                Text = cfg.name,
+                Name = "text",
+                LayoutOrder = 2,
+                BackgroundTransparency = 1,
+                Size = dim2(0, 0, 1, -1),
+                BorderSizePixel = 0,
+                AutomaticSize = Enum.AutomaticSize.X,
+                TextXAlignment = Enum.TextXAlignment.Left,
+                TextYAlignment = Enum.TextYAlignment.Center,
+                TextSize = 12,
+                BackgroundColor3 = rgb(255, 255, 255)
+            })
+            cfg["text_label"] = text
+        
+            library:create("UIStroke", {
+                Parent = text,
+                LineJoinMode = Enum.LineJoinMode.Miter
+            })
+
         library:connection(toggle_holder.MouseEnter, function()
             library:tween(toggle, { BackgroundColor3 = themes.preset.accent })
         end)
@@ -4336,6 +4350,7 @@ local config_holder
 
             library:tween(accent, {BackgroundTransparency = bool and 0 or 1})
             flags[cfg.flag] = bool
+            cfg.enabled = bool
             
             cfg.callback(bool)
         end
