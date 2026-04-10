@@ -529,8 +529,8 @@ local config_holder
     function library:load_config(config_json) 
         local config = http_service:JSONDecode(config_json)
     
-        for k, v in next, config do 
-            local function_set = library.config_flags[k]
+        for _, v in next, config do 
+            local function_set = library.config_flags[_]
             
             if function_set then 
                 if type(v) == "table" and v["Transparency"] and v["Color"] then
@@ -540,15 +540,7 @@ local config_holder
                 else 
                     function_set(v)
                 end
-            elseif k ~= "config_name_list" and k ~= "config_name_text_box" then
-                -- Keys not registered yet (or legacy): still mirror into flags so runtime reads match save
-                local t = type(v)
-                if t == "boolean" or t == "number" then
-                    flags[k] = v
-                elseif t == "string" and flags[k] ~= nil and type(flags[k]) == "string" then
-                    flags[k] = v
-                end
-            end
+            end 
         end 
     end 
     
@@ -2281,7 +2273,7 @@ local config_holder
             local section = column:section({name = "Other"})
             section:label({name = "UI Bind"})
             :keybind({callback = window.set_menu_visibility, key = getgenv().UiBindKey})
-            section:toggle({name = "Anti AFK", flag = "anti_afk", default = false, callback = function(v)
+            section:toggle({name = "Anti AFK", flag = "anti_afk", default = true, callback = function(v)
                 if v then
                     -- Initialize anti-AFK if not already active
                     if not getgenv().AntiAFKActive then
@@ -2314,14 +2306,14 @@ local config_holder
                     library.info_list_frame.Visible = bool
                 end
             end})
-            section:toggle({name = "Watermark", flag = "watermark", default = true, callback = function(bool)
+            section:toggle({name = "Watermark", flag = "watermark", default = false, callback = function(bool)
                 watermark.set_visible(bool)
             end})
-            library.keybind_list_frame.Visible = (flags.keybind_list ~= false)
+            library.keybind_list_frame.Visible = true
             if library.info_list_frame then
                 library.info_list_frame.Visible = (flags.information_list ~= false)
             end
-            watermark.set_visible(flags.watermark ~= false)
+            watermark.set_visible(false)
             section:button_holder({})
             section:button({name = "Copy JobId", callback = function()
                 setclipboard(game.JobId)
@@ -2564,89 +2556,57 @@ local config_holder
             brand = brandStr,
         }
 
-        local function wm_chip(parent, layoutOrder)
-            local out = library:create("Frame", {
-                Parent = parent,
-                Name = "WMChip",
-                LayoutOrder = layoutOrder,
-                AutomaticSize = Enum.AutomaticSize.X,
-                Size = dim2(0, 0, 0, 24),
-                BorderSizePixel = 0,
-                BackgroundColor3 = themes.preset.outline,
-                ClipsDescendants = false,
-            })
-            library:apply_theme(out, "outline", "BackgroundColor3")
-
-            local inl = library:create("Frame", {
-                Parent = out,
-                Position = dim2(0, 1, 0, 1),
-                BorderColor3 = rgb(0, 0, 0),
-                AutomaticSize = Enum.AutomaticSize.X,
-                Size = dim2(0, 0, 1, -2),
-                BorderSizePixel = 0,
-                BackgroundColor3 = themes.preset.inline,
-                ClipsDescendants = false,
-                ZIndex = 0,
-            })
-            library:apply_theme(inl, "inline", "BackgroundColor3")
-
-            -- Same 1px inset as `inl`: flush with outline corners (was 2px / -4 and sat under `inl`).
-            local accentBar = library:create("Frame", {
-                Parent = out,
-                Name = "AccentBar",
-                Position = dim2(0, 1, 0, 1),
-                BorderColor3 = rgb(0, 0, 0),
-                Size = dim2(1, -2, 0, 2),
-                BorderSizePixel = 0,
-                BackgroundColor3 = themes.preset.accent,
-                ZIndex = 2,
-            })
-            library:apply_theme(accentBar, "accent", "BackgroundColor3")
-
-            local bg = library:create("Frame", {
-                Parent = inl,
-                Position = dim2(0, 1, 0, 1),
-                BorderColor3 = rgb(0, 0, 0),
-                AutomaticSize = Enum.AutomaticSize.X,
-                Size = dim2(0, 0, 1, -2),
-                BorderSizePixel = 0,
-                BackgroundColor3 = rgb(255, 255, 255),
-                ClipsDescendants = false,
-                ZIndex = 0,
-            })
-
-            local grad = library:create("UIGradient", {
-                Parent = bg,
-                Rotation = 90,
-                Color = rgbseq{
-                    rgbkey(0, rgb(15, 15, 15)),
-                    rgbkey(1, rgb(30, 30, 30))
-                }
-            })
-            library:apply_theme(grad, "contrast", "Color")
-
-            return out, bg
-        end
-
-        local watermark_root = library:create("Frame", {
+        local watermark_outline = library:create("Frame", {
             Parent = sgui,
-            Name = "Watermark",
+            Name = "",
             BorderColor3 = rgb(0, 0, 0),
-            AnchorPoint = vec2(1, 0),
-            Position = dim2(1, -6, 0, 4),
-            AutomaticSize = Enum.AutomaticSize.X,
+            AnchorPoint = vec2(1, 1),
+            Position = dim2(1, -20, 0, 20),
             Size = dim2(0, 0, 0, 24),
             BorderSizePixel = 0,
-            BackgroundTransparency = 1,
-            ClipsDescendants = false,
+            BackgroundColor3 = themes.preset.outline,
+            ClipsDescendants = false
+        }) library:apply_theme(watermark_outline, "outline", "BackgroundColor3") 
+        watermark_outline.Position = dim_offset(watermark_outline.AbsolutePosition.X, watermark_outline.AbsolutePosition.Y)
+        library:draggify(watermark_outline)
+
+        local watermark_inline = library:create("Frame", {
+            Parent = watermark_outline,
+            Name = "",
+            Position = dim2(0, 1, 0, 1),
+            BorderColor3 = rgb(0, 0, 0),
+            Size = dim2(1, -2, 1, -2),
+            BorderSizePixel = 0,
+            BackgroundColor3 = themes.preset.inline,
+            ClipsDescendants = false
+        }) library:apply_theme(watermark_inline, "inline", "BackgroundColor3") 
+        
+        local watermark_background = library:create("Frame", {
+            Parent = watermark_inline,
+            Name = "",
+            Position = dim2(0, 1, 0, 1),
+            BorderColor3 = rgb(0, 0, 0),
+            Size = dim2(1, -2, 1, -2),
+            BorderSizePixel = 0,
+            BackgroundColor3 = rgb(255, 255, 255),
+            ClipsDescendants = false
         })
-        watermark_root.Position = dim_offset(watermark_root.AbsolutePosition.X, watermark_root.AbsolutePosition.Y)
+        
+        local UIGradient = library:create("UIGradient", {
+            Parent = watermark_background,
+            Name = "",
+            Rotation = 90,
+            Color = rgbseq{
+                rgbkey(0, rgb(15, 15, 15)),
+                rgbkey(1, rgb(30, 30, 30))
+            }
+        }) library:apply_theme(UIGradient, "contrast", "Color") 
 
         local row = library:create("Frame", {
-            Parent = watermark_root,
+            Parent = watermark_background,
             Name = "WMRow",
-            AutomaticSize = Enum.AutomaticSize.X,
-            Size = dim2(0, 0, 1, 0),
+            Position = dim2(0, 2, 0, 2),
+            Size = dim2(1, -4, 1, -4),
             BackgroundTransparency = 1,
             BorderSizePixel = 0,
         })
@@ -2657,48 +2617,31 @@ local config_holder
             VerticalAlignment = Enum.VerticalAlignment.Center,
             HorizontalAlignment = Enum.HorizontalAlignment.Left,
             SortOrder = Enum.SortOrder.LayoutOrder,
-            Padding = dim(0, 10),
+            Padding = dim(0, 8),
         })
 
-        local _, timeBg = wm_chip(row, 1)
-        local _, brandBg = wm_chip(row, 2)
-
-        library:create("UIPadding", {
-            Parent = timeBg,
-            PaddingLeft = dim(0, 3),
-            PaddingRight = dim(0, 3),
-        })
-
-        local timeLabel = library:create("TextLabel", {
-            Parent = timeBg,
-            Name = "Time",
-            FontFace = library.watermark_font or library.font,
-            TextColor3 = themes.preset.accent,
-            BorderColor3 = rgb(0, 0, 0),
-            Text = " ",
-            Size = dim2(0, 0, 1, 0),
+        local brandCell = library:create("Frame", {
+            Parent = row,
+            Name = "WMBrand",
+            LayoutOrder = 1,
             AutomaticSize = Enum.AutomaticSize.X,
-            TextXAlignment = Enum.TextXAlignment.Left,
-            BackgroundTransparency = 1,
+            Size = dim2(0, 0, 1, -4),
+            BackgroundColor3 = themes.preset.accent,
+            BackgroundTransparency = 0.62,
             BorderSizePixel = 0,
-            TextSize = 12,
-            TextWrapped = false,
-            TextTruncate = Enum.TextTruncate.None,
-        })
-        library:apply_theme(timeLabel, "accent", "TextColor3")
-        library:create("UIStroke", {Parent = timeLabel, LineJoinMode = Enum.LineJoinMode.Miter})
+        }) library:apply_theme(brandCell, "accent", "BackgroundColor3")
 
         library:create("UIPadding", {
-            Parent = brandBg,
-            PaddingLeft = dim(0, 6),
-            PaddingRight = dim(0, 6),
+            Parent = brandCell,
+            PaddingLeft = dim(0, 8),
+            PaddingRight = dim(0, 8),
         })
 
         local brandLabel = library:create("TextLabel", {
-            Parent = brandBg,
-            Name = "Brand",
+            Parent = brandCell,
+            Name = "",
             FontFace = library.watermark_font or library.font,
-            TextColor3 = themes.preset.accent,
+            TextColor3 = themes.preset.text,
             BorderColor3 = rgb(0, 0, 0),
             Text = brandStr,
             Size = dim2(0, 0, 1, 0),
@@ -2709,29 +2652,96 @@ local config_holder
             TextWrapped = false,
             TextTruncate = Enum.TextTruncate.None,
         })
-        library:apply_theme(brandLabel, "accent", "TextColor3")
-        library:create("UIStroke", {Parent = brandLabel, LineJoinMode = Enum.LineJoinMode.Miter})
+
+        library:create("UIStroke", {
+            Parent = brandLabel,
+            Name = "",
+            LineJoinMode = Enum.LineJoinMode.Miter
+        })
+
+        local divider = library:create("Frame", {
+            Parent = row,
+            Name = "WMDivider",
+            LayoutOrder = 2,
+            Size = dim2(0, 1, 1, -8),
+            BorderSizePixel = 0,
+            BackgroundColor3 = themes.preset.outline,
+        }) library:apply_theme(divider, "outline", "BackgroundColor3")
+
+        local timeCell = library:create("Frame", {
+            Parent = row,
+            Name = "WMTime",
+            LayoutOrder = 3,
+            AutomaticSize = Enum.AutomaticSize.X,
+            Size = dim2(0, 0, 1, 0),
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0,
+        })
+
+        library:create("UIPadding", {
+            Parent = timeCell,
+            PaddingLeft = dim(0, 0),
+            PaddingRight = dim(0, 4),
+        })
+
+        local timeLabel = library:create("TextLabel", {
+            Parent = timeCell,
+            Name = "",
+            FontFace = library.watermark_font or library.font,
+            TextColor3 = themes.preset.text,
+            BorderColor3 = rgb(0, 0, 0),
+            Text = " ",
+            Size = dim2(0, 0, 1, 0),
+            AutomaticSize = Enum.AutomaticSize.X,
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0,
+            TextSize = 12,
+            TextWrapped = false,
+            TextTruncate = Enum.TextTruncate.None,
+        })
+
+        library:create("UIStroke", {
+            Parent = timeLabel,
+            Name = "",
+            LineJoinMode = Enum.LineJoinMode.Miter
+        })
+        
+        local accent = library:create("Frame", {
+            Parent = watermark_outline,
+            Name = "",
+            Position = dim2(0, 2, 0, 2),
+            BorderColor3 = rgb(0, 0, 0),
+            Size = dim2(1, -4, 0, 2),
+            BorderSizePixel = 0,
+            BackgroundColor3 = themes.preset.accent
+        }) library:apply_theme(accent, "accent", "BackgroundColor3") 
 
         local currentTimeStr = timeDefault
 
         function cfg.change_text(input)
             currentTimeStr = tostring(input or "")
-            timeLabel.Text = currentTimeStr
-        end
+            timeLabel.Text = "  " .. currentTimeStr .. "  "
+            local listGaps = 16
+            local bw = brandLabel.TextBounds.X + 16
+            local tw = timeLabel.TextBounds.X
+            watermark_outline.Size = dim2(0, bw + listGaps + 1 + tw + 6, 0, 24)
+        end 
 
-        function cfg.set_visible(bool)
-            watermark_root.Visible = bool
-        end
+        function cfg.set_visible(bool) 
+            watermark_outline.Visible = bool
+        end 
 
         function cfg.set_brand(s)
             brandStr = tostring(s or "")
             cfg.brand = brandStr
             brandLabel.Text = brandStr
+            cfg.change_text(currentTimeStr)
         end
 
         cfg.change_text(timeDefault)
 
-        return cfg
+        return cfg 
+
     end 
 
     function library:esp_preview(properties)
@@ -4230,27 +4240,45 @@ local config_holder
                 Position = dim2(0, 0, 0, 0),
                 BorderColor3 = rgb(0, 0, 0),
                 Size = dim2(0, 0, 0, 14),
-                AutomaticSize = Enum.AutomaticSize.X,
                 BorderSizePixel = 0,
                 BackgroundColor3 = rgb(255, 255, 255)
             })
-
+            
+            local text = library:create("TextLabel", {
+                Parent = left_components,
+                FontFace = library.font,
+                TextColor3 = themes.preset.text,
+                BorderColor3 = rgb(0, 0, 0),
+                Text = cfg.name,
+                Name = "text",
+                BackgroundTransparency = 1,
+                Size = dim2(0, 0, 1, -1),
+                BorderSizePixel = 0,
+                AutomaticSize = Enum.AutomaticSize.X,
+                TextSize = 12,
+                BackgroundColor3 = rgb(255, 255, 255)
+            })
+            cfg["text_label"] = text
+        
+            library:create("UIStroke", {
+                Parent = text,
+                LineJoinMode = Enum.LineJoinMode.Miter
+            })
+        
             library:create("UIListLayout", {
                 Parent = left_components,
-                Padding = dim(0, 7),
+                Padding = dim(0, 5),
                 Name = "_",
-                FillDirection = Enum.FillDirection.Horizontal,
-                VerticalAlignment = Enum.VerticalAlignment.Center,
+                FillDirection = Enum.FillDirection.Horizontal
             })
         
             -- Plain TextButton: no default UIStroke (avoids accent-looking border); outer ring is outline until hover.
             local toggle = library:create_plain("TextButton", {
                 Parent = left_components,
                 Name = "!toggle",
-                LayoutOrder = 1,
                 Text = "",
                 AutoButtonColor = false,
-                Position = dim2(0, 0, 0, 0),
+                Position = dim2(0, 0, 0, 2),
                 BorderColor3 = rgb(0, 0, 0),
                 Size = dim2(0, 14, 0, 14),
                 BorderSizePixel = 0,
@@ -4302,7 +4330,8 @@ local config_holder
                 BorderSizePixel = 0,
                 BackgroundColor3 = rgb(255, 255, 255)
             })
-            library:apply_theme(background, "accent", "BackgroundColor3") 
+            -- Keep unchecked checkbox neutral; accent should only appear on hover ring and checked fill.
+            library:apply_theme(background, "inline", "BackgroundColor3") 
 
             local UIGradient = library:create("UIGradient", {
                 Parent = background,
@@ -4313,30 +4342,6 @@ local config_holder
                     rgbkey(1, rgb(35, 35, 47))
                 }
             }) library:apply_theme(UIGradient, "contrast", "Color") 
-
-            local text = library:create("TextLabel", {
-                Parent = left_components,
-                FontFace = library.font,
-                TextColor3 = themes.preset.text,
-                BorderColor3 = rgb(0, 0, 0),
-                Text = cfg.name,
-                Name = "text",
-                LayoutOrder = 2,
-                BackgroundTransparency = 1,
-                Size = dim2(0, 0, 1, -1),
-                BorderSizePixel = 0,
-                AutomaticSize = Enum.AutomaticSize.X,
-                TextXAlignment = Enum.TextXAlignment.Left,
-                TextYAlignment = Enum.TextYAlignment.Center,
-                TextSize = 12,
-                BackgroundColor3 = rgb(255, 255, 255)
-            })
-            cfg["text_label"] = text
-        
-            library:create("UIStroke", {
-                Parent = text,
-                LineJoinMode = Enum.LineJoinMode.Miter
-            })
 
         library:connection(toggle_holder.MouseEnter, function()
             library:tween(toggle, { BackgroundColor3 = themes.preset.accent })
@@ -4354,7 +4359,6 @@ local config_holder
 
             library:tween(accent, {BackgroundTransparency = bool and 0 or 1})
             flags[cfg.flag] = bool
-            cfg.enabled = bool
             
             cfg.callback(bool)
         end
@@ -4822,15 +4826,14 @@ local config_holder
             
             local UIGradient = library:create("UIGradient", {
                 Parent = sat,
-                -- Saturation should run left -> right.
-                Rotation = 0,
+                Rotation = 270,
                 Transparency = numseq{
                     numkey(0, 0),
                     numkey(1, 1)
                 },
                 Color = rgbseq{
-                    rgbkey(0, rgb(255, 255, 255)),
-                    rgbkey(1, rgb(255, 255, 255))
+                    rgbkey(0, rgb(0, 0, 0)),
+                    rgbkey(1, rgb(0, 0, 0))
                 }
             })
             
@@ -4840,18 +4843,16 @@ local config_holder
                 BorderColor3 = rgb(0, 0, 0),
                 Size = dim2(1, 0, 1, 0),
                 BorderSizePixel = 0,
-                BackgroundColor3 = rgb(0, 0, 0),
+                BackgroundColor3 = rgb(255, 255, 255),
                 Text = "",
                 AutoButtonColor = false,
             })
             
             local UIGradient = library:create("UIGradient", {
                 Parent = val,
-                -- Value should run top (bright) -> bottom (dark).
-                Rotation = 90,
                 Transparency = numseq{
-                    numkey(0, 1),
-                    numkey(1, 0)
+                    numkey(0, 0),
+                    numkey(1, 1)
                 }
             })
             
@@ -4892,8 +4893,7 @@ local config_holder
             end 
         
             if alpha then 
-                -- Exposed alpha behaves as opacity (1 = visible, 0 = invisible)
-                a = math.clamp(alpha, 0, 1)
+                a = alpha
             end 
         
             local hsv_position = Color3.fromHSV(h, s, v)
@@ -4903,11 +4903,8 @@ local config_holder
             local offset = (value < 1) and 0 or -4
             hue_picker.Position = dim2(0, 0, value, offset)
 
-            -- Alpha bar visual runs left (opaque) -> right (transparent),
-            -- so picker X is the inverse of opacity.
-            local alpha_x = 1 - a
-            local offset = (alpha_x < 1) and 0 or -4
-            alpha_picker.Position = dim2(alpha_x, offset, 0, 0)
+            local offset = (a < 1) and 0 or -4
+            alpha_picker.Position = dim2(a, offset, 0, 0)
 
             alpha_drag.BackgroundColor3 = Color3.fromHSV(h, s, v)
             
@@ -4940,8 +4937,7 @@ local config_holder
             elseif dragging_hue then 
                 h = math.clamp(1 - (vec2(mouse.X, mouse.Y - gui_offset) - hue.AbsolutePosition).Y / hue.AbsoluteSize.Y, 0, 1)
             elseif dragging_alpha then 
-                local alpha_x = math.clamp((vec2(mouse.X, mouse.Y - gui_offset) - alpha.AbsolutePosition).X / alpha.AbsoluteSize.X, 0, 1)
-                a = 1 - alpha_x
+                a = math.clamp((vec2(mouse.X, mouse.Y - gui_offset) - alpha.AbsolutePosition).X / alpha.AbsoluteSize.X, 0, 1)
             end
 
             cfg.set(nil, nil)
