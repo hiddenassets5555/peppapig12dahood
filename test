@@ -4822,7 +4822,8 @@ local config_holder
             
             local UIGradient = library:create("UIGradient", {
                 Parent = sat,
-                Rotation = 270,
+                -- Saturation should run left -> right.
+                Rotation = 0,
                 Transparency = numseq{
                     numkey(0, 0),
                     numkey(1, 1)
@@ -4846,6 +4847,8 @@ local config_holder
             
             local UIGradient = library:create("UIGradient", {
                 Parent = val,
+                -- Value should run top (bright) -> bottom (dark).
+                Rotation = 90,
                 Transparency = numseq{
                     numkey(0, 1),
                     numkey(1, 0)
