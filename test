@@ -4267,7 +4267,7 @@ local config_holder
         
             library:create("UIListLayout", {
                 Parent = left_components,
-                Padding = dim(0, 5),
+                Padding = dim(0, 8),
                 Name = "_",
                 FillDirection = Enum.FillDirection.Horizontal
             })
