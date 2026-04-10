@@ -4677,10 +4677,8 @@ local config_holder
             local UIGradient = library:create("UIGradient", {
                 Parent = alphaind,
                 Transparency = numseq{
-                    -- Match flags[cfg.flag].Transparency semantics:
-                    -- 0 = opaque (left), 1 = fully transparent (right)
-                    numkey(0, 1),
-                    numkey(1, 0)
+                    numkey(0, 0),
+                    numkey(1, 1)
                 }
             })
             
