@@ -2631,7 +2631,7 @@ local config_holder
             Name = "Watermark",
             BorderColor3 = rgb(0, 0, 0),
             AnchorPoint = vec2(1, 0),
-            Position = dim2(1, -20, 0, 20),
+            Position = dim2(1, -20, 0, 10),
             AutomaticSize = Enum.AutomaticSize.X,
             Size = dim2(0, 0, 0, 24),
             BorderSizePixel = 0,
@@ -2639,7 +2639,6 @@ local config_holder
             ClipsDescendants = false,
         })
         watermark_root.Position = dim_offset(watermark_root.AbsolutePosition.X, watermark_root.AbsolutePosition.Y)
-        library:draggify(watermark_root)
 
         local row = library:create("Frame", {
             Parent = watermark_root,
@@ -2672,7 +2671,7 @@ local config_holder
             Parent = timeBg,
             Name = "Time",
             FontFace = library.watermark_font or library.font,
-            TextColor3 = themes.preset.text,
+            TextColor3 = themes.preset.accent,
             BorderColor3 = rgb(0, 0, 0),
             Text = " ",
             Size = dim2(0, 0, 1, 0),
@@ -2683,6 +2682,7 @@ local config_holder
             TextWrapped = false,
             TextTruncate = Enum.TextTruncate.None,
         })
+        library:apply_theme(timeLabel, "accent", "TextColor3")
         library:create("UIStroke", {Parent = timeLabel, LineJoinMode = Enum.LineJoinMode.Miter})
 
         library:create("UIPadding", {
@@ -2695,7 +2695,7 @@ local config_holder
             Parent = brandBg,
             Name = "Brand",
             FontFace = library.watermark_font or library.font,
-            TextColor3 = themes.preset.text,
+            TextColor3 = themes.preset.accent,
             BorderColor3 = rgb(0, 0, 0),
             Text = brandStr,
             Size = dim2(0, 0, 1, 0),
@@ -2706,6 +2706,7 @@ local config_holder
             TextWrapped = false,
             TextTruncate = Enum.TextTruncate.None,
         })
+        library:apply_theme(brandLabel, "accent", "TextColor3")
         library:create("UIStroke", {Parent = brandLabel, LineJoinMode = Enum.LineJoinMode.Miter})
 
         local currentTimeStr = timeDefault
