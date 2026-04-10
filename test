@@ -5901,30 +5901,9 @@ local config_holder
 
         function cfg.set(value) 
             local selected = {}
-            local is_table = type(value) == "table"
-            -- Saved configs often store a single string; multi mode must keep flags as an array.
-            if cfg.multi and not is_table and type(value) == "string" and value ~= "" then
-                value = { value }
-                is_table = true
-            end
-
-            local function rowSelectedForMulti(txt)
-                if not is_table then
-                    return false
-                end
-                if find(value, txt) then
-                    return true
-                end
-                for _, y in pairs(value) do
-                    if y == txt then
-                        return true
-                    end
-                end
-                return false
-            end
 
             for _, v in next, cfg.option_instances do
-                local on = (v.Text == value) or (cfg.multi and rowSelectedForMulti(v.Text))
+                local on = (v.Text == value) or (cfg.multi and find(value, v.Text))
                 if on then
                     insert(selected, v.Text)
                     v.TextColor3 = themes.preset.accent
