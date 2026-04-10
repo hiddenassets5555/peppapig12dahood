@@ -2208,14 +2208,11 @@ local config_holder
                 open = false,
             })
 
-            local watermark = library:watermark({
-                brand = "Home.Private",
-                default = os.date('%b %d %Y - %H:%M:%S'),
-            })
+            local watermark = library:watermark({default = os.date('Home.Private - %b %d %Y - %H:%M:%S')})
 
             task.spawn(function()
                 while task.wait(1) do 
-                    watermark.change_text(os.date('%b %d %Y - %H:%M:%S'))
+                    watermark.change_text(os.date('Home.Private - %b %d %Y - %H:%M:%S'))
                 end 
             end) 
 
@@ -2549,11 +2546,8 @@ local config_holder
     end
 
     function library:watermark(options) 
-        local brandStr = options.brand or "Home.Private"
-        local timeDefault = options.text or options.default or os.date('%b %d %Y - %H:%M:%S')
         local cfg = {
-            default = timeDefault,
-            brand = brandStr,
+            default = options.text or options.default or os.date('drain.lol | %b %d %Y | %H:%M')
         }
 
         local watermark_outline = library:create("Frame", {
@@ -2601,90 +2595,26 @@ local config_holder
                 rgbkey(1, rgb(30, 30, 30))
             }
         }) library:apply_theme(UIGradient, "contrast", "Color") 
-
-        local row = library:create("Frame", {
+        
+        local text = library:create("TextLabel", {
             Parent = watermark_background,
-            Name = "WMRow",
-            Position = dim2(0, 2, 0, 2),
-            Size = dim2(1, -4, 1, -4),
-            BackgroundTransparency = 1,
-            BorderSizePixel = 0,
-        })
-
-        -- Hard split: true 50/50 sections (left=date, right=brand).
-        local timeCell = library:create("Frame", {
-            Parent = row,
-            Name = "WMTime",
-            Position = dim2(0, 0, 0, 0),
-            Size = dim2(0.5, 0, 1, 0),
-            BackgroundTransparency = 1,
-            BorderSizePixel = 0,
-        })
-
-        local divider = library:create("Frame", {
-            Parent = row,
-            Name = "WMDivider",
-            AnchorPoint = vec2(0.5, 0.5),
-            Position = dim2(0.5, 0, 0.5, 0),
-            Size = dim2(0, 1, 1, -6),
-            BorderSizePixel = 0,
-            BackgroundColor3 = themes.preset.outline,
-        }) library:apply_theme(divider, "outline", "BackgroundColor3")
-
-        local brandCell = library:create("Frame", {
-            Parent = row,
-            Name = "WMBrand",
-            Position = dim2(0.5, 1, 0, 0),
-            Size = dim2(0.5, -1, 1, 0),
-            BackgroundColor3 = themes.preset.accent,
-            BackgroundTransparency = 0.62,
-            BorderSizePixel = 0,
-        }) library:apply_theme(brandCell, "accent", "BackgroundColor3")
-
-        local brandLabel = library:create_plain("TextLabel", {
-            Parent = brandCell,
             Name = "",
-            FontFace = library.watermark_font or library.font,
-            TextColor3 = themes.preset.accent,
+            FontFace = library.font,
+            TextColor3 = themes.preset.text,
             BorderColor3 = rgb(0, 0, 0),
-            Text = brandStr,
-            Size = dim2(1, -8, 1, 0),
-            Position = dim2(0, 4, 0, 0),
+            Text = "  drain.lol | Beta | Aug 29 2024 | 07:29:00  ",
+            Size = dim2(1, 0, 1, 0),
             BackgroundTransparency = 1,
+            Position = dim2(0, -1, 0, 1),
             BorderSizePixel = 0,
             TextSize = 12,
-            TextXAlignment = Enum.TextXAlignment.Center,
-            TextYAlignment = Enum.TextYAlignment.Center,
+            BackgroundColor3 = rgb(255, 255, 255),
             TextWrapped = false,
-            TextTruncate = Enum.TextTruncate.AtEnd,
+            TextTruncate = Enum.TextTruncate.None
         })
-        library:apply_theme(brandLabel, "accent", "TextColor3")
+        
         library:create("UIStroke", {
-            Parent = brandLabel,
-            Name = "",
-            LineJoinMode = Enum.LineJoinMode.Miter
-        })
-
-        local timeLabel = library:create_plain("TextLabel", {
-            Parent = timeCell,
-            Name = "",
-            FontFace = library.watermark_font or library.font,
-            TextColor3 = themes.preset.accent,
-            BorderColor3 = rgb(0, 0, 0),
-            Text = " ",
-            Size = dim2(1, -8, 1, 0),
-            Position = dim2(0, 4, 0, 0),
-            BackgroundTransparency = 1,
-            BorderSizePixel = 0,
-            TextSize = 12,
-            TextXAlignment = Enum.TextXAlignment.Center,
-            TextYAlignment = Enum.TextYAlignment.Center,
-            TextWrapped = false,
-            TextTruncate = Enum.TextTruncate.AtEnd,
-        })
-        library:apply_theme(timeLabel, "accent", "TextColor3")
-        library:create("UIStroke", {
-            Parent = timeLabel,
+            Parent = text,
             Name = "",
             LineJoinMode = Enum.LineJoinMode.Miter
         })
@@ -2698,30 +2628,19 @@ local config_holder
             BorderSizePixel = 0,
             BackgroundColor3 = themes.preset.accent
         }) library:apply_theme(accent, "accent", "BackgroundColor3") 
-
-        local currentTimeStr = timeDefault
-
+        
         function cfg.change_text(input)
-            currentTimeStr = tostring(input or "")
-            timeLabel.Text = currentTimeStr
-            local bw = brandLabel.TextBounds.X + 16
-            local tw = timeLabel.TextBounds.X + 16
-            local half = math.max(90, math.max(bw, tw))
-            watermark_outline.Size = dim2(0, (half * 2) + 7, 0, 24)
+            text.Text = "  ".. input .."  "
+            local bounds = text.TextBounds
+            watermark_outline.Size = dim2(0, bounds.X + 6, 0, 24)
         end 
 
         function cfg.set_visible(bool) 
             watermark_outline.Visible = bool
         end 
 
-        function cfg.set_brand(s)
-            brandStr = tostring(s or "")
-            cfg.brand = brandStr
-            brandLabel.Text = brandStr
-            cfg.change_text(currentTimeStr)
-        end
 
-        cfg.change_text(timeDefault)
+        cfg.change_text(cfg.default)
 
         return cfg 
 
