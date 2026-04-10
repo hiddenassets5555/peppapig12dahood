@@ -2298,10 +2298,18 @@ local config_holder
             section:toggle({name = "Keybind List", flag = "keybind_list", default = true, callback = function(bool)
                 library.keybind_list_frame.Visible = bool
             end})
+            section:toggle({name = "Information List", flag = "information_list", default = true, callback = function(bool)
+                if library.info_list_frame then
+                    library.info_list_frame.Visible = bool
+                end
+            end})
             section:toggle({name = "Watermark", flag = "watermark", default = false, callback = function(bool)
                 watermark.set_visible(bool)
             end})
             library.keybind_list_frame.Visible = true
+            if library.info_list_frame then
+                library.info_list_frame.Visible = (flags.information_list ~= false)
+            end
             watermark.set_visible(false)
             section:button_holder({})
             section:button({name = "Copy JobId", callback = function()
