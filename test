@@ -2581,7 +2581,8 @@ local config_holder
                 Parent = out,
                 Position = dim2(0, 1, 0, 1),
                 BorderColor3 = rgb(0, 0, 0),
-                Size = dim2(1, -2, 1, -2),
+                AutomaticSize = Enum.AutomaticSize.X,
+                Size = dim2(0, 0, 1, -2),
                 BorderSizePixel = 0,
                 BackgroundColor3 = themes.preset.inline,
                 ClipsDescendants = false,
@@ -2606,7 +2607,8 @@ local config_holder
                 Parent = inl,
                 Position = dim2(0, 1, 0, 1),
                 BorderColor3 = rgb(0, 0, 0),
-                Size = dim2(1, -2, 1, -2),
+                AutomaticSize = Enum.AutomaticSize.X,
+                Size = dim2(0, 0, 1, -2),
                 BorderSizePixel = 0,
                 BackgroundColor3 = rgb(255, 255, 255),
                 ClipsDescendants = false,
@@ -2631,7 +2633,7 @@ local config_holder
             Name = "Watermark",
             BorderColor3 = rgb(0, 0, 0),
             AnchorPoint = vec2(1, 0),
-            Position = dim2(1, -20, 0, 10),
+            Position = dim2(1, -6, 0, 4),
             AutomaticSize = Enum.AutomaticSize.X,
             Size = dim2(0, 0, 0, 24),
             BorderSizePixel = 0,
@@ -2663,8 +2665,8 @@ local config_holder
 
         library:create("UIPadding", {
             Parent = timeBg,
-            PaddingLeft = dim(0, 6),
-            PaddingRight = dim(0, 6),
+            PaddingLeft = dim(0, 3),
+            PaddingRight = dim(0, 3),
         })
 
         local timeLabel = library:create("TextLabel", {
@@ -2676,6 +2678,7 @@ local config_holder
             Text = " ",
             Size = dim2(0, 0, 1, 0),
             AutomaticSize = Enum.AutomaticSize.X,
+            TextXAlignment = Enum.TextXAlignment.Left,
             BackgroundTransparency = 1,
             BorderSizePixel = 0,
             TextSize = 12,
@@ -2713,7 +2716,7 @@ local config_holder
 
         function cfg.change_text(input)
             currentTimeStr = tostring(input or "")
-            timeLabel.Text = "  " .. currentTimeStr .. "  "
+            timeLabel.Text = currentTimeStr
         end
 
         function cfg.set_visible(bool)
