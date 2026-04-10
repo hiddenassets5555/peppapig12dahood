@@ -254,7 +254,9 @@ local function loadCustomFont()
     return Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
 end
 
-library.font = loadCustomFont()
+-- Menu / library UI only (Tahoma or Source Sans). Not tied to ESP font flags in main.lua.
+library.ui_font = loadCustomFont()
+library.font = library.ui_font
 library.DesyncData = {
     AutoActive = false,
     Has066 = false,
@@ -678,8 +680,7 @@ local config_holder
 
         library.fonts["System"] = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
 
-        -- Default UI font must match Settings > Text Font default ("Minecraft"); async init left library.font on loadCustomFont fallback.
-        library.font = library.fonts["Minecraft"] or library.fonts["Plex"] or library.font
+        -- library.font / library.ui_font stay loadCustomFont(); Minecraft & Plex are for ESP / Drawing only (main.lua flags).
     end
     library:init_fonts()
 
@@ -1176,20 +1177,26 @@ local config_holder
     library.sgui = sgui
     library.notif_holder = notif_holder
 
-    function library:apply_ui_font(fontFace)
-        if typeof(fontFace) ~= "Font" then
+    function library:refresh_ui_font()
+        local face = library.ui_font or library.font
+        if typeof(face) ~= "Font" then
             return
         end
-        library.font = fontFace
+        library.font = face
         for _, root in ipairs({ library.sgui, library.notif_holder, library.tooltip_sgui }) do
             if root then
                 for _, d in ipairs(root:GetDescendants()) do
                     if d:IsA("TextLabel") or d:IsA("TextButton") or d:IsA("TextBox") then
-                        d.FontFace = fontFace
+                        d.FontFace = face
                     end
                 end
             end
         end
+    end
+
+    -- Legacy name: always reapplies menu font only (ignores ESP font picks).
+    function library:apply_ui_font(_)
+        library:refresh_ui_font()
     end
 
     function library:fold_elements(origin, elements)
