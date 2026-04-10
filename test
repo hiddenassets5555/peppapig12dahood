@@ -4892,7 +4892,8 @@ local config_holder
             end 
         
             if alpha then 
-                a = alpha
+                -- Exposed alpha behaves as opacity (1 = visible, 0 = invisible)
+                a = math.clamp(alpha, 0, 1)
             end 
         
             local hsv_position = Color3.fromHSV(h, s, v)
@@ -4902,8 +4903,11 @@ local config_holder
             local offset = (value < 1) and 0 or -4
             hue_picker.Position = dim2(0, 0, value, offset)
 
-            local offset = (a < 1) and 0 or -4
-            alpha_picker.Position = dim2(a, offset, 0, 0)
+            -- Alpha bar visual runs left (opaque) -> right (transparent),
+            -- so picker X is the inverse of opacity.
+            local alpha_x = 1 - a
+            local offset = (alpha_x < 1) and 0 or -4
+            alpha_picker.Position = dim2(alpha_x, offset, 0, 0)
 
             alpha_drag.BackgroundColor3 = Color3.fromHSV(h, s, v)
             
@@ -4936,7 +4940,8 @@ local config_holder
             elseif dragging_hue then 
                 h = math.clamp(1 - (vec2(mouse.X, mouse.Y - gui_offset) - hue.AbsolutePosition).Y / hue.AbsoluteSize.Y, 0, 1)
             elseif dragging_alpha then 
-                a = math.clamp((vec2(mouse.X, mouse.Y - gui_offset) - alpha.AbsolutePosition).X / alpha.AbsoluteSize.X, 0, 1)
+                local alpha_x = math.clamp((vec2(mouse.X, mouse.Y - gui_offset) - alpha.AbsolutePosition).X / alpha.AbsoluteSize.X, 0, 1)
+                a = 1 - alpha_x
             end
 
             cfg.set(nil, nil)
