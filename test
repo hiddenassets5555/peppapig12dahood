@@ -2273,7 +2273,7 @@ local config_holder
             local section = column:section({name = "Other"})
             section:label({name = "UI Bind"})
             :keybind({callback = window.set_menu_visibility, key = getgenv().UiBindKey})
-            section:toggle({name = "Anti AFK", flag = "anti_afk", default = true, callback = function(v)
+            section:toggle({name = "Anti AFK", flag = "anti_afk", default = false, callback = function(v)
                 if v then
                     -- Initialize anti-AFK if not already active
                     if not getgenv().AntiAFKActive then
@@ -2623,7 +2623,7 @@ local config_holder
         local brandCell = library:create("Frame", {
             Parent = row,
             Name = "WMBrand",
-            LayoutOrder = 1,
+            LayoutOrder = 3,
             AutomaticSize = Enum.AutomaticSize.X,
             Size = dim2(0, 0, 1, -4),
             BackgroundColor3 = themes.preset.accent,
@@ -2671,7 +2671,7 @@ local config_holder
         local timeCell = library:create("Frame", {
             Parent = row,
             Name = "WMTime",
-            LayoutOrder = 3,
+            LayoutOrder = 1,
             AutomaticSize = Enum.AutomaticSize.X,
             Size = dim2(0, 0, 1, 0),
             BackgroundTransparency = 1,
