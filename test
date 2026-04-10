@@ -2569,17 +2569,6 @@ local config_holder
             })
             library:apply_theme(out, "outline", "BackgroundColor3")
 
-            local accentBar = library:create("Frame", {
-                Parent = out,
-                Name = "AccentBar",
-                Position = dim2(0, 2, 0, 2),
-                BorderColor3 = rgb(0, 0, 0),
-                Size = dim2(1, -4, 0, 2),
-                BorderSizePixel = 0,
-                BackgroundColor3 = themes.preset.accent,
-            })
-            library:apply_theme(accentBar, "accent", "BackgroundColor3")
-
             local inl = library:create("Frame", {
                 Parent = out,
                 Position = dim2(0, 1, 0, 1),
@@ -2588,8 +2577,22 @@ local config_holder
                 BorderSizePixel = 0,
                 BackgroundColor3 = themes.preset.inline,
                 ClipsDescendants = false,
+                ZIndex = 0,
             })
             library:apply_theme(inl, "inline", "BackgroundColor3")
+
+            -- Same 1px inset as `inl`: flush with outline corners (was 2px / -4 and sat under `inl`).
+            local accentBar = library:create("Frame", {
+                Parent = out,
+                Name = "AccentBar",
+                Position = dim2(0, 1, 0, 1),
+                BorderColor3 = rgb(0, 0, 0),
+                Size = dim2(1, -2, 0, 2),
+                BorderSizePixel = 0,
+                BackgroundColor3 = themes.preset.accent,
+                ZIndex = 2,
+            })
+            library:apply_theme(accentBar, "accent", "BackgroundColor3")
 
             local bg = library:create("Frame", {
                 Parent = inl,
@@ -2599,6 +2602,7 @@ local config_holder
                 BorderSizePixel = 0,
                 BackgroundColor3 = rgb(255, 255, 255),
                 ClipsDescendants = false,
+                ZIndex = 0,
             })
 
             local grad = library:create("UIGradient", {
@@ -2618,8 +2622,8 @@ local config_holder
             Parent = sgui,
             Name = "Watermark",
             BorderColor3 = rgb(0, 0, 0),
-            AnchorPoint = vec2(1, 1),
-            Position = dim2(1, -20, 0, 20),
+            AnchorPoint = vec2(0, 0),
+            Position = dim2(0, 20, 0, 20),
             AutomaticSize = Enum.AutomaticSize.X,
             Size = dim2(0, 0, 0, 24),
             BorderSizePixel = 0,
