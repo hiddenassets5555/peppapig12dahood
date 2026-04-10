@@ -66,14 +66,14 @@ local ESP_SETTINGS = { SkeletonColor = Color3.fromRGB(255, 255, 255), Enabled = 
 
 local themes = {
     preset = {
-        ["outline"] = rgb(49, 46, 46), 
-        ["inline"] = rgb(32, 26, 30), 
-        ["accent"] = rgb(227, 144, 191), 
-        ["high_contrast"] = rgb(23, 18, 21),
-        ["low_contrast"] = rgb(32, 26, 30),
-        ["text"] = rgb(163, 171, 178),
+        ["outline"] = rgb(0, 0, 0),
+        ["inline"] = rgb(18, 18, 18),
+        ["accent"] = rgb(161, 140, 174),
+        ["high_contrast"] = rgb(14, 13, 13),
+        ["low_contrast"] = rgb(18, 18, 18),
+        ["text"] = rgb(255, 255, 255),
         ["text_outline"] = rgb(0, 0, 0),
-        ["glow"] = rgb(0, 0, 0), 
+        ["glow"] = rgb(161, 140, 174),
     },
 
     utility = {
@@ -2208,11 +2208,14 @@ local config_holder
                 open = false,
             })
 
-            local watermark = library:watermark({default = os.date('Home.Private |  - %b %d %Y - %H:%M:%S')})  
+            local watermark = library:watermark({
+                brand = "Home.Private",
+                default = os.date('%b %d %Y - %H:%M:%S'),
+            })
 
             task.spawn(function()
                 while task.wait(1) do 
-                    watermark.change_text(os.date('Home.Private - %b %d %Y - %H:%M:%S'))
+                    watermark.change_text(os.date('%b %d %Y - %H:%M:%S'))
                 end 
             end) 
 
@@ -2546,8 +2549,11 @@ local config_holder
     end
 
     function library:watermark(options) 
+        local brandStr = options.brand or "Home.Private"
+        local timeDefault = options.text or options.default or os.date('%b %d %Y - %H:%M:%S')
         local cfg = {
-            default = options.text or options.default or os.date('drain.lol | %b %d %Y | %H:%M')
+            default = timeDefault,
+            brand = brandStr,
         }
 
         local watermark_outline = library:create("Frame", {
@@ -2595,26 +2601,107 @@ local config_holder
                 rgbkey(1, rgb(30, 30, 30))
             }
         }) library:apply_theme(UIGradient, "contrast", "Color") 
-        
-        local text = library:create("TextLabel", {
+
+        local row = library:create("Frame", {
             Parent = watermark_background,
+            Name = "WMRow",
+            Position = dim2(0, 2, 0, 2),
+            Size = dim2(1, -4, 1, -4),
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0,
+        })
+
+        library:create("UIListLayout", {
+            Parent = row,
+            FillDirection = Enum.FillDirection.Horizontal,
+            VerticalAlignment = Enum.VerticalAlignment.Center,
+            HorizontalAlignment = Enum.HorizontalAlignment.Left,
+            SortOrder = Enum.SortOrder.LayoutOrder,
+            Padding = dim(0, 8),
+        })
+
+        local brandCell = library:create("Frame", {
+            Parent = row,
+            Name = "WMBrand",
+            LayoutOrder = 1,
+            AutomaticSize = Enum.AutomaticSize.X,
+            Size = dim2(0, 0, 1, -4),
+            BackgroundColor3 = themes.preset.accent,
+            BackgroundTransparency = 0.62,
+            BorderSizePixel = 0,
+        }) library:apply_theme(brandCell, "accent", "BackgroundColor3")
+
+        library:create("UIPadding", {
+            Parent = brandCell,
+            PaddingLeft = dim(0, 8),
+            PaddingRight = dim(0, 8),
+        })
+
+        local brandLabel = library:create("TextLabel", {
+            Parent = brandCell,
             Name = "",
-            FontFace = library.font,
+            FontFace = library.watermark_font or library.font,
             TextColor3 = themes.preset.text,
             BorderColor3 = rgb(0, 0, 0),
-            Text = "  drain.lol | Beta | Aug 29 2024 | 07:29:00  ",
-            Size = dim2(1, 0, 1, 0),
+            Text = brandStr,
+            Size = dim2(0, 0, 1, 0),
+            AutomaticSize = Enum.AutomaticSize.X,
             BackgroundTransparency = 1,
-            Position = dim2(0, -1, 0, 1),
             BorderSizePixel = 0,
             TextSize = 12,
-            BackgroundColor3 = rgb(255, 255, 255),
             TextWrapped = false,
-            TextTruncate = Enum.TextTruncate.None
+            TextTruncate = Enum.TextTruncate.None,
         })
-        
+
         library:create("UIStroke", {
-            Parent = text,
+            Parent = brandLabel,
+            Name = "",
+            LineJoinMode = Enum.LineJoinMode.Miter
+        })
+
+        local divider = library:create("Frame", {
+            Parent = row,
+            Name = "WMDivider",
+            LayoutOrder = 2,
+            Size = dim2(0, 1, 1, -8),
+            BorderSizePixel = 0,
+            BackgroundColor3 = themes.preset.outline,
+        }) library:apply_theme(divider, "outline", "BackgroundColor3")
+
+        local timeCell = library:create("Frame", {
+            Parent = row,
+            Name = "WMTime",
+            LayoutOrder = 3,
+            AutomaticSize = Enum.AutomaticSize.X,
+            Size = dim2(0, 0, 1, 0),
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0,
+        })
+
+        library:create("UIPadding", {
+            Parent = timeCell,
+            PaddingLeft = dim(0, 0),
+            PaddingRight = dim(0, 4),
+        })
+
+        local timeLabel = library:create("TextLabel", {
+            Parent = timeCell,
+            Name = "",
+            FontFace = library.watermark_font or library.font,
+            TextColor3 = themes.preset.text,
+            BorderColor3 = rgb(0, 0, 0),
+            Text = " ",
+            Size = dim2(0, 0, 1, 0),
+            AutomaticSize = Enum.AutomaticSize.X,
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0,
+            TextSize = 12,
+            TextWrapped = false,
+            TextTruncate = Enum.TextTruncate.None,
+        })
+
+        library:create("UIStroke", {
+            Parent = timeLabel,
             Name = "",
             LineJoinMode = Enum.LineJoinMode.Miter
         })
@@ -2628,19 +2715,30 @@ local config_holder
             BorderSizePixel = 0,
             BackgroundColor3 = themes.preset.accent
         }) library:apply_theme(accent, "accent", "BackgroundColor3") 
-        
+
+        local currentTimeStr = timeDefault
+
         function cfg.change_text(input)
-            text.Text = "  ".. input .."  "
-            local bounds = text.TextBounds
-            watermark_outline.Size = dim2(0, bounds.X + 6, 0, 24)
+            currentTimeStr = tostring(input or "")
+            timeLabel.Text = "  " .. currentTimeStr .. "  "
+            local listGaps = 16
+            local bw = brandLabel.TextBounds.X + 16
+            local tw = timeLabel.TextBounds.X
+            watermark_outline.Size = dim2(0, bw + listGaps + 1 + tw + 6, 0, 24)
         end 
 
         function cfg.set_visible(bool) 
             watermark_outline.Visible = bool
         end 
 
+        function cfg.set_brand(s)
+            brandStr = tostring(s or "")
+            cfg.brand = brandStr
+            brandLabel.Text = brandStr
+            cfg.change_text(currentTimeStr)
+        end
 
-        cfg.change_text(cfg.default)
+        cfg.change_text(timeDefault)
 
         return cfg 
 
@@ -4174,7 +4272,8 @@ local config_holder
                 FillDirection = Enum.FillDirection.Horizontal
             })
         
-            local toggle = library:create("TextButton", {
+            -- Plain TextButton: no default UIStroke (avoids accent-looking border); outer ring is outline until hover.
+            local toggle = library:create_plain("TextButton", {
                 Parent = left_components,
                 Name = "!toggle",
                 Text = "",
@@ -4183,10 +4282,10 @@ local config_holder
                 BorderColor3 = rgb(0, 0, 0),
                 Size = dim2(0, 14, 0, 14),
                 BorderSizePixel = 0,
-                ZIndex = 1, 
-                BackgroundColor3 = themes.preset.outline
-            }) library:apply_theme(toggle, "outline", "BackgroundColor3") 
-            library:apply_theme(toggle, "accent", "BackgroundColor3") 
+                ZIndex = 1,
+                BackgroundColor3 = themes.preset.outline,
+            })
+            library:apply_theme(toggle, "outline", "BackgroundColor3")
 
             local inline = library:create("Frame", {
                 Parent = toggle,
@@ -4242,9 +4341,13 @@ local config_holder
                     rgbkey(1, rgb(35, 35, 47))
                 }
             }) library:apply_theme(UIGradient, "contrast", "Color") 
-        
 
-        library:hoverify(toggle_holder, toggle)
+        library:connection(toggle_holder.MouseEnter, function()
+            library:tween(toggle, { BackgroundColor3 = themes.preset.accent })
+        end)
+        library:connection(toggle_holder.MouseLeave, function()
+            library:tween(toggle, { BackgroundColor3 = themes.preset.outline })
+        end)
 
         function cfg.set(bool)
             if bool and library.can_enable_feature and not library.can_enable_feature() then
