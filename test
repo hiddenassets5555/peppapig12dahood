@@ -5901,22 +5901,47 @@ local config_holder
 
         function cfg.set(value) 
             local selected = {}
-
             local is_table = type(value) == "table"
+            -- Saved configs often store a single string; multi mode must keep flags as an array.
+            if cfg.multi and not is_table and type(value) == "string" and value ~= "" then
+                value = { value }
+                is_table = true
+            end
 
-            for _,v in next, cfg.option_instances do 
-                if v.Text == value or (is_table and find(value, v.Text)) then 
+            local function rowSelectedForMulti(txt)
+                if not is_table then
+                    return false
+                end
+                if find(value, txt) then
+                    return true
+                end
+                for _, y in pairs(value) do
+                    if y == txt then
+                        return true
+                    end
+                end
+                return false
+            end
+
+            for _, v in next, cfg.option_instances do
+                local on = (v.Text == value) or (cfg.multi and rowSelectedForMulti(v.Text))
+                if on then
                     insert(selected, v.Text)
-                    cfg.multi_items = selected
                     v.TextColor3 = themes.preset.accent
-                else 
+                else
                     v.TextColor3 = themes.preset.text
                 end
             end
 
-            text.Text = is_table and concat(selected, ", ") or selected[1] or "nun"
-            flags[cfg.flag] = is_table and selected or selected[1]
-            cfg.callback(flags[cfg.flag]) 
+            if cfg.multi then
+                cfg.multi_items = selected
+                text.Text = #selected > 0 and concat(selected, ", ") or "nun"
+                flags[cfg.flag] = selected
+            else
+                text.Text = selected[1] or "nun"
+                flags[cfg.flag] = selected[1]
+            end
+            cfg.callback(flags[cfg.flag])
         end
         
         function cfg:refresh_options(refreshed_list) 
